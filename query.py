@@ -920,21 +920,6 @@ def _add_player_to_team(cursor, team_owner, player):
               WHERE name = %s''',
            team_owner, player)
 
-def wrap_transaction(fn):
-  """Given a function, returns a function that accepts a cursor and arbitrary
-  arguments, calls the function with those args, wrapped in a transaction."""
-  def transact(cursor, *args):
-    result = None
-    cursor.execute('BEGIN;')
-    try:
-      result = fn(cursor, *args)
-      cursor.execute('COMMIT;')
-    except:
-      cursor.execute('ROLLBACK;')
-      raise
-    return result
-  return transact
-
 def create_team(cursor, team, owner_name):
   """Creates a team with the given name, owned by the named player."""
   loaddb.check_add_player(cursor, owner_name)

@@ -15,6 +15,8 @@ import sys
 START_TIME = '20090801'
 END_TIME   = '20090901'
 
+ACCEPTED_VERSIONS = ['0.4', '0.5']
+
 CDO = 'http://crawl.develz.org/'
 
 # Log and milestone files. A tuple indicates a remote file with t[1]
@@ -588,12 +590,14 @@ dbfield_to_sqltype = {
         'gold_spent': sql_int
 	}
 
-def is_not_tourney(game):
+def is_selected(game):
   """A game started before the tourney start or played after the end
   doesn't count."""
-  start = game['start']
-  end = game.get('end') or game.get('time') or start
-  return start < START_TIME or end >= END_TIME
+  v = game['version']
+  for accepted_version in ACCEPTED_VERSIONS:
+    if v.startswith(accepted_version):
+      return True
+  return False
 
 _active_cursor = None
 
@@ -690,7 +694,13 @@ def apply_dbtypes(game):
       new_hash[key] = dbfield_to_sqltype[COMBINED_LOG_TO_DB[key]].to_sql(value)
     else:
       new_hash[key] = value
-  return new_hash
+  # Another pass to populate field names with SQL column names.
+  augmented_hash = dict(new_hash)
+  for key, value in new_hash.items():
+    sqlkey = COMBINED_LOG_TO_DB.get(key)
+    if sqlkey:
+      augmented_hash[sqlkey] = value
+  return augmented_hash
 
 def make_xlog_db_query(db_mappings, xdict, filename, offset, table):
   fields = ['source_file']
@@ -819,17 +829,32 @@ def is_ghost_kill(game):
   killer = game.get('killer') or ''
   return R_GHOST_NAME.search(killer)
 
+def wrap_transaction(fn):
+  """Given a function, returns a function that accepts a cursor and arbitrary
+  arguments, calls the function with those args, wrapped in a transaction."""
+  def transact(cursor, *args):
+    result = None
+    cursor.execute('BEGIN;')
+    try:
+      result = fn(cursor, *args)
+      cursor.execute('COMMIT;')
+    except:
+      cursor.execute('ROLLBACK;')
+      raise
+    return result
+  return transact
+
 def process_log(cursor, filename, offset, d):
-  if is_not_tourney(d):
+  """Processes a logfile record for scoring purposes."""
+
+  if not is_selected(d):
     return
 
   ghost_kill = is_ghost_kill(d)
-
   # Add the player outside the transaction and suppress errors.
   check_add_player(cursor, d['name'])
 
-  cursor.execute('BEGIN;')
-  try:
+  def do_logline(cursor):
     insert_xlog_db(cursor, d, filename, offset)
 
     if not d.get('milestone'):
@@ -842,10 +867,7 @@ def process_log(cursor, filename, offset, d):
     for listener in LISTENERS:
       listener.logfile_event(cursor, d)
 
-    cursor.execute('COMMIT;')
-  except:
-    cursor.execute('ROLLBACK;')
-    raise
+  wrap_transaction(do_logline)(cursor)
 
 def extract_unique_name(kill_message):
   return R_KILL_UNIQUE.findall(kill_message)[0]
@@ -955,15 +977,14 @@ MILESTONE_HANDLERS = {
 }
 
 def add_milestone_record(c, filename, offset, d):
-  if is_not_tourney(d):
+  if not is_selected(d):
     return
 
   # Add player entry outside the milestone transaction.
   check_add_player(c, d['name'])
 
   # Start a transaction to ensure that we don't part-update tables.
-  c.execute('BEGIN;')
-  try:
+  def do_milestone(c):
     update_milestone_bookmark(c, filename, offset)
     insert_xlog_db(c, d, filename, offset)
     handler = MILESTONE_HANDLERS.get(d['type'])
@@ -974,10 +995,7 @@ def add_milestone_record(c, filename, offset, d):
     for listener in LISTENERS:
       listener.milestone_event(c, d)
 
-    c.execute('COMMIT;')
-  except:
-    c.execute('ROLLBACK;')
-    raise
+  wrap_transaction(do_milestone)(c)
 
 def add_listener(listener):
   LISTENERS.append(listener)

@@ -2,6 +2,8 @@ New scoring script ideas:
 -------------------------
 
 General thoughts:
+- Player of the month, tracked historically?
+  - Based on points?
 - Script will be based on tourney scripts. It should be able to use any
   number of scorefile/milestone paths.
 - Script should run fairly fast so as to not load cao.
