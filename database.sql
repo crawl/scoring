@@ -1,12 +1,9 @@
 -- Use InnoDB for transaction support?
 -- SET storage_engine=InnoDB;
 
-DROP TABLE IF EXISTS player_points;
-DROP TABLE IF EXISTS clan_points;
 DROP TABLE IF EXISTS deaths_to_distinct_uniques;
 DROP TABLE IF EXISTS deaths_to_uniques;
 DROP TABLE IF EXISTS player_maxed_skills;
-DROP TABLE IF EXISTS clan_banners;
 DROP TABLE IF EXISTS player_banners;
 DROP TABLE IF EXISTS player_won_gods;
 DROP TABLE IF EXISTS active_streaks;
@@ -27,7 +24,6 @@ DROP TABLE IF EXISTS combo_highscores;
 DROP TABLE IF EXISTS class_highscores;
 DROP TABLE IF EXISTS species_highscores;
 DROP TABLE IF EXISTS games;
-DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS players;
 
 DROP VIEW IF EXISTS fastest_realtime;
@@ -57,30 +53,14 @@ DROP VIEW IF EXISTS most_pacific_wins;
 
 CREATE TABLE IF NOT EXISTS players (
   name VARCHAR(20) PRIMARY KEY,
-  team_captain VARCHAR(20),
-  score_base BIGINT,
-  -- This is the computed score! We will overwrite it each time we
-  -- recalculate it, and it may be null at any point.
-  score_full BIGINT DEFAULT 0,
-  team_score_base BIGINT,
-  -- This is also computed and will be overwritten each time.
-  team_score_full BIGINT DEFAULT 0,
-  FOREIGN KEY (team_captain) REFERENCES players (name)
-  ON DELETE SET NULL
+  games_played INT DEFAULT 0,
+  games_won INT DEFAULT 0,
+  total_score BIGINT,
+  best_score BIGINT,
+  best_scoring_game BIGINT
   );
+CREATE INDEX player_total_scores ON players (name, total_score);
   
-CREATE INDEX pscore ON players (score_full);
-
-CREATE TABLE teams (
-  owner VARCHAR(20) UNIQUE NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  -- Clan total score, will be recomputed at intervals.
-  total_score BIGINT DEFAULT 0 NOT NULL,
-  PRIMARY KEY (owner),
-  FOREIGN KEY (owner) REFERENCES players (name)
-  ON DELETE CASCADE
-  );
-
 -- For mappings of logfile fields to columns, see loaddb.py
 CREATE TABLE games (
   id BIGINT AUTO_INCREMENT,
@@ -327,27 +307,6 @@ CREATE INDEX player_won_gods_pg ON player_won_gods (player, god);
 -- Audit table for point assignment. Tracks both permanent and
 -- temporary points.
 
-CREATE TABLE player_points (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  player VARCHAR(20) NOT NULL,
-  temp BOOLEAN DEFAULT 0,
-  points MEDIUMINT NOT NULL DEFAULT 0,
-  team_points MEDIUMINT NOT NULL DEFAULT 0,
-  point_source VARCHAR(150) NOT NULL,
-  FOREIGN KEY (player) REFERENCES players (name)
-  );
-
-CREATE INDEX point_player_src ON player_points (player, point_source);
-
--- Clan point assignments.
-CREATE TABLE clan_points (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  captain VARCHAR(20) NOT NULL,
-  points MEDIUMINT NOT NULL DEFAULT 0,
-  point_source VARCHAR(150) NOT NULL,
-  FOREIGN KEY (captain) REFERENCES players (name)
-  );
-
 CREATE TABLE deaths_to_uniques (
   player  VARCHAR(20),
   uniq    VARCHAR(50),
@@ -388,15 +347,6 @@ CREATE TABLE player_banners (
   );
 CREATE INDEX player_banners_player ON player_banners (player);
 
-CREATE TABLE clan_banners (
-  team_captain VARCHAR(20),
-  banner VARCHAR(50),
-  prestige INT NOT NULL,
-  PRIMARY KEY (team_captain, banner),
-  FOREIGN KEY (team_captain) REFERENCES players (name)
-);
-CREATE INDEX clan_banners_captain ON clan_banners (team_captain);
-
 -- Views for trophies
 
 -- The three fastest realtime wins. Ties are broken by who got there first.
@@ -421,35 +371,6 @@ SELECT id, player, kills
  WHERE killertype = 'winning' AND kills IS NOT NULL
 ORDER BY kills
  LIMIT 3;
-
-CREATE VIEW clan_combo_highscores AS
-SELECT p.team_captain, g.*
-FROM combo_highscores g, players p
-WHERE g.player = p.name
-AND p.team_captain IS NOT NULL;
-
-CREATE VIEW combo_hs_clan_scoreboard AS
-SELECT team_captain, COUNT(*) AS combos
-FROM clan_combo_highscores
-GROUP BY team_captain
-ORDER BY combos DESC
-LIMIT 10;
-
-CREATE VIEW clan_total_scores AS
-SELECT team_captain, (SUM(score_full) + SUM(team_score_full)) score
-FROM players
-WHERE team_captain IS NOT NULL
-GROUP BY team_captain
-ORDER BY score DESC;
-
-CREATE VIEW clan_unique_kills AS
-SELECT p.team_captain AS team_captain, COUNT(DISTINCT monster) AS kills
-FROM players p INNER JOIN kills_of_uniques k
-                       ON p.name = k.player
-WHERE p.team_captain IS NOT NULL
-GROUP BY p.team_captain
-ORDER BY kills DESC
-LIMIT 10;
 
 CREATE VIEW game_combo_win_highscores AS
 SELECT *
