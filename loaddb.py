@@ -29,7 +29,7 @@ MILESTONES = [ 'cao-milestones-0.5',
 
 BLACKLIST_FILE = 'blacklist.txt'
 EXTENSION_FILE = 'modules.ext'
-TOURNAMENT_DB = 'tournament'
+SCORING_DB = 'scoring'
 COMMIT_INTERVAL = 3000
 CRAWLRC_DIRECTORY = '/home/crawl/chroot/dgldir/rcfiles/'
 
@@ -273,8 +273,8 @@ class MasterXlogReader:
 
 def connect_db():
   connection = MySQLdb.connect(host='localhost',
-                               user='crawl',
-                               db=TOURNAMENT_DB)
+                               user='henzell',
+                               db=SCORING_DB)
   return connection
 
 def parse_logline(logline):
