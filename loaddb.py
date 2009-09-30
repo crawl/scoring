@@ -147,7 +147,7 @@ class Xlogline:
     self.processor(cursor, self.filename, self.offset, self.xdict)
 
 class Xlogfile:
-  def __init__(self, filename, tell_op, proc_op, blacklist=None):
+  def __init__(self, filename, proc_op, blacklist=None):
     if isinstance(filename, tuple):
       self.local = False
       self.filename = filename[0]
@@ -157,7 +157,6 @@ class Xlogfile:
       self.filename = filename
     self.handle = None
     self.offset = None
-    self.tell_op = tell_op
     self.proc_op = proc_op
     self.size  = None
     self.blacklist = blacklist
@@ -179,8 +178,8 @@ class Xlogfile:
     info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
     # FIXME: Restore remote fetch.
     #res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
-    if res != 0:
-      raise IOError, "Failed to fetch %s with wget" % self.url
+    #if res != 0:
+    #  raise IOError, "Failed to fetch %s with wget" % self.url
 
   def _open(self):
     try:
@@ -202,7 +201,7 @@ class Xlogfile:
     while True:
       if not self.offset:
         xlog_seek(self.filename, self.handle,
-                  self.tell_op(cursor, self.filename))
+                  dbfile_offset(cursor, self.filename))
         self.offset = self.handle.tell()
 
       # Don't read beyond the last snapshot size for local files.
@@ -240,11 +239,11 @@ class Xlogfile:
 
 class Logfile (Xlogfile):
   def __init__(self, filename, blacklist):
-    Xlogfile.__init__(self, filename, logfile_offset, process_log, blacklist)
+    Xlogfile.__init__(self, filename, process_log, blacklist)
 
 class MilestoneFile (Xlogfile):
   def __init__(self, filename):
-    Xlogfile.__init__(self, filename, milestone_offset, process_milestone)
+    Xlogfile.__init__(self, filename, process_milestone)
 
 class MasterXlogReader:
   """Given a list of Xlogfile objects, calls the process operation on the oldest
@@ -780,12 +779,6 @@ def dbfile_offset(cursor, filename):
                      '''SELECT MAX(source_file_offset) FROM logfile_offsets
                         WHERE filename = %s''',
                      filename) or -1
-
-def logfile_offset(cursor, filename):
-  return dbfile_offset(cursor, 'games', filename)
-
-def milestone_offset(cursor, filename):
-  return dbfile_offset(cursor, 'milestone_bookmark', filename)
 
 def update_db_bookmark(cursor, table, filename, offset):
   cursor.execute('INSERT INTO ' + table + \
