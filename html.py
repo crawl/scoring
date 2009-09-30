@@ -42,8 +42,7 @@ STOCK_WIN_COLUMNS = \
 
 EXT_WIN_COLUMNS = \
     [ ('sc', 'Score', True),
-      ('race', 'Species'),
-      ('cls', 'Class'),
+      ('charabbr', 'Character'),
       ('god', 'God'),
       ('title', 'Title'),
       ('xl', 'XL'),
@@ -68,8 +67,7 @@ STOCK_COLUMNS = \
 
 EXT_COLUMNS = \
     [ ('sc', 'Score', True),
-      ('race', 'Species'),
-      ('cls', 'Class'),
+      ('charabbr', 'Character'),
       ('god', 'God'),
       ('title', 'Title'),
       ('place', 'Place'),
@@ -82,8 +80,8 @@ EXT_COLUMNS = \
     ]
 
 WHERE_COLUMNS = \
-    [ ('race', 'Species'),
-      ('cls', 'Class'),
+    [
+      ('charabbr', 'Character'),
       ('god', 'God'),
       ('title', 'Title'),
       ('place', 'Place'),
