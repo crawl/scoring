@@ -7,6 +7,7 @@ import banner
 import logging
 from logging import debug, info, warn, error
 import crawl_utils
+from crawl_utils import DBMemoizer
 import crawl
 import uniq
 
@@ -108,8 +109,54 @@ def do_milestone_ghost(c, mile):
   if not mile['milestone'].startswith('banished'):
     assign_team_points(c, "ghost", mile['name'], 2)
 
+@DBMemoizer
+def topN_count(c):
+  return query_first(c, '''SELECT COUNT(*) FROM top_games''')
+
+def insert_game(c, g, table):
+  query_do(c,
+           'INSERT INTO %s (%s) VALUES (%s)' %
+           (table, loaddb.LOG_DB_COLUMNS, loaddb.LOG_DB_PLACEHOLDERS),
+           *[g.get(x[1]) for x in loaddb.LOG_DB_MAPPINGS])
+
 def update_topN(c, g, n):
-  pass
+  if topN_count(c) >= n:
+    if not g_min_highscore or g['sc'] > g_min_highscore:
+      row = query_first_row(c, '''SELECT id, sc FROM top_games
+                                ORDER BY sc LIMIT 1''')
+      g_min_highscore = row[1]
+      if g['sc'] > g_min_highscore:
+        query_do('''DELETE FROM top_games WHERE id = %s''', row[0])
+        insert_game(c, g, 'top_games')
+        g_min_highscore = g['sc']
+  else:
+    insert_game(c, g, 'top_games')
+    topN_count.flush()
+
+def game_is_win(g):
+  return g['ktyp'] == 'winning'
+
+def update_player_stats(c, g):
+  winc = game_is_win(g) and 1 or 0
+  query_do(c, '''INSERT INTO players
+                             (name, games_played, games_won,
+                              total_score, best_score,
+                              first_game_start, last_game_end)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                 ON DUPLICATE KEY UPDATE
+                         SET games_played = games_played + 1,
+                             games_won = games_won + %s,
+                             total_score = total_score + %s,
+                             best_score =
+                                   CASE WHEN best_score < %s
+                                        THEN %s
+                                        ELSE best_score
+                                        END,
+                             last_game_end = %s,
+                             current_combo = NULL''',
+           g['name'], 1, winc, g['sc'], g['sc'], g['start_time'],
+           g['end_time'],
+           winc, g['sc'], g['sc'], g['sc'], g['end_time'])
 
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line

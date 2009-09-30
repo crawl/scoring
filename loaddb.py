@@ -31,7 +31,7 @@ LOGS = [ 'cao-logfile-0.4',
 
 MILESTONES = [ 'cao-milestones-0.5',
                'cao-milestones-0.4',
-               ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt') ]
+               ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
                ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt') ]
 
 BLACKLIST_FILE = 'blacklist.txt'
@@ -177,7 +177,8 @@ class Xlogfile:
 
   def fetch_remote(self):
     info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
-    res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
+    # FIXME: Restore remote fetch.
+    #res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
     if res != 0:
       raise IOError, "Failed to fetch %s with wget" % self.url
 
@@ -231,6 +232,7 @@ class Xlogfile:
         xdict['tmsg'] = 'was blacklisted.'
         xdict['vmsg'] = 'was blacklisted.'
 
+      xdict['source_file'] = self.filename
       xline = Xlogline( self, self.filename, self.offset,
                         xdict.get('end') or xdict.get('time'),
                         xdict, self.proc_op )
@@ -393,6 +395,7 @@ def xlog_dict(logline):
 
 # Note: all fields must be present here.
 LOG_DB_MAPPINGS = [
+    [ 'source_file', 'source_file' ],
     [ 'v', 'v' ],
     [ 'lv', 'lv' ],
     [ 'name', 'name' ],
@@ -437,6 +440,9 @@ LOG_DB_MAPPINGS = [
     [ 'goldfound', 'goldfound' ],
     [ 'goldspent', 'goldspent' ]
     ]
+
+LOG_DB_COLUMNS = ",".join([x[1] for x in LOG_DB_MAPPINGS])
+LOG_DB_PLACEHOLDERS = ",".join(['%s' for x in LOG_DB_MAPPINGS])
 
 MILE_DB_MAPPINGS = [
     [ 'v', 'v' ],
@@ -912,12 +918,12 @@ def process_xlog(c, filename, offset, d, flambda):
 
 def process_log(c, filename, offset, d):
   """Processes a logfile record for scoring purposes."""
-  return process_xlog(c, filename, offset, d
+  return process_xlog(c, filename, offset, d,
                       lambda l: l.logfile_event)
 
 def process_milestone(c, filename, offset, d):
   """Processes a milestone record for scoring purposes."""
-  return process_xlog(c, filename, offset, d
+  return process_xlog(c, filename, offset, d,
                       lambda l: l.milestone_event)
 
 if __name__ == '__main__':

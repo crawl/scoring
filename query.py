@@ -21,8 +21,6 @@ import time
 MAX_UNIQUES = 43
 MAX_RUNES = 15
 
-LOG_FIELDS = [ 'source_file' ] + [ x[1] for x in loaddb.LOG_DB_MAPPINGS ]
-
 def _cursor():
   """Easy retrieve of cursor to make interactive testing easier."""
   d = loaddb.connect_db()
@@ -384,14 +382,15 @@ def find_clan_games(c, captain, sort_min=None, sort_max=None, limit=1,
 
   return [ row_to_xdict(x) for x in query.rows(c) ]
 
-def find_games(c, sort_min=None, sort_max=None, limit=1, **dictionary):
+def find_games(c, table, sort_min=None, sort_max=None,
+               limit=None, **dictionary):
   """Finds all games matching the supplied criteria, all criteria ANDed
   together."""
 
   if sort_min is None and sort_max is None:
     sort_min = 'end_time'
 
-  query = Query('SELECT ' + ",".join(LOG_FIELDS) + ' FROM games')
+  query = Query('SELECT ' + ",".join(LOG_FIELDS) + (' FROM %s' % table))
   where = []
   values = []
 

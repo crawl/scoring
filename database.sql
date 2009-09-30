@@ -126,6 +126,7 @@ CREATE TABLE player_best_games (
 CREATE TABLE top_games AS SELECT * FROM player_best_games;
 ALTER TABLE top_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE top_games ADD CONSTRAINT PRIMARY KEY (id);
+CREATE INDEX top_games_sc ON top_games (sc);
 
 -- Keep track of best score for each combo (unique charabbr).
 CREATE TABLE top_combo_scores AS SELECT * FROM player_best_games;
@@ -182,7 +183,6 @@ CREATE TABLE players (
   games_won INT DEFAULT 0,
   total_score BIGINT,
   best_score BIGINT,
-  best_scoring_game BIGINT,
   first_game_start DATETIME,
   last_game_end DATETIME,
 
@@ -334,14 +334,6 @@ CREATE TABLE active_streaks (
   player VARCHAR(20) PRIMARY KEY,
   streak MEDIUMINT DEFAULT 1,
   streak_time DATETIME NOT NULL,
-  FOREIGN KEY (player) REFERENCES players (name)
-  );
-
--- This is to show the last character played under 'active streaks'
-CREATE TABLE most_recent_character (
-  player VARCHAR(20) PRIMARY KEY,
-  charabbr CHAR(4) NOT NULL,
-  update_time DATETIME NOT NULL,
   FOREIGN KEY (player) REFERENCES players (name)
   );
 

@@ -98,9 +98,8 @@ def daemonize(lockfile = LOCKFILE):
   else:
     sys.exit(0)
 
-class Memoizer:
+class Memoizer (object):
   FLUSH_THRESHOLD = 1000
-
   """Given a function, caches the results of the function for sets of arguments
   and returns the cached result where possible. Do not use if you have
   very large possible combinations of args, or we'll run out of RAM."""
@@ -123,6 +122,9 @@ class Memoizer:
   def record(self, args, value):
     self.cache[self.extractor(args)] = value
 
+class DBMemoizer (Memoizer):
+  def __init__(self, fn):
+    Memoizer.__init__(self, fn, lambda args: args[1:])
 
 def format_time(time):
   return "%04d%02d%02d-%02d%02d%02d" % (time.year, time.month, time.day,

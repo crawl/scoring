@@ -36,46 +36,32 @@ def render(c, page, dest=None, pars=None):
 
 def tourney_overview(c):
   info("Updating overview page")
-  render(c, 'overview')
+  #render(c, 'overview')
 
 def player_pages(c):
   info("Updating all player pages")
-  for p in query.get_players(c):
-    player_page(c, p)
-  render(c, 'all-players')
-  render(c, 'scoreboard')
-  render(c, 'combo-scoreboard')
-  render(c, 'combo-leaders')
-  render(c, 'killers')
-  render(c, 'gkills')
-
-def team_page(c, captain):
-  info("Updating team page for captain %s" % captain)
-  render(c, 'clan', dest = ('%s/%s' % (crawl_utils.CLAN_BASE, captain.lower())),
-         pars = { 'captain' : captain })
-
-def team_pages(c):
-  info("Updating teams page")
-  render(c, 'teams')
-  for captain in query.get_team_captains(c):
-    team_page(c, captain)
+  render(c, 'top-N')
+  #for p in query.get_players(c):
+  #  player_page(c, p)
+  #render(c, 'all-players')
+  #render(c, 'scoreboard')
+  #render(c, 'combo-scoreboard')
+  #render(c, 'combo-leaders')
+  #render(c, 'killers')
+  #render(c, 'gkills')
 
 def player_page(c, player):
   info("Updating player page for %s" % player)
-  render(c, 'player',
-         dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
-         pars = { 'player' : player })
+  #render(c, 'player',
+  #       dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
+  #       pars = { 'player' : player })
 
 # Update tourney overview every 5 mins.
 INTERVAL = crawl_utils.UPDATE_INTERVAL
 TIMER = [ loaddb.define_timer( INTERVAL, tourney_overview ),
-          loaddb.define_timer( INTERVAL, team_pages ),
-          loaddb.define_timer( INTERVAL, player_pages )
-          ]
+          loaddb.define_timer( INTERVAL, player_pages ) ]
 LISTENER = [ loaddb.define_cleanup(tourney_overview),
-             loaddb.define_cleanup(team_pages),
-             loaddb.define_cleanup(player_pages)
-           ]
+             loaddb.define_cleanup(player_pages) ]
 
 if __name__ == '__main__':
   db = loaddb.connect_db()
