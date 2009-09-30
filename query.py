@@ -358,7 +358,7 @@ def get_winning_games(c, **selectors):
                     killertype='winning', **selectors)
 
 def row_to_xdict(row):
-  return dict( zip(LOG_FIELDS, row) )
+  return dict( zip(loaddb.LOG_DB_COLUMNS, row) )
 
 def find_clan_games(c, captain, sort_min=None, sort_max=None, limit=1,
                     **dictionary):
@@ -390,7 +390,7 @@ def find_games(c, table, sort_min=None, sort_max=None,
   if sort_min is None and sort_max is None:
     sort_min = 'end_time'
 
-  query = Query('SELECT ' + ",".join(LOG_FIELDS) + (' FROM %s' % table))
+  query = Query('SELECT ' + loaddb.LOG_DB_SCOLUMNS + (' FROM %s' % table))
   where = []
   values = []
 

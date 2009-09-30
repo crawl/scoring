@@ -121,7 +121,7 @@ class CrawlTimerState:
 class Xlogline:
   """A dictionary from an Xlogfile, along with information about where and
   when it came from."""
-  def __init__(self, owner, filename, time, xdict, processor):
+  def __init__(self, owner, filename, offset, time, xdict, processor):
     self.owner = owner
     self.filename = filename
     self.offset = offset
@@ -440,8 +440,9 @@ LOG_DB_MAPPINGS = [
     [ 'goldspent', 'goldspent' ]
     ]
 
-LOG_DB_COLUMNS = ",".join([x[1] for x in LOG_DB_MAPPINGS])
-LOG_DB_PLACEHOLDERS = ",".join(['%s' for x in LOG_DB_MAPPINGS])
+LOG_DB_COLUMNS = [x[1] for x in LOG_DB_MAPPINGS]
+LOG_DB_SCOLUMNS = ",".join(LOG_DB_COLUMNS)
+LOG_DB_SPLACEHOLDERS = ",".join(['%s' for x in LOG_DB_MAPPINGS])
 
 MILE_DB_MAPPINGS = [
     [ 'v', 'v' ],
@@ -527,7 +528,12 @@ class Query:
     self.query = self.query.strip()
     if not self.query.endswith(';'):
       self.query += ';'
-    cursor.execute(self.query, self.values)
+    try:
+      cursor.execute(self.query, self.values)
+    except:
+      print("Failing query: " + self.query
+            + " args: " + self.values.__repr__())
+      raise
 
   def row(self, cursor):
     """Executes query and returns the first row tuple, or None if there are no
@@ -558,55 +564,55 @@ sql_int = bigint
 varchar = char
 
 dbfield_to_sqltype = {
-	'player':char,
+	'name':char,
 	'start_time':datetime,
-	'score':bigint,
+	'sc':bigint,
 	'race':char,
         'raceabbr':char,
-	'class':char,
-	'version':char,
+	'cls':char,
+	'v':char,
 	'lv':char,
 	'uid':sql_int,
-	'charabbrev':char,
+	'charabbr':char,
 	'xl':sql_int,
-	'skill':char,
-	'sk_lev':sql_int,
+	'sk':char,
+	'sklev':sql_int,
 	'title':varchar,
 	'place':char,
 	'branch':char,
 	'lvl':sql_int,
 	'ltyp':char,
 	'hp':sql_int,
-	'maxhp':sql_int,
- 	'maxmaxhp':sql_int,
+	'mhp':sql_int,
+ 	'mmhp':sql_int,
 	'strength':sql_int,
 	'intellegence':sql_int,
 	'dexterity':sql_int,
 	'god':char,
-	'duration':sql_int,
+	'dur':sql_int,
 	'turn':bigint,
-	'runes':sql_int,
-	'killertype':char,
+	'urune':sql_int,
+	'ktyp':char,
 	'killer':char,
         'kgroup' : char,
         'kaux':char,
-	'damage':sql_int,
+	'dam':sql_int,
 	'piety':sql_int,
-        'penitence':sql_int,
+        'pen':sql_int,
 	'end_time':datetime,
         'milestone_time':datetime,
-	'terse_msg':varchar,
-	'verb_msg':varchar,
+	'tmsg':varchar,
+	'vmsg':varchar,
         'nrune':sql_int,
         'kills': sql_int,
         'gold': sql_int,
-        'gold_found': sql_int,
-        'gold_spent': sql_int
+        'goldfound': sql_int,
+        'goldspent': sql_int
 	}
 
 def is_selected(game):
   """Accept all games that match our version criterion."""
-  return game['version'] >= OLDEST_VERSION
+  return game['v'] >= OLDEST_VERSION
 
 _active_cursor = None
 
@@ -641,33 +647,12 @@ def query_first_col(cursor, query, *values):
   rows = query_rows(cursor, query, *values)
   return [x[0] for x in rows]
 
-def _player_exists(c, name):
+@crawl_utils.DBMemoizer
+def player_exists(c, name):
   """Return true if the player exists in the player table"""
   query = Query("""SELECT name FROM players WHERE name=%s;""",
                 name)
   return query.row(c) is not None
-
-player_exists = crawl_utils.Memoizer(_player_exists, lambda args: args[1 : ])
-
-def add_player(c, name):
-  """Add the given player with no score yet"""
-  query_do(c,
-           """INSERT INTO players (name, score_base, team_score_base)
-              VALUES (%s, 0, 0);""",
-           name)
-  # And register with the Memoizer to let it know that the player now exists.
-  player_exists.record((c, name), True)
-
-def check_add_player(cursor, player):
-  """Checks whether a player exists in the players table,
-  adds an entry if not, suppressing exceptions."""
-  try:
-    if not player_exists(cursor, player):
-      add_player(cursor, player)
-  except MySQLdb.IntegrityError:
-    # We don't care, this just means someone else added the player
-    # just now. However we do need to update the player_exists cache.
-    player_exists.record((cursor, player), True)
 
 def longest_streak_count(c, player):
   return query_first_def(c, 0,
@@ -775,10 +760,10 @@ def update_highscores(c, xdict, filename, offset):
 def dbfile_offset(cursor, filename):
   """Given a db cursor and filename, returns the offset of the last
   logline from that file that was entered in the db."""
-  return query_first(cursor,
-                     '''SELECT MAX(source_file_offset) FROM logfile_offsets
-                        WHERE filename = %s''',
-                     filename) or -1
+  return query_first_def(cursor, -1,
+                         '''SELECT offset FROM logfile_offsets
+                            WHERE filename = %s''',
+                         filename)
 
 def update_db_bookmark(cursor, table, filename, offset):
   cursor.execute('INSERT INTO ' + table + \
@@ -900,7 +885,6 @@ def process_xlog(c, filename, offset, d, flambda):
   if not is_selected(d):
     return
   # Add the player outside the transaction and suppress errors.
-  check_add_player(cursor, d['name'])
   def do_xlogline(cursor):
     # Tell the listeners to do their thang
     for listener in LISTENERS:

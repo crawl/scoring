@@ -1,8 +1,11 @@
 import query, crawl_utils, time
 import loaddb
+import locale
 
-from crawl_utils import clan_link, player_link, linked_text
+from crawl_utils import player_link, linked_text
 import re
+
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 BANNER_IMAGES = \
     { 'pantheon': [ 'thepantheon.png', 'The Pantheon' ],
@@ -27,54 +30,54 @@ BANNER_IMAGES = \
       'scythe' : [ 'thescythe.png', 'The Scythe' ] }
 
 STOCK_WIN_COLUMNS = \
-    [ ('player', 'Player'),
-      ('score', 'Score', True),
-      ('charabbrev', 'Character'),
+    [ ('name', 'Player'),
+      ('sc', 'Score', True),
+      ('charabbr', 'Character'),
       ('turn', 'Turns'),
-      ('duration', 'Duration'),
+      ('dur', 'Duration'),
       ('god', 'God'),
-      ('runes', 'Runes'),
+      ('urune', 'Runes'),
       ('end_time', 'Time', True)
     ]
 
 EXT_WIN_COLUMNS = \
-    [ ('score', 'Score', True),
+    [ ('sc', 'Score', True),
       ('race', 'Species'),
-      ('class', 'Class'),
+      ('cls', 'Class'),
       ('god', 'God'),
       ('title', 'Title'),
       ('xl', 'XL'),
       ('turn', 'Turns'),
-      ('duration', 'Duration'),
-      ('runes', 'Runes'),
+      ('dur', 'Duration'),
+      ('urune', 'Runes'),
       ('end_time', 'Date')
     ]
 
 STOCK_COLUMNS = \
-    [ ('player', 'Player'),
-      ('score', 'Score', True),
-      ('charabbrev', 'Character'),
+    [ ('name', 'Player'),
+      ('sc', 'Score', True),
+      ('charabbr', 'Character'),
       ('place', 'Place'),
-      ('verb_msg', 'Death'),
+      ('vmsg', 'Death'),
       ('turn', 'Turns'),
-      ('duration', 'Duration'),
+      ('dur', 'Duration'),
       ('god', 'God'),
-      ('runes', 'Runes'),
+      ('urune', 'Runes'),
       ('end_time', 'Time', True)
     ]
 
 EXT_COLUMNS = \
-    [ ('score', 'Score', True),
+    [ ('sc', 'Score', True),
       ('race', 'Species'),
-      ('class', 'Class'),
+      ('cls', 'Class'),
       ('god', 'God'),
       ('title', 'Title'),
       ('place', 'Place'),
-      ('verb_msg', 'Death'),
+      ('vmsg', 'Death'),
       ('xl', 'XL'),
       ('turn', 'Turns'),
-      ('duration', 'Duration'),
-      ('runes', 'Runes'),
+      ('dur', 'Duration'),
+      ('urune', 'Runes'),
       ('end_time', 'Date')
     ]
 
@@ -95,10 +98,12 @@ R_STR_DATE = re.compile(r'^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})')
 def fixup_column(col, data, game):
   if col.find('time') != -1:
     return pretty_date(data)
-  elif col.find('duration') != -1:
+  elif col.find('dur') != -1:
     return pretty_dur(data)
-  elif col == 'place' and game.get('killertype') == 'winning':
+  elif col == 'place' and game.get('ktyp') == 'winning':
     return ''
+  elif col == 'sc' or col == 'turn':
+    return locale.format('%d', data, True)
   return data
 
 def pretty_dur(dur):
@@ -155,9 +160,14 @@ def wrap_tuple(x):
 def is_player_header(header):
   return header in ['Player', 'Captain']
 
-def is_clan_header(header):
-  return header in ['Clan', 'Team', 'Teamname']
+def is_numeric_column(col):
+  return col in ['sc', 'turn']
 
+def column_class(cname, data):
+  if is_numeric_column(cname):
+    return "numeric"
+  else:
+    return isinstance(data, str) and "celltext" or "numeric"
 
 def table_text(headers, data, cls='bordered', count=True, link=None,
                width=None, place_column=-1, stub_text='No data'):
@@ -201,8 +211,7 @@ def table_text(headers, data, cls='bordered', count=True, link=None,
     for c in range(len(headers)):
       val = row[c]
       header = headers[c]
-      tcls = (isinstance(val, str) and not val.endswith('%')) \
-          and "celltext" or "numeric"
+      tcls = column_class(header, val)
       out += '''<td class="%s">''' % tcls
       val = str(val)
       if is_player_header(header[0]):
@@ -214,8 +223,7 @@ def table_text(headers, data, cls='bordered', count=True, link=None,
   return out
 
 def games_table(games, first=None, excluding=None, columns=None,
-                including=None,
-                cls='bordered', count=True, win=True):
+                including=None, cls='bordered', count=True, win=False):
   columns = columns or (win and STOCK_WIN_COLUMNS or STOCK_COLUMNS)
 
   # Copy columns.
@@ -255,7 +263,7 @@ def games_table(games, first=None, excluding=None, columns=None,
     ngame += 1
 
     ocls = odd and "odd" or "even"
-    if game.get('killertype') == 'winning':
+    if game.get('ktyp') == 'winning':
       ocls += " win"
 
     out += '''<tr class="%s">''' % ocls
@@ -266,7 +274,7 @@ def games_table(games, first=None, excluding=None, columns=None,
 
     for c in columns:
       val = fixup_column(c[0], game.get(c[0]) or '', game)
-      tcls = isinstance(val, str) and "celltext" or "numeric"
+      tcls = column_class(c[0], val)
       out += '''<td class="%s">''' % tcls
 
       need_link = len(c) >= 3 and c[2]
@@ -291,10 +299,12 @@ def full_games_table(games, **pars):
     pars['columns'] = win and EXT_WIN_COLUMNS or EXT_COLUMNS
   return games_table(games, **pars)
 
-def ext_games_table(games, win=True, **pars):
+def ext_games_table(games, win=False, **pars):
   cols = win and EXT_WIN_COLUMNS or EXT_COLUMNS
-  pars.setdefault('including', []).append((1, ('player', 'Player')))
-  return games_table(games, columns=cols, count=False, **pars)
+  pars.setdefault('including', []).append((1, ('name', 'Player')))
+  if not pars.has_key('count'):
+    pars['count'] = False
+  return games_table(games, columns=cols, **pars)
 
 def combo_highscorers(c):
   hs = query.get_top_combo_highscorers(c)
@@ -346,7 +356,7 @@ def streak_table(streaks, active=False):
   result = []
   for s in streaks:
     games = s[3]
-    game_text = hyperlink_games(games, 'charabbrev')
+    game_text = hyperlink_games(games, 'charabbr')
     if active:
       game_text += ", " + s[4]
     row = [s[0], s[1], pretty_date(games[0]['start_time']),
@@ -363,49 +373,6 @@ def best_active_streaks(c):
 def best_streaks(c):
   streaks = query.get_top_streaks(c)
   return streak_table(streaks)
-
-def fixup_clan_rows(rows):
-  rows = [ list(r) for r in rows ]
-  for clan in rows:
-    clan[0] = linked_text(clan[1], clan_link, clan[0])
-  return rows
-
-def best_clans(c):
-  clans = fixup_clan_rows(query.get_top_clan_scores(c))
-  return table_text( [ 'Clan', 'Captain', 'Points' ],
-                     clans, place_column=2 )
-
-def clan_unique_kills(c):
-  ukills = fixup_clan_rows(query.get_top_clan_unique_kills(c))
-  return table_text( [ 'Clan', 'Captain', 'Kills' ],
-                     ukills, place_column=2 )
-
-def clan_combo_highscores(c):
-  return table_text( [ 'Clan', 'Captain', 'Scores' ],
-                     fixup_clan_rows(query.get_top_clan_combos(c)),
-                     place_column=2 )
-
-def clan_affiliation(c, player, include_clan=True):
-  # Clan affiliation info is clan name, followed by a list of players,
-  # captain first, or None if the player is not in a clan.
-  clan_info = query.get_clan_info(c, player)
-  if clan_info is None:
-    return "None"
-
-  clan_name, players = clan_info
-  if include_clan:
-    clan_html = linked_text(players[0], clan_link, clan_name) + " - "
-  else:
-    clan_html = ''
-
-  plinks = [ linked_text(players[0], player_link) + " (captain)" ]
-
-  other_players = sorted(players[1:])
-  for p in other_players:
-    plinks.append( linked_text(p, player_link) )
-
-  clan_html += ", ".join(plinks)
-  return clan_html
 
 def whereis(show_name, *players):
   where = [ query.whereis_player(p) for p in players ]
@@ -462,15 +429,15 @@ def banner_div(all_banners):
   return res
 
 def _scored_win_text(g, text):
-  if g['killertype'] == 'winning':
+  if g['ktyp'] == 'winning':
     text += '*'
   return text
 
 def player_combo_scores(c, player):
   games = query.get_combo_scores(c, player=player)
   games = [ [ crawl_utils.linked_text(g, crawl_utils.morgue_link,
-                                      _scored_win_text(g, g['charabbrev'])),
-              g['score'] ]
+                                      _scored_win_text(g, g['charabbr'])),
+              g['sc'] ]
             for g in games ]
   return games
 
@@ -479,8 +446,8 @@ def player_species_scores(c, player):
 
   games = [
     [ crawl_utils.linked_text(g, crawl_utils.morgue_link,
-                              _scored_win_text(g, g['charabbrev'][:2])),
-      g['score'] ]
+                              _scored_win_text(g, g['charabbr'][:2])),
+      g['sc'] ]
     for g in games ]
   return games
 
@@ -488,8 +455,8 @@ def player_class_scores(c, player):
   games = query.game_hs_classes(c, player)
   games = [
     [ crawl_utils.linked_text(g, crawl_utils.morgue_link,
-                              _scored_win_text(g, g['charabbrev'][2:])),
-      g['score'] ]
+                              _scored_win_text(g, g['charabbr'][2:])),
+      g['sc'] ]
     for g in games ]
   return games
 

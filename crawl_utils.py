@@ -10,11 +10,9 @@ UPDATE_INTERVAL = 7 * 60
 LOCK = None
 BASEDIR = '/home/snark'
 LOCKFILE = BASEDIR + '/tourney-py.lock'
-SCORE_FILE_DIR = '/var/www/crawl/tourney09'
+SCORE_FILE_DIR = 'scores'
 PLAYER_BASE = 'players'
-CLAN_BASE = 'clans'
 PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
-CLAN_FILE_DIR = SCORE_FILE_DIR + '/' + CLAN_BASE
 
 CAO_MORGUE_BASE = 'http://crawl.akrasiac.org/rawdata'
 CDO_MORGUE_BASE = 'http://crawl.develz.org/morgues/stable'
@@ -22,17 +20,16 @@ CDO_MORGUE_BASE = 'http://crawl.develz.org/morgues/stable'
 CAO_BASE = (('tecumseh' in os.getcwd())
             and 'file:///var/www/crawl'
             or 'http://crawl.akrasiac.org')
-CAO_TOURNEY_BASE = '%s/tourney09' % CAO_BASE
-CAO_IMAGE_BASE = CAO_TOURNEY_BASE + '/images'
-CAO_PLAYER_BASE = '%s/players' % CAO_TOURNEY_BASE
-CAO_CLAN_BASE = '%s/clans' % CAO_TOURNEY_BASE
+CAO_SCORING_BASE = '%s/scores' % CAO_BASE
+CAO_IMAGE_BASE = CAO_SCORING_BASE + '/images'
+CAO_PLAYER_BASE = '%s/players' % CAO_SCORING_BASE
 
-CAO_OVERVIEW = '''<a href="%s/overview.html">Overview</a>''' % CAO_TOURNEY_BASE
+CAO_OVERVIEW = '''<a href="%s/overview.html">Overview</a>''' % CAO_SCORING_BASE
 
 RAWDATA_PATH = '/var/www/crawl/rawdata'
 TAILDB_STOP_REQUEST_FILE = os.path.join(BASEDIR, 'taildb.stop')
 
-MKDIRS = [ SCORE_FILE_DIR, PLAYER_FILE_DIR, CLAN_FILE_DIR ]
+MKDIRS = [ SCORE_FILE_DIR, PLAYER_FILE_DIR ]
 
 for d in MKDIRS:
   if not os.path.exists(d):
@@ -133,9 +130,6 @@ def format_time(time):
 def player_link(player):
   return "%s/%s.html" % (CAO_PLAYER_BASE, player.lower())
 
-def clan_link(clan):
-  return "%s/%s.html" % (CAO_CLAN_BASE, clan.lower())
-
 def banner_link(banner):
   return CAO_IMAGE_BASE + '/' + banner
 
@@ -143,7 +137,7 @@ def morgue_link(xdict):
   """Returns a hyperlink to the morgue file for a dictionary that contains
   all fields in the games table."""
   src = xdict['source_file']
-  name = xdict['player']
+  name = xdict['name']
 
   stime = format_time( xdict['end_time'] )
   base = src.find('cao') >= 0 and CAO_MORGUE_BASE or CDO_MORGUE_BASE

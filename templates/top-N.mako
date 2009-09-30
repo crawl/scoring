@@ -2,7 +2,7 @@
    import loaddb, query, crawl_utils, html
    c = attributes['cursor']
 
-   top_scores = query.find_games(c, 'top_games')
+   top_scores = query.find_games(c, 'top_games', sort_max='sc')
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -21,11 +21,10 @@
       <div class="page_content">
         <div class="content">
 
-          <hr style="width: 50%; margin-left: 0px;">
           <div>
             <h2>Top Scores</h2>
 
-            ${html.ext_games_table(top_scores)}
+            ${html.ext_games_table(top_scores, count=True)}
           </div>
         </div>
       </div>
