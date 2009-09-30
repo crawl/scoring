@@ -121,7 +121,7 @@ class CrawlTimerState:
 class Xlogline:
   """A dictionary from an Xlogfile, along with information about where and
   when it came from."""
-  def __init__(self, owner, filename, offset, time, xdict, processor):
+  def __init__(self, owner, filename, time, xdict, processor):
     self.owner = owner
     self.filename = filename
     self.offset = offset
@@ -767,12 +767,12 @@ def update_highscores(c, xdict, filename, offset):
                          field="raceabbr",
                          value=xdict['char'][:2])
 
-def dbfile_offset(cursor, table, filename):
+def dbfile_offset(cursor, filename):
   """Given a db cursor and filename, returns the offset of the last
   logline from that file that was entered in the db."""
   return query_first(cursor,
-                     ('SELECT MAX(source_file_offset) FROM %s ' % table) + \
-                       'WHERE source_file = %s',
+                     '''SELECT MAX(source_file_offset) FROM logfile_offsets
+                        WHERE filename = %s''',
                      filename) or -1
 
 def logfile_offset(cursor, filename):
@@ -820,15 +820,6 @@ def extract_milestone_ghost_name(milestone):
 def extract_rune(milestone):
   return R_RUNE.findall(milestone)[0]
 
-def record_ghost_kill(cursor, game):
-  """Given a game where the character was slain by a ghost, adds an entry in
-  the kills_by_ghosts table."""
-  query_do(cursor,
-           '''INSERT INTO kills_by_ghosts
-              (killed_player, killed_start_time, killer) VALUES
-              (%s, %s, %s);''',
-           game['name'], game['start'], extract_ghost_name(game['killer']))
-
 def is_ghost_kill(game):
   killer = game.get('killer') or ''
   return R_GHOST_NAME.search(killer)
@@ -850,101 +841,6 @@ def wrap_transaction(fn):
 
 def extract_unique_name(kill_message):
   return R_KILL_UNIQUE.findall(kill_message)[0]
-
-def _player_count_unique_uniques(cursor, player):
-  """Given a player name, counts the number of distinct uniques the player
-  has killed by trawling through the kills_of_uniques table. This is more
-  expensive and lower-level than player_get_nunique_uniques, so use that
-  where possible."""
-  return query_first(cursor,
-                     '''SELECT COUNT(DISTINCT monster)
-                        FROM kills_of_uniques
-                        WHERE player = %s''',
-                     player)
-
-
-def player_get_nunique_uniques(cursor, player):
-  """Given a player name, looks up the number of distinct slain uniques
-  for the player by checking the kunique_times ref table. This is less
-  expensive than player_count_unique_uniques, and should be used unless
-  you know that kunique_times is out-of-date."""
-  return query_first_def(cursor,
-                         0,
-                         '''SELECT nuniques FROM kunique_times
-                            WHERE player = %s''',
-                         player)
-
-def add_unique_milestone(cursor, game):
-  if not game['milestone'].startswith('banished '):
-    sqltime = game['time']
-    query_do(cursor,
-             '''INSERT INTO kills_of_uniques (player, kill_time, monster)
-                VALUES (%s, %s, %s);''',
-             game['name'],
-             sqltime,
-             extract_unique_name(game['milestone']))
-
-    # Update a convenient lookup table that we can use for trophy calcs.
-    uniqcount = _player_count_unique_uniques(cursor, game['name'])
-    cachecount = player_get_nunique_uniques(cursor, game['name'])
-    if uniqcount > cachecount:
-      if cachecount == 0:
-        query_do(cursor,
-                 '''INSERT INTO kunique_times (player, nuniques, kill_time)
-                    VALUES (%s, %s, %s)''',
-                 game['name'], uniqcount, sqltime)
-      else:
-        query_do(cursor,
-                 '''UPDATE kunique_times
-                    SET nuniques = %s, kill_time = %s
-                    WHERE player = %s
-                    AND nuniques < %s''',
-                 uniqcount, sqltime, game['name'], uniqcount)
-
-def add_ghost_milestone(cursor, game):
-  if not game['milestone'].startswith('banished '):
-    query_do(cursor,
-             '''INSERT INTO kills_of_ghosts (player, start_time, ghost)
-                VALUES (%s, %s, %s);''',
-             game['name'], game['time'],
-             extract_milestone_ghost_name(game['milestone']))
-
-def add_rune_milestone(cursor, game):
-  query_do(cursor,
-           '''INSERT INTO rune_finds (player, start_time, rune_time, rune, xl)
-              VALUES (%s, %s, %s, %s, %s);''',
-           game['name'], game['start'], game['time'],
-           extract_rune(game['milestone']), game['xl'])
-
-def add_ziggurat_milestone(c, g):
-  place = g['place']
-  mtype = g['type']
-  level = int(R_PLACE_DEPTH.findall(place)[0])
-  depth = level * 2
-  # Leaving a ziggurat level by the exit gets more props than merely
-  # entering the level.
-  if mtype == 'zig.exit':
-    depth += 1
-  player = g['name']
-  def player_ziggurat_deepest(player):
-    return query_first_def(c, 0,
-                           '''SELECT deepest FROM ziggurats
-                              WHERE player = %s''',
-                           player)
-  deepest = player_ziggurat_deepest(g['name'])
-  if depth > deepest:
-    if deepest == 0:
-      query_do(c,
-               '''INSERT INTO ziggurats (player, deepest, place, zig_time,
-                                         start_time)
-                                VALUES (%s, %s, %s, %s, %s)''',
-               player, depth, place, g['time'], g['start'])
-    else:
-      query_do(c,
-               '''UPDATE ziggurats SET deepest = %s, place = %s,
-                                       zig_time = %s, start_time = %s
-                                 WHERE player = %s''',
-               depth, place, g['time'], g['start'], player)
 
 def add_listener(listener):
   LISTENERS.append(listener)
@@ -994,6 +890,12 @@ def create_master_reader():
                 [ Logfile(x, blacklist) for x in LOGS ])
   return MasterXlogReader(processors)
 
+def update_xlog_offset(c, filename, offset):
+  query_do(c, '''INSERT INTO logfile_offsets (filename, offset)
+                      VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE offset = %s''',
+           filename, offset, offset)
+
 def process_xlog(c, filename, offset, d, flambda):
   """Processes an xlog record for scoring purposes."""
   if not is_selected(d):
@@ -1004,8 +906,9 @@ def process_xlog(c, filename, offset, d, flambda):
     # Tell the listeners to do their thang
     for listener in LISTENERS:
       flambda(listener)(cursor, d)
+    # Update the offsets table.
+    update_xlog_offset(c, filename, offset)
   wrap_transaction(do_xlogline)(cursor)
-
 
 def process_log(c, filename, offset, d):
   """Processes a logfile record for scoring purposes."""

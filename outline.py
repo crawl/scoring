@@ -16,6 +16,8 @@ from query import log_temp_points, log_temp_team_points, get_points
 
 import nemchoice
 
+TOP_N = 1000
+
 # So there are a few problems we have to solve:
 # 1. Intercepting new logfile events
 #    DONE: parsing a logfile line
@@ -106,12 +108,22 @@ def do_milestone_ghost(c, mile):
   if not mile['milestone'].startswith('banished'):
     assign_team_points(c, "ghost", mile['name'], 2)
 
+def update_topN(c, g, n):
+  pass
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
   irrevocable points and those should be assigned immediately. Revocable
   points (high scores, lowest dungeon level, fastest wins) should be
   calculated elsewhere."""
+
+  # Update top-1000.
+  update_topN(c, this_game, TOP_N)
+
+  # Update statistics for this player's game.
+  update_player_stats(c, this_game)
+
   if this_game['ktyp'] == 'winning':
     crunch_winner(c, this_game) # lots of math to do for winners
 
