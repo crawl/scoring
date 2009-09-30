@@ -17,15 +17,6 @@ General thoughts:
      - total score, player, best score, games (won), win %, av score,
        last game
 
-   Player stats table:
-   ------------------
-   player,
-   # of games played,
-   # of wins,
-   total score,
-   best score,
-   best game id.
-
    This table can be updated in two ways:
    - Full update on first run.
    - Incremental update when catching up to new logfile entries.
@@ -40,7 +31,8 @@ General thoughts:
  - all_players: List of all players (alphabetic)
  - players.html: List of players (top total score)
  - players_best_score: List of players (best score)
- - per player page
+ - per player page:
+     - 
  - top_killers
  - winners
  - escapes_turns

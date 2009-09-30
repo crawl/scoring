@@ -1,6 +1,7 @@
 -- Use InnoDB for transaction support?
 -- SET storage_engine=InnoDB;
 
+DROP TABLE IF EXISTS logfile_offsets;
 DROP TABLE IF EXISTS deaths_to_distinct_uniques;
 DROP TABLE IF EXISTS deaths_to_uniques;
 DROP TABLE IF EXISTS player_maxed_skills;
@@ -23,7 +24,6 @@ DROP VIEW IF EXISTS combo_highscores;
 DROP TABLE IF EXISTS combo_highscores;
 DROP TABLE IF EXISTS class_highscores;
 DROP TABLE IF EXISTS species_highscores;
-DROP TABLE IF EXISTS games;
 DROP TABLE IF EXISTS players;
 
 DROP VIEW IF EXISTS fastest_realtime;
@@ -51,90 +51,147 @@ DROP VIEW IF EXISTS ghostbusters;
 DROP VIEW IF EXISTS compulsive_shoppers;
 DROP VIEW IF EXISTS most_pacific_wins;
 
-CREATE TABLE IF NOT EXISTS players (
-  name VARCHAR(20) PRIMARY KEY,
-  games_played INT DEFAULT 0,
-  games_won INT DEFAULT 0,
-  total_score BIGINT,
-  best_score BIGINT,
-  best_scoring_game BIGINT
-  );
-CREATE INDEX player_total_scores ON players (name, total_score);
-  
--- For mappings of logfile fields to columns, see loaddb.py
-CREATE TABLE games (
-  id BIGINT AUTO_INCREMENT,
-  
-  -- Source logfile
-  source_file VARCHAR(150),
-  -- Offset in the source file.
-  source_file_offset BIGINT,
+-- Keep track of how far we've processed the various logfiles/milestones.
+CREATE TABLE logfile_offsets (
+  filename VARCHAR(100) PRIMARY KEY,
+  offset BIGINT DEFAULT 0
+);
 
-  player VARCHAR(20),
+-- [greensnark] I've changed the field names for tables containing
+-- game entries to be closer to the logfile names. This is
+-- inconsistent with the tourney db and with Henzell's primary db,
+-- which sucks, but reducing the number of differences between logfile
+-- names and field names seems quite important to me.
+
+-- Best games on a per-player basis. Adding a new game must also delete the
+-- previous entry by that player.
+CREATE TABLE player_best_games (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  
+  -- Source logfile. This should be sufficient to identify the server
+  -- involved.
+  source_file VARCHAR(150),
+
+  name VARCHAR(20),
   start_time DATETIME,
-  score BIGINT,
+  sc BIGINT,
   race VARCHAR(20),
   -- Two letter race abbreviation so we can group by it without pain.
   raceabbr CHAR(2) NOT NULL,
-  class VARCHAR(20),
-  version CHAR(10),
+  cls VARCHAR(20),
+  v CHAR(10),
   lv CHAR(8),
   uid INT,
-  charabbrev CHAR(4),
+  charabbr CHAR(4),
   xl INT,
-  skill VARCHAR(16),
-  sk_lev INT,
+  sk VARCHAR(16),
+  sklev INT,
   title VARCHAR(255),
   place CHAR(16),
-  branch CHAR(16),
+  br CHAR(16),
   lvl INT,
   ltyp CHAR(16),
   hp INT,
-  maxhp INT,
-  maxmaxhp INT,
+  mhp INT,
+  mmhp INT,
   strength INT,
   intelligence INT,
   dexterity INT,
   god VARCHAR(20),
-  duration INT,
+  dur INT,
   turn BIGINT,
-  runes INT DEFAULT 0,
-  killertype VARCHAR(20),
+  ktyp VARCHAR(20),
   killer CHAR(50),
   kgroup CHAR(50),
   kaux VARCHAR(255),
   -- Kills may be null.
   kills INT,
-  damage INT,
+  dam INT,
   piety INT,
-  penitence INT,
+  pen INT,
   gold INT,
   gold_found INT,
   gold_spent INT,
   end_time DATETIME,
-  terse_msg VARCHAR(255),
-  verb_msg VARCHAR(255),
+  tmsg VARCHAR(255),
+  vmsg VARCHAR(255),
   nrune INT DEFAULT 0,
+  urune INT DEFAULT 0
+);
 
-  CONSTRAINT PRIMARY KEY (id)
+-- Table for the top games on the servers. How many games we keep here
+-- is controlled by the Python code.
+-- We want all the same field names, etc. for all games tables, so we create
+-- each new table based on the canonical game table (player_best_games).
+CREATE TABLE top_games AS SELECT * FROM player_best_games;
+ALTER TABLE top_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE top_games ADD CONSTRAINT PRIMARY KEY (id);
+
+-- Keep track of best score for each combo (unique charabbr).
+CREATE TABLE top_combo_scores AS SELECT * FROM player_best_games;
+ALTER TABLE top_combo_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE top_combo_scores ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE top_combo_scores Add CONSTRAINT UNIQUE (charabbr);
+CREATE UNIQUE INDEX top_combo_scores_charabbr
+ON top_combo_scores (charabbr);
+
+-- Keep track of best score for each species (unique raceabbr).
+CREATE TABLE top_species_scores AS SELECT * FROM player_best_games;
+ALTER TABLE top_species_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE top_species_scores ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE top_species_scores Add CONSTRAINT UNIQUE (raceabbr);
+CREATE UNIQUE INDEX top_species_scores_raceabbr
+ON top_species_scores (raceabbr);
+
+-- Keep track of best score for each species (unique cls).
+CREATE TABLE top_class_scores AS SELECT * FROM player_best_games;
+ALTER TABLE top_class_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE top_class_scores ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE top_class_scores Add CONSTRAINT UNIQUE (cls);
+CREATE UNIQUE INDEX top_class_scores_cls
+ON top_class_scores (cls);
+
+-- Most recent game by every known player.
+CREATE TABLE player_last_games AS SELECT * FROM player_best_games;
+ALTER TABLE player_last_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE player_last_games ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE player_last_games Add CONSTRAINT UNIQUE (name);
+CREATE UNIQUE INDEX player_last_games_name
+ON player_last_games (name);
+
+-- Streak games by all players; includes first game in the streak.
+CREATE TABLE streak_games AS SELECT * FROM player_best_games;
+ALTER TABLE streak_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE streak_games ADD CONSTRAINT PRIMARY KEY (id);
+
+-- Track all streaks by all players.
+CREATE TABLE streaks (
+  player VARCHAR(20),
+  start_game_id BIGINT,
+  end_game_id BIGINT,
+  active BOOLEAN DEFAULT 0,
+  ngames INT 0,
+  FOREIGN KEY start_game_id REFERENCES streak_games (id),
+  FOREIGN KEY end_game_id REFERENCES streak_games (id)
+);
+
+-- Player statistics
+CREATE TABLE players (
+  name VARCHAR(20) PRIMARY KEY,
+  games_played INT DEFAULT 0,
+  games_won INT DEFAULT 0,
+  total_score BIGINT,
+  best_score BIGINT,
+  best_scoring_game BIGINT,
+  first_game_start DATETIME,
+  last_game_end DATETIME,
+
+  -- Combo they're currently playing; used in the active streaks
+  -- table. This will be set to NULL on end of game, and will only be
+  -- set to a new value if currently NULL.
+  current_combo CHAR(4)
   );
-
-CREATE INDEX games_source_offset ON games (source_file, source_file_offset);
-
-CREATE INDEX games_scores ON games (player, score);
-CREATE INDEX games_kgrp ON games (kgroup);
-CREATE INDEX games_charabbrev_score ON games (charabbrev, score);
-CREATE INDEX games_ktyp ON games (killertype);
-CREATE INDEX games_p_ktyp ON games (player, killertype);
-
--- Index to find games with fewest kills.
-CREATE INDEX games_kills ON games (killertype, kills);
-
--- Index to help us find fastest wins (time) quick.
-CREATE INDEX games_win_dur ON games (killertype, duration);
-
--- Index to help us find fastest wins (turncount) quick.
-CREATE INDEX games_win_turn ON games (killertype, turn);
+CREATE INDEX player_total_scores ON players (name, total_score);
 
 CREATE TABLE combo_highscores AS
 SELECT * FROM games;
@@ -169,7 +226,7 @@ CREATE TABLE milestones (
   race VARCHAR(20),
   raceabbr CHAR(2) NOT NULL,
   class VARCHAR(20),
-  charabbrev CHAR(4),
+  charabbr CHAR(4),
   xl INT,
   skill VARCHAR(16),
   sk_lev INT,
@@ -283,7 +340,7 @@ CREATE TABLE active_streaks (
 -- This is to show the last character played under 'active streaks'
 CREATE TABLE most_recent_character (
   player VARCHAR(20) PRIMARY KEY,
-  charabbrev CHAR(4) NOT NULL,
+  charabbr CHAR(4) NOT NULL,
   update_time DATETIME NOT NULL,
   FOREIGN KEY (player) REFERENCES players (name)
   );
