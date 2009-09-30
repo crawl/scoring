@@ -100,7 +100,7 @@ def fixup_column(col, data, game):
     return pretty_dur(data)
   elif col == 'place' and game.get('ktyp') == 'winning':
     return ''
-  elif col == 'sc' or col == 'turn':
+  elif col == 'sc' or col == 'turn' or col.lower().find('score') != -1:
     return locale.format('%d', data, True)
   return data
 
@@ -159,7 +159,7 @@ def is_player_header(header):
   return header in ['Player', 'Captain']
 
 def is_numeric_column(col):
-  return col in ['sc', 'turn']
+  return col in ['sc', 'turn'] or col.find('%') != -1
 
 def column_class(cname, data):
   if is_numeric_column(cname):
@@ -168,7 +168,7 @@ def column_class(cname, data):
     return isinstance(data, str) and "celltext" or "numeric"
 
 def table_text(headers, data, cls='bordered', count=True, link=None,
-               width=None, place_column=-1, stub_text='No data'):
+               fixup=False, width=None, place_column=-1, stub_text='No data'):
   if cls:
     cls = ''' class="%s"''' % cls
   if width:
@@ -209,7 +209,9 @@ def table_text(headers, data, cls='bordered', count=True, link=None,
     for c in range(len(headers)):
       val = row[c]
       header = headers[c]
-      tcls = column_class(header, val)
+      tcls = column_class(header[0], val)
+      if fixup:
+        val = fixup_column(header[0], val, {})
       out += '''<td class="%s">''' % tcls
       val = str(val)
       if is_player_header(header[0]):
@@ -472,3 +474,10 @@ def player_scores_block(c, scores, title):
   if asterisk:
     text += "<p class='fineprint'>* Winning Game</p>"
   return text
+
+
+def best_players_by_total_score(rows):
+  return table_text( [ 'Total Score', 'Player', 'Games Played', 'Games Won',
+                       'Win %', 'Best Score', 'First Game',
+                       'Most Recent Game' ],
+                     rows, fixup=True )

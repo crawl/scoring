@@ -41,6 +41,7 @@ def tourney_overview(c):
 def player_pages(c):
   info("Updating all player pages")
   render(c, 'top-N')
+  render(c, 'best-players-total-score')
   #for p in query.get_players(c):
   #  player_page(c, p)
   #render(c, 'all-players')

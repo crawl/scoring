@@ -12,8 +12,6 @@ import crawl
 import uniq
 
 from loaddb import query_do, query_first, query_first_col, wrap_transaction
-from query import assign_points, assign_team_points
-from query import log_temp_points, log_temp_team_points, get_points
 
 import nemchoice
 

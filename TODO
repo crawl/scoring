@@ -3,16 +3,7 @@ New scoring script ideas:
 
 General thoughts:
 - Most recent allruners, most recent ziggurat:27 visits.
-- Player of the month, tracked historically?
-  - Based on points?
-- Script will be based on tourney scripts. It should be able to use any
-  number of scorefile/milestone paths.
-- Script should run fairly fast so as to not load cao.
-- DB size will be kept minimal, using incremental updates instead of
-  queries on fully-populated tables where possible.
-- Output pages should contain all data currently available on cao scoring
-  pages:
- - top100
+
  - players.html: top total scores:
      - total score, player, best score, games (won), win %, av score,
        last game
