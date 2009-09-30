@@ -32,7 +32,14 @@ General thoughts:
  - players.html: List of players (top total score)
  - players_best_score: List of players (best score)
  - per player page:
-     - 
+     - Ten best games.
+     - Ten most recent games.
+     Break up of:
+     - Highest CL.
+     - Escapes with orb.
+     - Games played
+     Break up by race and class.
+     
  - top_killers
  - winners
  - escapes_turns

@@ -15,16 +15,23 @@ import sys
 START_TIME = '20090801'
 END_TIME   = '20090901'
 
-ACCEPTED_VERSIONS = ['0.4', '0.5']
+OLDEST_VERSION = '0.4'
 
 CDO = 'http://crawl.develz.org/'
 
 # Log and milestone files. A tuple indicates a remote file with t[1]
-# being the URL to wget -c from.
+# being the URL to wget -c from. Files can be in any order, loglines
+# will be read in strict chronological order.
 
-LOGS = [ 'cao-logfile-0.5', ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt') ]
+LOGS = [ 'cao-logfile-0.4',
+         'cao-logfile-0.5',
+         ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
+         ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
+       ]
 
 MILESTONES = [ 'cao-milestones-0.5',
+               'cao-milestones-0.4',
+               ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt') ]
                ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt') ]
 
 BLACKLIST_FILE = 'blacklist.txt'
@@ -235,7 +242,7 @@ class Logfile (Xlogfile):
 
 class MilestoneFile (Xlogfile):
   def __init__(self, filename):
-    Xlogfile.__init__(self, filename, milestone_offset, add_milestone_record)
+    Xlogfile.__init__(self, filename, milestone_offset, process_milestone)
 
 class MasterXlogReader:
   """Given a list of Xlogfile objects, calls the process operation on the oldest
@@ -383,83 +390,85 @@ def xlog_dict(logline):
 
 # The mappings in order so that we can generate our db queries with all the
 # fields in order and generally debug things more easily.
+
+# Note: all fields must be present here.
 LOG_DB_MAPPINGS = [
-    [ 'v', 'version' ],
+    [ 'v', 'v' ],
     [ 'lv', 'lv' ],
-    [ 'name', 'player' ],
+    [ 'name', 'name' ],
     [ 'uid', 'uid' ],
     [ 'race', 'race' ],
     [ 'raceabbr', 'raceabbr' ],
-    [ 'cls', 'class' ],
-    [ 'char', 'charabbrev' ],
+    [ 'cls', 'cls' ],
+    [ 'char', 'charabbr' ],
     [ 'xl', 'xl' ],
-    [ 'sk', 'skill' ],
-    [ 'sklev', 'sk_lev' ],
+    [ 'sk', 'sk' ],
+    [ 'sklev', 'sklev' ],
     [ 'title', 'title' ],
     [ 'place', 'place' ],
-    [ 'br', 'branch' ],
+    [ 'br', 'br' ],
     [ 'lvl', 'lvl' ],
     [ 'ltyp', 'ltyp' ],
     [ 'hp', 'hp' ],
-    [ 'mhp', 'maxhp' ],
-    [ 'mmhp', 'maxmaxhp' ],
+    [ 'mhp', 'mhp' ],
+    [ 'mmhp', 'mmhp' ],
     [ 'str', 'strength' ],
     [ 'int', 'intelligence' ],
     [ 'dex', 'dexterity' ],
     [ 'god', 'god' ],
     [ 'start', 'start_time' ],
-    [ 'dur', 'duration' ],
+    [ 'dur', 'dur' ],
     [ 'turn', 'turn' ],
-    [ 'sc', 'score' ],
-    [ 'ktyp', 'killertype' ],
+    [ 'sc', 'sc' ],
+    [ 'ktyp', 'ktyp' ],
     [ 'killer', 'killer' ],
     [ 'kgroup', 'kgroup' ],
-    [ 'dam', 'damage' ],
+    [ 'dam', 'dam' ],
     [ 'piety', 'piety' ],
-    [ 'pen', 'penitence' ],
+    [ 'pen', 'pen' ],
     [ 'end', 'end_time' ],
-    [ 'tmsg', 'terse_msg' ],
-    [ 'vmsg', 'verb_msg' ],
+    [ 'tmsg', 'tmsg' ],
+    [ 'vmsg', 'vmsg' ],
     [ 'kaux', 'kaux' ],
     [ 'kills', 'kills' ],
     [ 'nrune', 'nrune' ],
-    [ 'urune', 'runes' ],
+    [ 'urune', 'urune' ],
     [ 'gold', 'gold' ],
-    [ 'goldfound', 'gold_found' ],
-    [ 'goldspent', 'gold_spent' ]
+    [ 'goldfound', 'goldfound' ],
+    [ 'goldspent', 'goldspent' ]
     ]
 
 MILE_DB_MAPPINGS = [
-    [ 'v', 'version' ],
+    [ 'v', 'v' ],
     [ 'lv', 'lv' ],
-    [ 'name', 'player' ],
+    [ 'name', 'name' ],
     [ 'uid', 'uid' ],
     [ 'race', 'race' ],
     [ 'raceabbr', 'raceabbr' ],
-    [ 'cls', 'class' ],
-    [ 'char', 'charabbrev' ],
+    [ 'cls', 'cls' ],
+    [ 'char', 'charabbr' ],
     [ 'xl', 'xl' ],
-    [ 'sk', 'skill' ],
-    [ 'sklev', 'sk_lev' ],
+    [ 'sk', 'sk' ],
+    [ 'sklev', 'sklev' ],
     [ 'title', 'title' ],
     [ 'place', 'place' ],
-    [ 'br', 'branch' ],
+    [ 'br', 'br' ],
     [ 'lvl', 'lvl' ],
     [ 'ltyp', 'ltyp' ],
     [ 'hp', 'hp' ],
-    [ 'mhp', 'maxhp' ],
-    [ 'mmhp', 'maxmaxhp' ],
+    [ 'mhp', 'mhp' ],
+    [ 'mmhp', 'mmhp' ],
     [ 'str', 'strength' ],
     [ 'int', 'intelligence' ],
     [ 'dex', 'dexterity' ],
     [ 'god', 'god' ],
     [ 'start', 'start_time' ],
-    [ 'dur', 'duration' ],
+    [ 'dur', 'dur' ],
     [ 'turn', 'turn' ],
-    [ 'dam', 'damage' ],
+    [ 'dam', 'dam' ],
     [ 'piety', 'piety' ],
     [ 'nrune', 'nrune' ],
-    [ 'urune', 'runes' ],
+    [ 'urune', 'urune' ],
     [ 'verb', 'verb' ],
     [ 'noun', 'noun' ],
     [ 'milestone', 'milestone' ],
@@ -591,13 +600,8 @@ dbfield_to_sqltype = {
 	}
 
 def is_selected(game):
-  """A game started before the tourney start or played after the end
-  doesn't count."""
-  v = game['version']
-  for accepted_version in ACCEPTED_VERSIONS:
-    if v.startswith(accepted_version):
-      return True
-  return False
+  """Accept all games that match our version criterion."""
+  return game['version'] >= OLDEST_VERSION
 
 _active_cursor = None
 
@@ -844,31 +848,6 @@ def wrap_transaction(fn):
     return result
   return transact
 
-def process_log(cursor, filename, offset, d):
-  """Processes a logfile record for scoring purposes."""
-
-  if not is_selected(d):
-    return
-
-  ghost_kill = is_ghost_kill(d)
-  # Add the player outside the transaction and suppress errors.
-  check_add_player(cursor, d['name'])
-
-  def do_logline(cursor):
-    insert_xlog_db(cursor, d, filename, offset)
-
-    if not d.get('milestone'):
-      update_highscores(cursor, d, filename, offset)
-
-    if ghost_kill:
-      record_ghost_kill(cursor, d)
-
-    # Tell the listeners to do their thang
-    for listener in LISTENERS:
-      listener.logfile_event(cursor, d)
-
-  wrap_transaction(do_logline)(cursor)
-
 def extract_unique_name(kill_message):
   return R_KILL_UNIQUE.findall(kill_message)[0]
 
@@ -967,36 +946,6 @@ def add_ziggurat_milestone(c, g):
                                  WHERE player = %s''',
                depth, place, g['time'], g['start'], player)
 
-MILESTONE_HANDLERS = {
-  'unique' : add_unique_milestone,
-  'ghost' : add_ghost_milestone,
-  'rune' : add_rune_milestone,
-  'zig.enter': add_ziggurat_milestone,
-  'zig': add_ziggurat_milestone,
-  'zig.exit': add_ziggurat_milestone,
-}
-
-def add_milestone_record(c, filename, offset, d):
-  if not is_selected(d):
-    return
-
-  # Add player entry outside the milestone transaction.
-  check_add_player(c, d['name'])
-
-  # Start a transaction to ensure that we don't part-update tables.
-  def do_milestone(c):
-    update_milestone_bookmark(c, filename, offset)
-    insert_xlog_db(c, d, filename, offset)
-    handler = MILESTONE_HANDLERS.get(d['type'])
-    if handler:
-      handler(c, d)
-
-    # Tell the listeners to do their thang
-    for listener in LISTENERS:
-      listener.milestone_event(c, d)
-
-  wrap_transaction(do_milestone)(c)
-
 def add_listener(listener):
   LISTENERS.append(listener)
 
@@ -1044,6 +993,29 @@ def create_master_reader():
   processors = ([ MilestoneFile(x) for x in MILESTONES ] +
                 [ Logfile(x, blacklist) for x in LOGS ])
   return MasterXlogReader(processors)
+
+def process_xlog(c, filename, offset, d, flambda):
+  """Processes an xlog record for scoring purposes."""
+  if not is_selected(d):
+    return
+  # Add the player outside the transaction and suppress errors.
+  check_add_player(cursor, d['name'])
+  def do_xlogline(cursor):
+    # Tell the listeners to do their thang
+    for listener in LISTENERS:
+      flambda(listener)(cursor, d)
+  wrap_transaction(do_xlogline)(cursor)
+
+
+def process_log(c, filename, offset, d):
+  """Processes a logfile record for scoring purposes."""
+  return process_xlog(c, filename, offset, d
+                      lambda l: l.logfile_event)
+
+def process_milestone(c, filename, offset, d):
+  """Processes a milestone record for scoring purposes."""
+  return process_xlog(c, filename, offset, d
+                      lambda l: l.milestone_event)
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)
