@@ -12,10 +12,12 @@ import crawl
 import uniq
 
 from loaddb import query_do, query_first, query_first_col, wrap_transaction
+from loaddb import query_first_def
 
 import nemchoice
 
 TOP_N = 1000
+MAX_PLAYER_BEST_GAMES = 10
 
 # So there are a few problems we have to solve:
 # 1. Intercepting new logfile events
@@ -94,6 +96,49 @@ def update_topN(c, g, n):
 def game_is_win(g):
   return g['ktyp'] == 'winning'
 
+@DBMemoizer
+def player_best_game_count(c, player):
+  return query_first(c, '''SELECT COUNT(*) FROM player_best_games
+                                          WHERE name = %s''',
+                     player)
+
+@DBMemoizer
+def player_lowest_highscore(c, player):
+  return query_first(c, '''SELECT MIN(sc) FROM player_best_games
+                                         WHERE name = %s''',
+                     player)
+
+@DBMemoizer
+def player_first_game_exists(c, player):
+  return query_first_def(c, False,
+                         '''SELECT id FROM player_first_games
+                                WHERE name = %s''', player)
+
+def update_player_best_games(c, g):
+  player = g['name']
+  if player_best_game_count(c, player) >= MAX_PLAYER_BEST_GAMES:
+    if g['sc'] > player_lowest_highscore(c, player):
+      query_do(c, '''DELETE FROM player_best_games WHERE id = %s''',
+               query_first(c, '''SELECT id FROM player_best_games
+                                       WHERE name = %s
+                                    ORDER BY sc LIMIT 1''',
+                           player))
+      insert_game(c, g, 'player_best_games')
+      player_lowest_highscore.flush_key(player)
+  else:
+    insert_game(c, g, 'player_best_games')
+    player_best_game_count.flush_key(player)
+
+def update_player_first_game(c, g):
+  player = g['name']
+  if not player_first_game_exists(c, player):
+    player_first_game_exists.flush_key(player)
+    insert_game(c, g, 'player_first_games')
+
+def update_player_last_game(c, g):
+  query_do(c, '''DELETE FROM player_last_games WHERE name = %s''', g['name'])
+  insert_game(c, g, 'player_last_games')
+
 def update_player_stats(c, g):
   winc = game_is_win(g) and 1 or 0
   query_do(c, '''INSERT INTO players
@@ -115,6 +160,10 @@ def update_player_stats(c, g):
            g['name'], 1, winc, g['sc'], g['sc'], g['start_time'],
            g['end_time'],
            winc, g['sc'], g['sc'], g['sc'], g['end_time'])
+
+  update_player_best_games(c, g)
+  update_player_first_game(c, g)
+  update_player_last_game(c, g)
 
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line

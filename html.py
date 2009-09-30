@@ -1,11 +1,8 @@
 import query, crawl_utils, time
 import loaddb
-import locale
 
-from crawl_utils import player_link, linked_text
+from crawl_utils import player_link, linked_text, human_number
 import re
-
-locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 BANNER_IMAGES = \
     { 'pantheon': [ 'thepantheon.png', 'The Pantheon' ],
@@ -100,8 +97,9 @@ def fixup_column(col, data, game):
     return pretty_dur(data)
   elif col == 'place' and game.get('ktyp') == 'winning':
     return ''
-  elif col == 'sc' or col == 'turn' or col.lower().find('score') != -1:
-    return locale.format('%d', data, True)
+  elif (isinstance(data, (int,long)) and
+        (col == 'sc' or col == 'turn' or col.lower().find('score') != -1)):
+    return human_number(data)
   return data
 
 def pretty_dur(dur):
@@ -159,7 +157,9 @@ def is_player_header(header):
   return header in ['Player', 'Captain']
 
 def is_numeric_column(col):
-  return col in ['sc', 'turn'] or col.find('%') != -1
+  return (col in ['sc', 'turn']
+          or col.find('%') != -1
+          or col.lower().find('score') != -1)
 
 def column_class(cname, data):
   if is_numeric_column(cname):

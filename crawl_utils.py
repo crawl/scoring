@@ -1,8 +1,10 @@
-
 import os.path
 import logging
 import fcntl
 import sys
+import locale
+
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 # Update every so often (seconds)
 UPDATE_INTERVAL = 7 * 60
@@ -110,11 +112,19 @@ class Memoizer (object):
       self.flush()
     key = self.extractor(args)
     if not self.cache.has_key(key):
-      self.cache[key] = self.fn(*args)
+      value = self.fn(*args)
+      self.cache[key] = value
+      return value
     return self.cache[key]
 
   def flush(self):
     self.cache.clear()
+
+  def flush_key(self, *args):
+    try:
+      del self.cache[args]
+    except KeyError:
+      pass
 
   def record(self, args, value):
     self.cache[self.extractor(args)] = value
@@ -145,4 +155,7 @@ def morgue_link(xdict):
 
 def linked_text(key, link_fn, text=None):
   link = link_fn(key)
-  return '<a href="%s">%s</a>' % (link, (text or key).replace('_', ' '))
+  return '<a href="%s">%s</a>' % (link, str(text or key).replace('_', ' '))
+
+def human_number(n):
+  return locale.format('%d', n, True)

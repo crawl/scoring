@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS logfile_offsets;
 DROP TABLE IF EXISTS player_best_games;
 DROP TABLE IF EXISTS player_last_games;
+DROP TABLE IF EXISTS player_first_games;
 DROP TABLE IF EXISTS streak_games;
 DROP TABLE IF EXISTS streaks;
 DROP TABLE IF EXISTS top_games;
@@ -80,6 +81,8 @@ CREATE TABLE player_best_games (
   urune INT DEFAULT 0
 );
 
+CREATE INDEX player_best_game_pscores ON player_best_games (name, sc);
+
 -- Table for the top games on the servers. How many games we keep here
 -- is controlled by the Python code.
 -- We want all the same field names, etc. for all games tables, so we create
@@ -120,6 +123,14 @@ ALTER TABLE player_last_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE player_last_games Add CONSTRAINT UNIQUE (name);
 CREATE UNIQUE INDEX player_last_games_name
 ON player_last_games (name);
+
+-- First known game by every known player
+CREATE TABLE player_first_games AS SELECT * FROM player_best_games;
+ALTER TABLE player_first_games ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE player_first_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE player_first_games Add CONSTRAINT UNIQUE (name);
+CREATE UNIQUE INDEX player_first_games_name
+ON player_first_games (name);
 
 -- Streak games by all players; includes first game in the streak.
 CREATE TABLE streak_games AS SELECT * FROM player_best_games;

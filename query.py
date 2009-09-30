@@ -11,7 +11,7 @@ from loaddb import query_first_col, query_first_def
 
 import crawl
 import crawl_utils
-from crawl_utils import DBMemoizer
+from crawl_utils import DBMemoizer, morgue_link, linked_text, human_number
 import uniq
 import os.path
 import re
@@ -173,6 +173,25 @@ def find_place_numeric(rows, player):
       return index
   return -1
 
+def player_best_game(c, player):
+  return (row_to_xdict(
+      query_row(c, 'SELECT ' + loaddb.LOG_DB_SCOLUMNS
+                + ''' FROM player_best_games WHERE name = %s
+                     ORDER BY sc DESC LIMIT 1''',
+                player)))
+
+def player_first_game(c, player):
+  return (row_to_xdict(
+      query_row(c, 'SELECT ' + loaddb.LOG_DB_SCOLUMNS
+                + ''' FROM player_first_games WHERE name = %s''',
+                player)))
+
+def player_last_game(c, player):
+  return (row_to_xdict(
+      query_row(c, 'SELECT ' + loaddb.LOG_DB_SCOLUMNS
+                + ''' FROM player_last_games WHERE name = %s''',
+                player)))
+
 def best_players_by_total_score(c):
   rows = query_rows(c, '''SELECT name, games_played, games_won,
                                  total_score, best_score,
@@ -181,6 +200,12 @@ def best_players_by_total_score(c):
                           ORDER BY total_score DESC''')
   res = []
   for r in rows:
-    win_perc = calc_perc_pretty(r[2], r[1])
-    res.append([r[3]] + list(r[0:3]) + [win_perc] + list(r[4:]))
+    rl = list(r)
+    rl[4] = linked_text(player_best_game(c, rl[0]), morgue_link,
+                        human_number(rl[4]))
+    rl[5] = linked_text(player_first_game(c, rl[0]), morgue_link, rl[5])
+    rl[6] = linked_text(player_last_game(c, rl[0]), morgue_link, rl[6])
+    win_perc = calc_perc_pretty(rl[2], rl[1])
+    res.append([rl[3]] + list(rl[0:3]) + [win_perc] + list(rl[4:]))
+
   return res
