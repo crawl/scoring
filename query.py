@@ -78,6 +78,9 @@ def whereis_player(name):
 def row_to_xdict(row):
   return dict( zip(loaddb.LOG_DB_COLUMNS, row) )
 
+def xdict_rows(rows):
+  return [row_to_xdict(x) for x in rows]
+
 @DBMemoizer
 def canonicalize_player_name(c, player):
   row = query_row(c, '''SELECT name FROM players WHERE name = %s''',
@@ -198,6 +201,20 @@ def calc_avg_int(num, den):
   else:
     return int(num / den)
 
+def game_select_from(table):
+  return "SELECT " + loaddb.LOG_DB_SCOLUMNS + " FROM " + table + " "
+
+def player_best_first_last(c, player):
+  fields = loaddb.LOG_DB_SCOLUMNS
+  q = [(game_select_from('player_best_games') +
+        '''WHERE name = %s ORDER BY sc DESC LIMIT 1'''),
+       (game_select_from('player_first_games') +
+        '''WHERE name = %s'''),
+       (game_select_from('player_last_games') +
+        '''WHERE name = %s''')]
+  q = " UNION ALL ".join(["(" + x + ")" for x in q])
+  return xdict_rows(query_rows(c, q, player, player, player))
+
 def best_players_by_total_score(c):
   rows = query_rows(c, '''SELECT name, games_played, games_won,
                                  total_score, best_score,
@@ -207,10 +224,10 @@ def best_players_by_total_score(c):
   res = []
   for r in rows:
     rl = list(r)
-    rl[4] = linked_text(player_best_game(c, rl[0]), morgue_link,
-                        human_number(rl[4]))
-    rl[5] = linked_text(player_first_game(c, rl[0]), morgue_link, rl[5])
-    rl[6] = linked_text(player_last_game(c, rl[0]), morgue_link, rl[6])
+    games = player_best_first_last(c, rl[0])
+    rl[4] = linked_text(games[0], morgue_link, human_number(rl[4]))
+    rl[5] = linked_text(games[1], morgue_link, rl[5])
+    rl[6] = linked_text(games[2], morgue_link, rl[6])
     win_perc = calc_perc_pretty(rl[2], rl[1]) + "%"
     avg_score = calc_avg_int(rl[3], rl[1])
     res.append([rl[3]] + list(rl[0:3]) + [win_perc] + [rl[4]]

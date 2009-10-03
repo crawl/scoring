@@ -3,24 +3,16 @@ New scoring script ideas:
 
 General thoughts:
 - Most recent allruners, most recent ziggurat:27 visits.
-
- - players.html: top total scores:
-     - total score, player, best score, games (won), win %, av score,
-       last game
-
-   This table can be updated in two ways:
-   - Full update on first run.
-   - Incremental update when catching up to new logfile entries.
-       
  - top_combinations: Top score for each combo, broken up by race:
        combo, top score, player, date
+
  - combo_scoreboard: Scoreboard for players with most race/class/combo
                      highscores
        # of highscores, player, species
        # of highscores, player, class
        # of highscores, player, combos
+
  - all_players: List of all players (alphabetic)
- - players.html: List of players (top total score)
  - players_best_score: List of players (best score)
  - per player page:
      - Ten best games.
@@ -30,7 +22,7 @@ General thoughts:
      - Escapes with orb.
      - Games played
      Break up by race and class.
-     
+
  - top_killers
  - winners
  - escapes_turns
