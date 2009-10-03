@@ -54,7 +54,7 @@ STOCK_COLUMNS = \
       ('sc', 'Score', True),
       ('charabbr', 'Character'),
       ('place', 'Place'),
-      ('vmsg', 'Death'),
+      ('vmsg', 'End'),
       ('turn', 'Turns'),
       ('dur', 'Duration'),
       ('god', 'God'),
@@ -68,7 +68,7 @@ EXT_COLUMNS = \
       ('god', 'God'),
       ('title', 'Title'),
       ('place', 'Place'),
-      ('vmsg', 'Death'),
+      ('vmsg', 'End'),
       ('xl', 'XL'),
       ('turn', 'Turns'),
       ('dur', 'Duration'),
@@ -483,8 +483,4 @@ def best_players_by_total_score(rows):
                      rows, fixup=True )
 
 def top_combo_scores(rows):
-  selector = query.select_fields('charabbr', 'sc', 'name', 'end_time', 'v')
-  return table_text( ['Character', 'Score', 'Player', 'Date', 'Version'],
-                     [selector(g) for g in rows],
-                     fixup=True,
-                     count=True )
+  return ext_games_table(rows, count=True, first='charabbr')

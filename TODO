@@ -3,9 +3,6 @@ New scoring script ideas:
 
 General thoughts:
 - Most recent allruners, most recent ziggurat:27 visits.
- - top_combinations: Top score for each combo, broken up by race:
-       combo, top score, player, date
-
  - combo_scoreboard: Scoreboard for players with most race/class/combo
                      highscores
        # of highscores, player, species
