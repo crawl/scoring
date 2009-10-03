@@ -436,3 +436,23 @@ def gkills(c):
 def gvictims(c):
   return kill_list(query_rows(c,
                               '''SELECT victim, ghost FROM ghost_victims'''))
+
+def winner_stats(c):
+  rows = query_rows(c,
+                    '''SELECT p.games_won, p.name, p.games_played,
+                              p.max_runes, p.best_score, p.total_score, '''
+                    + logfields_prefixed('g.') +
+                    '''  FROM players p, player_best_games g
+                        WHERE p.name = g.name AND p.best_score = g.sc
+                          AND p.games_won > 0
+                        ORDER BY p.games_won DESC, p.games_played,
+                                 p.best_score DESC''')
+  results = []
+  for r in rows:
+    results.append(list(r[0:3]) +
+                   [calc_perc_pretty(r[0], r[2]) + '%', r[3],
+                    linked_text(row_to_xdict(r[6:]), morgue_link,
+                                human_number(r[4])),
+                    human_number(r[5]),
+                    human_number(calc_avg_int(r[5], r[2]))])
+  return results

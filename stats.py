@@ -263,8 +263,8 @@ def update_player_stats(c, g):
   query_do(c, '''INSERT INTO players
                              (name, games_played, games_won,
                               total_score, best_score, best_xl,
-                              first_game_start, last_game_end)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                              first_game_start, last_game_end, max_runes)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                  ON DUPLICATE KEY UPDATE
                              games_played = games_played + 1,
                              games_won = games_won + %s,
@@ -279,11 +279,14 @@ def update_player_stats(c, g):
                                         THEN %s
                                         ELSE best_xl
                                         END,
+                             max_runes = CASE WHEN max_runes < %s
+                                              THEN %s ELSE max_runes END,
                              last_game_end = %s,
                              current_combo = NULL''',
            g['name'], 1, winc, g['sc'], g['sc'], g['xl'], g['start_time'],
-           g['end_time'],
-           winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'], g['end_time'])
+           g['end_time'], g['urune'],
+           winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'],
+           g['urune'], g['urune'], g['end_time'])
 
   # Must be first!
   update_player_streak(c, g)

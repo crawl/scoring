@@ -196,6 +196,7 @@ CREATE TABLE players (
   best_score BIGINT,
   first_game_start DATETIME,
   last_game_end DATETIME,
+  max_runes TINYINT DEFAULT 0,
 
   -- Combo they're currently playing; used in the active streaks
   -- table. This will be set to NULL on end of game, and will only be
@@ -203,6 +204,7 @@ CREATE TABLE players (
   current_combo CHAR(4)
   );
 CREATE INDEX player_total_scores ON players (name, total_score);
+CREATE INDEX players_win_stats ON players (games_won DESC, games_played);
 
 -- Statistics on the games the player has played.
 CREATE TABLE player_char_stats (

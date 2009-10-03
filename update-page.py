@@ -65,6 +65,7 @@ PAGE_DEFS = [
   { 'name': 'all-players' },
   { 'name': 'killers' },
   { 'name': 'gkills' },
+  { 'name': 'winners' },
 ]
 
 if __name__ == '__main__':

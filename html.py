@@ -194,7 +194,7 @@ def table_text(headers, data, cls='bordered',
   headers = [ wrap_tuple(x) for x in headers ]
 
   if count:
-    out += "<th></th>"
+    out += "<th>&nbsp;</th>"
   for head in headers:
     out += "<th>%s</th>" % head[0]
   out += "</tr>\n"
@@ -524,3 +524,8 @@ def curried_scorer(thing):
 top_species_scorers = curried_scorer('Species')
 top_class_scorers = curried_scorer('Class')
 top_combo_scorers = curried_scorer('Character')
+
+def winner_stats(stats):
+  return table_text(['Wins', 'Player', 'Games Played', 'Win %',
+                     'Max Runes', 'Best Score', 'Total Score', 'Average Score'],
+                    stats)
