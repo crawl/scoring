@@ -244,3 +244,31 @@ in descending order of score."""
 
 def select_fields(*fields):
   return lambda g: [g.get(x) for x in fields]
+
+def top_thing_scorers(c, table, thing):
+  games = xdict_rows(query_rows(c, game_select_from(table)
+                                + " ORDER BY name, " + thing))
+  score_counts = { }
+
+  def inc_count(g):
+    name = g['name']
+    if not score_counts.has_key(name):
+      score_counts[name] = [ ]
+    l = score_counts[name]
+    l.append(linked_text(g, morgue_link, g[thing]))
+
+  for g in games:
+    inc_count(g)
+
+  best_players = score_counts.items()
+  best_players.sort(lambda a, b: len(b[1]) - len(a[1]))
+  return [[len(x[1]), x[0], ", ".join(x[1])] for x in best_players]
+
+def top_species_scorers(c):
+  return top_thing_scorers(c, 'top_species_scores', 'crace')
+
+def top_class_scorers(c):
+  return top_thing_scorers(c, 'top_class_scores', 'cls')
+
+def top_combo_scorers(c):
+  return top_thing_scorers(c, 'top_combo_scores', 'charabbr')

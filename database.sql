@@ -38,6 +38,7 @@ CREATE TABLE player_best_games (
   start_time DATETIME,
   sc BIGINT,
   race VARCHAR(20),
+  crace VARCHAR(20),
   -- Two letter race abbreviation so we can group by it without pain.
   raceabbr CHAR(2) NOT NULL,
   cls VARCHAR(20),
@@ -97,6 +98,7 @@ CREATE TABLE top_combo_scores AS SELECT * FROM player_best_games;
 ALTER TABLE top_combo_scores ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE top_combo_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE top_combo_scores Add CONSTRAINT UNIQUE (charabbr);
+CREATE INDEX top_combo_scores_name ON top_combo_scores (name, charabbr);
 CREATE UNIQUE INDEX top_combo_scores_charabbr
 ON top_combo_scores (charabbr);
 CREATE INDEX top_combo_scores_sc ON top_combo_scores (sc);
@@ -108,6 +110,7 @@ ALTER TABLE top_species_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE top_species_scores Add CONSTRAINT UNIQUE (raceabbr);
 CREATE UNIQUE INDEX top_species_scores_raceabbr
 ON top_species_scores (raceabbr);
+CREATE INDEX top_species_scores_name ON top_species_scores (name, crace);
 
 -- Keep track of best score for each species (unique cls).
 CREATE TABLE top_class_scores AS SELECT * FROM player_best_games;
@@ -116,6 +119,7 @@ ALTER TABLE top_class_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE top_class_scores Add CONSTRAINT UNIQUE (cls);
 CREATE UNIQUE INDEX top_class_scores_cls
 ON top_class_scores (cls);
+CREATE INDEX top_class_scores_name ON top_class_scores (name, cls);
 
 -- Most recent game by every known player.
 CREATE TABLE player_last_games AS SELECT * FROM player_best_games;

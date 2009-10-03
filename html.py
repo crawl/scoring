@@ -484,3 +484,14 @@ def best_players_by_total_score(rows):
 
 def top_combo_scores(rows):
   return ext_games_table(rows, count=True, first='charabbr')
+
+def top_thing_scorers(thingname, rows):
+  return table_text( ['Scores', 'Player', thingname],
+                     rows )
+
+def curried_scorer(thing):
+  return lambda rows: top_thing_scorers(thing, rows)
+
+top_species_scorers = curried_scorer('Species')
+top_class_scorers = curried_scorer('Class')
+top_combo_scorers = curried_scorer('Character')

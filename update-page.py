@@ -58,7 +58,8 @@ LISTENER = [ loaddb.define_cleanup(tourney_overview),
 PAGE_DEFS = [
   { 'name': 'top-N' },
   { 'name': 'best-players-total-score' },
-  { 'name': 'top-combo-scores' }
+  { 'name': 'top-combo-scores' },
+  { 'name': 'combo-scoreboard' }
   ]
 
 if __name__ == '__main__':

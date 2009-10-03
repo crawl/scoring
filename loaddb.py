@@ -10,6 +10,11 @@ from logging import debug, info, warn, error
 import ConfigParser
 import imp
 import sys
+import optparse
+
+oparser = optparse.OptionParser()
+oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
+OPT, ARGS = oparser.parse_args()
 
 # Limit rows read to so many for testing.
 LIMIT_ROWS = 30000
@@ -378,6 +383,10 @@ def xlog_dict(logline):
   if d.get('char'):
     d['raceabbr'] = d['char'][0:2]
 
+  d['crace'] = d['race']
+  if d['race'].find('Draconian') != -1:
+    d['crace'] = 'Draconian'
+
   if d.get('tmsg') and not d.get('vmsg'):
     d['vmsg'] = d['tmsg']
 
@@ -399,7 +408,8 @@ def xlog_dict(logline):
 # The mappings in order so that we can generate our db queries with all the
 # fields in order and generally debug things more easily.
 
-# Note: all fields must be present here.
+# Note: all fields must be present here, even if their names are the
+# same in logfile and db.
 LOG_DB_MAPPINGS = [
     [ 'source_file', 'source_file' ],
     [ 'v', 'v' ],
@@ -407,6 +417,7 @@ LOG_DB_MAPPINGS = [
     [ 'name', 'name' ],
     [ 'uid', 'uid' ],
     [ 'race', 'race' ],
+    [ 'crace', 'crace' ],
     [ 'raceabbr', 'raceabbr' ],
     [ 'cls', 'cls' ],
     [ 'char', 'charabbr' ],
@@ -936,8 +947,9 @@ if __name__ == '__main__':
   cursor = db.cursor()
   set_active_cursor(cursor)
   try:
-    master = create_master_reader()
-    master.tail_all(cursor)
+    if not OPT.no_load:
+      master = create_master_reader()
+      master.tail_all(cursor)
   finally:
     set_active_cursor(None)
     cursor.close()
