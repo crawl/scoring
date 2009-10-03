@@ -397,3 +397,42 @@ def top_killers(c):
     g = row_to_xdict(r[2:])
     return [r[0], perc, r[1], linked_text(g, morgue_link, g['name'])]
   return [fix_killer_row(x) for x in rows]
+
+def kill_list(rows):
+  ghost_map = { }
+
+  def record_kill(ghost, victim):
+    if not ghost_map.has_key(ghost):
+      ghost_map[ghost] = { }
+    vmap = ghost_map[ghost]
+    if not vmap.has_key(victim):
+      vmap[victim] = 1
+    else:
+      vmap[victim] += 1
+
+  for r in rows:
+    record_kill(r[0], r[1])
+
+  ghost_items = [list(x) for x in ghost_map.items()]
+
+  def ntimes(count, who):
+    if count == 1:
+      return who
+    return "%s (%d)" % (who, count)
+
+  for g in ghost_items:
+    g[1] = g[1].items()
+    g[1].sort(lambda a, b: b[1] - a[1])
+    g.insert(1, sum([x[1] for x in g[1]]))
+    g[2] = ", ".join([ntimes(x[1], x[0]) for x in g[2]])
+
+  ghost_items.sort(lambda a, b: b[1] - a[1])
+  return ghost_items
+
+def gkills(c):
+  return kill_list(query_rows(c,
+                              '''SELECT ghost, victim FROM ghost_victims'''))
+
+def gvictims(c):
+  return kill_list(query_rows(c,
+                              '''SELECT victim, ghost FROM ghost_victims'''))

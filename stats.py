@@ -350,6 +350,14 @@ def update_killer_stats(c, g):
     ckiller_record_exists.set_key(True, ckiller)
   insert_game(c, g, 'killer_recent_kills')
 
+def update_gkills(c, g):
+  if loaddb.is_ghost_kill(g):
+    ghost = loaddb.extract_ghost_name(g['killer'])
+    if ghost != g['name']:
+      query_do(c,
+               '''INSERT INTO ghost_victims (ghost, victim) VALUES (%s, %s)''',
+               ghost, g['name'])
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
@@ -366,3 +374,5 @@ def act_on_logfile_line(c, this_game):
   update_combo_scores(c, this_game)
 
   update_killer_stats(c, this_game)
+
+  update_gkills(c, this_game)
