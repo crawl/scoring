@@ -12,7 +12,7 @@ UPDATE_INTERVAL = 7 * 60
 LOCK = None
 BASEDIR = '/home/snark'
 LOCKFILE = BASEDIR + '/tourney-py.lock'
-SCORE_FILE_DIR = 'scores'
+SCORE_FILE_DIR = 'scoring'
 PLAYER_BASE = 'players'
 PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
 

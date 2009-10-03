@@ -24,11 +24,10 @@ General thoughts:
      Break up by race and class.
 
  - top_killers
+ - gkills
  - winners
  - escapes_turns
  - escapes_score
- - per_day (line chart of activity)
- - recent
  - streaks
  - clevels (Character level stats)
  - species (Species stats)
@@ -37,3 +36,6 @@ General thoughts:
  - runes (Rune stats)
  - specie_class (Combo stat?)
  - specie_class_table (Whuh?)
+ - per_day (line chart of activity)
+ - recent (recent wins, recent ended games)
+ 

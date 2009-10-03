@@ -477,8 +477,14 @@ def player_scores_block(c, scores, title):
 
 
 def best_players_by_total_score(rows):
-  print "Table text for %d rows" % (len(rows))
   return table_text( [ 'Total Score', 'Player', 'Games Played', 'Games Won',
                        'Win %', 'Best Score', 'Average Score', 'First Game',
                        'Most Recent Game' ],
                      rows, fixup=True )
+
+def top_combo_scores(rows):
+  selector = query.select_fields('charabbr', 'sc', 'name', 'end_time', 'v')
+  return table_text( ['Character', 'Score', 'Player', 'Date', 'Version'],
+                     [selector(g) for g in rows],
+                     fixup=True,
+                     count=True )

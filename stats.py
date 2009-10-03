@@ -165,6 +165,38 @@ def update_player_stats(c, g):
   update_player_first_game(c, g)
   update_player_last_game(c, g)
 
+def top_score_for_cthing(c, col, table, thing):
+  q = "SELECT sc FROM %s WHERE %s = %s" % (table, col, '%s')
+  return query_first_def(c, 0, q, thing)
+
+@DBMemoizer
+def top_score_for_combo(c, ch):
+  return top_score_for_cthing(c, 'charabbr', 'top_combo_scores', ch)
+
+@DBMemoizer
+def top_score_for_species(c, sp):
+  return top_score_for_cthing(c, 'raceabbr', 'top_species_scores', sp)
+
+@DBMemoizer
+def top_score_for_class(c, cls):
+  return top_score_for_cthing(c, 'cls', 'top_class_scores', cls)
+
+def update_topscore_table_for(c, g, fn, table, thing):
+  sc = g['sc']
+  value = g[thing]
+  if sc > fn(c, value):
+    fn.flush_key(value)
+    query_do(c, "DELETE FROM " + table + " WHERE " + thing + " = %s", value)
+    insert_game(c, g, table)
+
+def update_combo_scores(c, g):
+  update_topscore_table_for(c, g, top_score_for_combo,
+                            'top_combo_scores', 'charabbr')
+  update_topscore_table_for(c, g, top_score_for_species,
+                            'top_species_scores', 'raceabbr')
+  update_topscore_table_for(c, g, top_score_for_class,
+                            'top_class_scores', 'cls')
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
@@ -177,3 +209,5 @@ def act_on_logfile_line(c, this_game):
 
   # Update statistics for this player's game.
   update_player_stats(c, this_game)
+
+  update_combo_scores(c, this_game)

@@ -233,3 +233,14 @@ def best_players_by_total_score(c):
     res.append([rl[3]] + list(rl[0:3]) + [win_perc] + [rl[4]]
                + [avg_score] + list(rl[5:]))
   return res
+
+def top_combo_scores(c):
+  """Returns all the top-scoring games for each unique character combo, ordered
+in descending order of score."""
+  rows = query_rows(c,
+                    game_select_from('top_combo_scores') +
+                    " ORDER BY sc DESC")
+  return xdict_rows(rows)
+
+def select_fields(*fields):
+  return lambda g: [g.get(x) for x in fields]

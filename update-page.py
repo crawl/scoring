@@ -39,17 +39,8 @@ def tourney_overview(c):
   #render(c, 'overview')
 
 def player_pages(c):
-  info("Updating all player pages")
-  render(c, 'top-N')
-  render(c, 'best-players-total-score')
-  #for p in query.get_players(c):
-  #  player_page(c, p)
-  #render(c, 'all-players')
-  #render(c, 'scoreboard')
-  #render(c, 'combo-scoreboard')
-  #render(c, 'combo-leaders')
-  #render(c, 'killers')
-  #render(c, 'gkills')
+  for p in PAGE_DEFS:
+    render(c, p['name'])
 
 def player_page(c, player):
   info("Updating player page for %s" % player)
@@ -63,6 +54,12 @@ TIMER = [ loaddb.define_timer( INTERVAL, tourney_overview ),
           loaddb.define_timer( INTERVAL, player_pages ) ]
 LISTENER = [ loaddb.define_cleanup(tourney_overview),
              loaddb.define_cleanup(player_pages) ]
+
+PAGE_DEFS = [
+  { 'name': 'top-N' },
+  { 'name': 'best-players-total-score' },
+  { 'name': 'top-combo-scores' }
+  ]
 
 if __name__ == '__main__':
   db = loaddb.connect_db()

@@ -41,18 +41,18 @@ CREATE TABLE player_best_games (
   -- Two letter race abbreviation so we can group by it without pain.
   raceabbr CHAR(2) NOT NULL,
   cls VARCHAR(20),
-  v CHAR(10),
-  lv CHAR(8),
+  v VARCHAR(10),
+  lv VARCHAR(8),
   uid INT,
   charabbr CHAR(4),
   xl INT,
   sk VARCHAR(16),
   sklev INT,
   title VARCHAR(255),
-  place CHAR(16),
-  br CHAR(16),
+  place VARCHAR(16),
+  br VARCHAR(16),
   lvl INT,
-  ltyp CHAR(16),
+  ltyp VARCHAR(16),
   hp INT,
   mhp INT,
   mmhp INT,
@@ -63,8 +63,8 @@ CREATE TABLE player_best_games (
   dur INT,
   turn BIGINT,
   ktyp VARCHAR(20),
-  killer CHAR(50),
-  kgroup CHAR(50),
+  killer VARCHAR(100),
+  kgroup VARCHAR(100),
   kaux VARCHAR(255),
   -- Kills may be null.
   kills INT,
@@ -99,6 +99,7 @@ ALTER TABLE top_combo_scores CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE top_combo_scores Add CONSTRAINT UNIQUE (charabbr);
 CREATE UNIQUE INDEX top_combo_scores_charabbr
 ON top_combo_scores (charabbr);
+CREATE INDEX top_combo_scores_sc ON top_combo_scores (sc);
 
 -- Keep track of best score for each species (unique raceabbr).
 CREATE TABLE top_species_scores AS SELECT * FROM player_best_games;

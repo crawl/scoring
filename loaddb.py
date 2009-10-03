@@ -11,6 +11,9 @@ import ConfigParser
 import imp
 import sys
 
+# Limit rows read to so many for testing.
+LIMIT_ROWS = 30000
+
 # Start and end of the tournament, UTC.
 START_TIME = '20090801'
 END_TIME   = '20090901'
@@ -274,6 +277,8 @@ class MasterXlogReader:
       # And process the line
       oldest.process(cursor)
       proc += 1
+      if LIMIT_ROWS > 0 and proc >= LIMIT_ROWS:
+        break
       if proc % 3000 == 0:
         info("Processed %d lines." % proc)
     if proc > 0:
@@ -367,7 +372,9 @@ associated with the same values in the target dictionary."""
 
 def xlog_dict(logline):
   d = parse_logline(logline.strip())
-  # Fake a raceabbr field.
+
+  # Fake a raceabbr field to group on race without failing on
+  # draconians.
   if d.get('char'):
     d['raceabbr'] = d['char'][0:2]
 
