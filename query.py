@@ -192,6 +192,12 @@ def player_last_game(c, player):
                 + ''' FROM player_last_games WHERE name = %s''',
                 player)))
 
+def calc_avg_int(num, den):
+  if den == 0:
+    return 0
+  else:
+    return int(num / den)
+
 def best_players_by_total_score(c):
   rows = query_rows(c, '''SELECT name, games_played, games_won,
                                  total_score, best_score,
@@ -205,7 +211,8 @@ def best_players_by_total_score(c):
                         human_number(rl[4]))
     rl[5] = linked_text(player_first_game(c, rl[0]), morgue_link, rl[5])
     rl[6] = linked_text(player_last_game(c, rl[0]), morgue_link, rl[6])
-    win_perc = calc_perc_pretty(rl[2], rl[1])
-    res.append([rl[3]] + list(rl[0:3]) + [win_perc] + list(rl[4:]))
-
+    win_perc = calc_perc_pretty(rl[2], rl[1]) + "%"
+    avg_score = calc_avg_int(rl[3], rl[1])
+    res.append([rl[3]] + list(rl[0:3]) + [win_perc] + [rl[4]]
+               + [avg_score] + list(rl[5:]))
   return res

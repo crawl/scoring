@@ -477,7 +477,8 @@ def player_scores_block(c, scores, title):
 
 
 def best_players_by_total_score(rows):
+  print "Table text for %d rows" % (len(rows))
   return table_text( [ 'Total Score', 'Player', 'Games Played', 'Games Won',
-                       'Win %', 'Best Score', 'First Game',
+                       'Win %', 'Best Score', 'Average Score', 'First Game',
                        'Most Recent Game' ],
                      rows, fixup=True )
