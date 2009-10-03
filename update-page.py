@@ -59,7 +59,8 @@ PAGE_DEFS = [
   { 'name': 'top-N' },
   { 'name': 'best-players-total-score' },
   { 'name': 'top-combo-scores' },
-  { 'name': 'combo-scoreboard' }
+  { 'name': 'combo-scoreboard' },
+  { 'name': 'all-players' },
   ]
 
 if __name__ == '__main__':

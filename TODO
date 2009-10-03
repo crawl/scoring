@@ -1,15 +1,12 @@
 New scoring script ideas:
 -------------------------
 
-General thoughts:
 - Most recent allruners, most recent ziggurat:27 visits.
- - combo_scoreboard: Scoreboard for players with most race/class/combo
-                     highscores
-       # of highscores, player, species
-       # of highscores, player, class
-       # of highscores, player, combos
 
- - all_players: List of all players (alphabetic)
+General thoughts:
+ - all_players: List of all players (alphabetic) with:
+    - games (won), best XL, best sc, av score, first game, most recent game
+    
  - players_best_score: List of players (best score)
  - per player page:
      - Ten best games.

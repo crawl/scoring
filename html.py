@@ -482,6 +482,12 @@ def best_players_by_total_score(rows):
                        'Most Recent Game' ],
                      rows, fixup=True )
 
+def all_player_stats(rows):
+  return table_text( [ 'Total Score', 'Player', 'Games Played', 'Games Won',
+                       'Win %', 'Best XL', 'Best Score', 'Average Score',
+                       'First Game', 'Most Recent Game' ],
+                     rows, fixup=True )
+
 def top_combo_scores(rows):
   return ext_games_table(rows, count=True, first='charabbr')
 

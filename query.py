@@ -234,6 +234,25 @@ def best_players_by_total_score(c):
                + [avg_score] + list(rl[5:]))
   return res
 
+def all_player_stats(c):
+  rows = query_rows(c, '''SELECT name, games_played, games_won,
+                                 total_score, best_xl, best_score,
+                                 first_game_start, last_game_end
+                            FROM players
+                           ORDER BY name''')
+  res = []
+  for r in rows:
+    rl = list(r)
+    games = player_best_first_last(c, rl[0])
+    rl[5] = linked_text(games[0], morgue_link, human_number(rl[5]))
+    rl[6] = linked_text(games[1], morgue_link, rl[6])
+    rl[7] = linked_text(games[2], morgue_link, rl[7])
+    win_perc = calc_perc_pretty(rl[2], rl[1]) + "%"
+    avg_score = calc_avg_int(rl[3], rl[1])
+    res.append([rl[3]] + list(rl[0:3]) + [win_perc] + rl[4:6]
+               + [avg_score] + list(rl[6:]))
+  return res
+
 def top_combo_scores(c):
   """Returns all the top-scoring games for each unique character combo, ordered
 in descending order of score."""

@@ -159,6 +159,7 @@ CREATE TABLE players (
   games_played INT DEFAULT 0,
   games_won INT DEFAULT 0,
   total_score BIGINT,
+  best_xl TINYINT,
   best_score BIGINT,
   first_game_start DATETIME,
   last_game_end DATETIME,

@@ -143,9 +143,9 @@ def update_player_stats(c, g):
   winc = game_is_win(g) and 1 or 0
   query_do(c, '''INSERT INTO players
                              (name, games_played, games_won,
-                              total_score, best_score,
+                              total_score, best_score, best_xl,
                               first_game_start, last_game_end)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                  ON DUPLICATE KEY UPDATE
                              games_played = games_played + 1,
                              games_won = games_won + %s,
@@ -155,11 +155,16 @@ def update_player_stats(c, g):
                                         THEN %s
                                         ELSE best_score
                                         END,
+                             best_xl =
+                                   CASE WHEN best_xl < %s
+                                        THEN %s
+                                        ELSE best_xl
+                                        END,
                              last_game_end = %s,
                              current_combo = NULL''',
-           g['name'], 1, winc, g['sc'], g['sc'], g['start_time'],
+           g['name'], 1, winc, g['sc'], g['sc'], g['xl'], g['start_time'],
            g['end_time'],
-           winc, g['sc'], g['sc'], g['sc'], g['end_time'])
+           winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'], g['end_time'])
 
   update_player_best_games(c, g)
   update_player_first_game(c, g)

@@ -2,8 +2,6 @@
    import loaddb, query, crawl_utils, html
 
    c = attributes['cursor']
-
-   stats = query.get_all_player_stats(c)
  %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -21,17 +19,13 @@
 
       <div class="page_content">
         <div class="heading_left">
-          <h1>All Players</h1>
+          <h2>All Players</h2>
         </div>
 
         <hr>
 
         <div class="content">
-          ${html.table_text( [ 'Player', 'Clan', 'Points',
-                               'Games Won', 'Games Played',
-                               'Win %' ],
-                             stats,
-                             place_column=2 )}
+          ${html.all_player_stats(query.all_player_stats(c))}
         </div>
       </div>
     </div>
