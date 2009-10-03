@@ -5,6 +5,13 @@
    player = attributes['player']
 
    whereis = html.whereis(False, player)
+   wins = query.player_wins(c, player)
+   streaks = query.player_streaks(c, player)
+   recent_games = query.player_recent_games(c, player)
+
+   combo_highscores = query.player_combo_highscores(c, player)
+   species_highscores = query.player_species_highscores(c, player)
+   class_highscores = query.player_class_highscores(c, player)
  %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -37,34 +44,17 @@
           </div>
           %endif
 
+          % if wins:
           <div class="game_table">
             <h3>Wins</h3>
-            ${html.full_games_table(won_games, count=False)}
-          </div>
-
-          % if streak_games:
-          <div class="game_table">
-            <h3>Longest streak of wins</h3>
-            ${html.full_games_table(streak_games)}
+            ${html.player_wins(wins, count=True)}
           </div>
           % endif
 
-          % if won_gods:
-          <div id="won-gods">
-            <h3>Winning Gods:</h3>
-            <div class="bordered inline">
-              ${", ".join(won_gods)}
-            </div>
-
-            <p class="fineprint">
-              All gods that ${player} has won games with, without changing
-              gods (or renouncing and rejoining gods) during the game.
-            </p>
-
-            <h3>Remaining Gods:</h3>
-            <div class="bordered inline">
-              ${", ".join(query.find_remaining_gods(won_gods)) or 'None'}
-            </div>
+          % if streaks:
+          <div class="game_table">
+            <h3>Streaks of Wins</h3>
+            ${html.player_streaks_table(streaks)}
           </div>
           % endif
 
@@ -74,32 +64,6 @@
           </div>
 
           <hr>
-
-          % if uniq_slain:
-          <div>
-            <table class="bordered">
-              <colgroup>
-                 <col width="10%">
-                 <col width="85%">
-              </colgroup>
-              <tr>
-                <th>Uniques Slain</th>
-                <td>${", ".join(uniq_slain)}</td>
-              </tr>
-              % if len(uniq_slain) > len(uniq_unslain):
-                <tr>
-                  <th>Uniques Left</th>
-                  % if uniq_unslain:
-                  <td>${", ".join(uniq_unslain)}</td>
-                  % else:
-                  <td>None</td>
-                  % endif
-                </tr>
-              % endif
-            </table>
-          </div>
-          <hr>
-          % endif
 
           % if combo_highscores or species_highscores or class_highscores:
             <div>
@@ -113,44 +77,6 @@
             <hr>
           % endif
 
-          <div class="audit_table">
-            <h3>Score Breakdown</h3>
-            <table class="grouping">
-              <tr>
-                <td>
-                  <h4>Player points</h4>
-                  <table class="bordered">
-                    <tr>
-                      <th>N</th> <th>Points</th> <th>Source</th>
-                    </tr>
-                    ${point_breakdown(audit)}
-                  </table>
-                </td>
-
-                <td>
-                  <h4>Team points</h4>
-                  <table class="bordered">
-                    <tr>
-                      <th>N</th> <th>Points</th> <th>Source</th>
-                    </tr>
-                    ${point_breakdown(audit_team)}
-                  </table>
-                </td>
-
-                <td class="legend">
-                  <h4>Legend</h4>
-                  <table class="bordered">
-                    <tr class="point_perm">
-                      <td>Permanent points</td>
-                    </tr>
-                    <tr class="point_temp">
-                      <td>Provisional points</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </div>
         </div>
       </div> <!-- content -->
     </div> <!-- page -->

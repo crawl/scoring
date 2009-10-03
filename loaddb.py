@@ -382,6 +382,7 @@ def xlog_dict(logline):
   # draconians.
   if d.get('char'):
     d['raceabbr'] = d['char'][0:2]
+    d['clsabbr'] = d['char'][2:]
 
   d['crace'] = d['race']
   if d['race'].find('Draconian') != -1:
@@ -419,6 +420,7 @@ RAW_LOG_DB_MAPPINGS = [
   'race',
   'crace',
   'raceabbr',
+  'clsabbr',
   'cls',
   [ 'char', 'charabbr' ],
   'xl',
@@ -668,6 +670,9 @@ def query_rows(cursor, query, *values):
 def query_first_col(cursor, query, *values):
   rows = query_rows(cursor, query, *values)
   return [x[0] for x in rows]
+
+def game_is_win(g):
+  return g['ktyp'] == 'winning'
 
 @crawl_utils.DBMemoizer
 def player_exists(c, name):

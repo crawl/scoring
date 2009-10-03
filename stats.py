@@ -12,7 +12,7 @@ import crawl
 import uniq
 
 from loaddb import query_do, query_first, query_first_col, wrap_transaction
-from loaddb import query_first_def
+from loaddb import query_first_def, game_is_win
 
 import nemchoice
 
@@ -76,11 +76,17 @@ def topN_count(c):
 def lowest_highscore(c):
   return query_first(c, '''SELECT MIN(sc) FROM top_games''')
 
-def insert_game(c, g, table):
+def insert_game(c, g, table, extras = []):
+  cols = loaddb.LOG_DB_MAPPINGS
+  if extras:
+    cols = list(cols)
+    for item in extras:
+      cols.append([item, item])
   query_do(c,
            'INSERT INTO %s (%s) VALUES (%s)' %
-           (table, loaddb.LOG_DB_SCOLUMNS, loaddb.LOG_DB_SPLACEHOLDERS),
-           *[g.get(x[1]) for x in loaddb.LOG_DB_MAPPINGS])
+           (table, ",".join([x[1] for x in cols]),
+            ",".join(["%s" for x in cols])),
+           *[g.get(x[0]) for x in cols])
 
 def update_topN(c, g, n):
   if topN_count(c) >= n:
@@ -94,9 +100,6 @@ def update_topN(c, g, n):
   else:
     insert_game(c, g, 'top_games')
     topN_count.flush()
-
-def game_is_win(g):
-  return g['ktyp'] == 'winning'
 
 @DBMemoizer
 def player_best_game_count(c, player):
@@ -125,6 +128,73 @@ def player_recent_game_count(c, player):
 @DBMemoizer
 def all_recent_game_count(c):
   return query_first(c, '''SELECT COUNT(*) FROM all_recent_games''')
+
+@DBMemoizer
+def player_streak_is_active(c, player):
+  return query_first_def(c, False,
+                         '''SELECT active FROM streaks
+                                          WHERE player = %s AND active = 1''',
+                         player)
+
+def player_won_last_game(c, player):
+  return query_first_def(c, False,
+                         '''SELECT id FROM player_last_games
+                                     WHERE name = %s
+                                       AND ktyp='winning' ''',
+                         player)
+
+def player_last_game_end_time(c, player):
+  return query_first(c, '''SELECT end_time FROM player_last_games
+                                          WHERE name = %s''',
+                     player)
+
+def player_create_streak(c, player, g):
+  query_do(c, '''INSERT INTO streaks
+                             (player, start_game_time, end_game_time,
+                              active, ngames)
+                      VALUES (%s, %s, %s, %s, %s)''',
+           player, player_last_game_end_time(c, player), g['end_time'],
+           True, 2)
+
+  # Record the game that started the streak:
+  query_do(c,
+           "INSERT INTO streak_games (" + loaddb.LOG_DB_SCOLUMNS + ") " +
+           "SELECT " + loaddb.LOG_DB_SCOLUMNS +
+           ''' FROM player_last_games WHERE name = %s''', player)
+
+  # And the second game in the streak:
+  insert_game(c, g, 'streak_games')
+
+def player_active_streak_id(c, player):
+  return query_first(c, '''SELECT id FROM streaks
+                                    WHERE player = %s AND active = 1''',
+                     player)
+
+def player_break_streak(c, player, g):
+  aid = player_active_streak_id(c, player)
+  query_do(c, '''UPDATE streaks SET active = 0 WHERE id = %s''', aid)
+  g['streak_id'] = aid
+  insert_game(c, g, 'streak_breakers', extras = ['streak_id'])
+
+def player_extend_streak(c, player, g):
+  query_do(c, '''UPDATE streaks SET end_game_time = %s, ngames = ngames + 1
+                              WHERE player = %s AND active = 1''',
+           g['end_time'], player)
+  insert_game(c, g, 'streak_games')
+
+def update_player_streak(c, g):
+  player = g['name']
+  win = game_is_win(g)
+  if not win:
+    if player_streak_is_active(c, player):
+      player_break_streak(c, player, g)
+      player_streak_is_active.flush_key(player)
+  else:
+    if player_streak_is_active(c, player):
+      player_extend_streak(c, player, g)
+    elif player_won_last_game(c, player):
+      player_create_streak(c, player, g)
+      player_streak_is_active.flush_key(player)
 
 def update_all_recent_games(c, g):
   if all_recent_game_count(c) >= MAX_PLAYER_RECENT_GAMES:
@@ -184,6 +254,10 @@ def update_player_last_game(c, g):
   query_do(c, '''DELETE FROM player_last_games WHERE name = %s''', g['name'])
   insert_game(c, g, 'player_last_games')
 
+def update_wins_table(c, g):
+  if game_is_win(g):
+    insert_game(c, g, 'wins')
+
 def update_player_stats(c, g):
   winc = game_is_win(g) and 1 or 0
   query_do(c, '''INSERT INTO players
@@ -211,12 +285,16 @@ def update_player_stats(c, g):
            g['end_time'],
            winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'], g['end_time'])
 
+  # Must be first!
+  update_player_streak(c, g)
+
   update_player_best_games(c, g)
   update_player_char_stats(c, g)
   update_player_recent_games(c, g)
   update_all_recent_games(c, g)
   update_player_first_game(c, g)
   update_player_last_game(c, g)
+  update_wins_table(c, g)
 
 def top_score_for_cthing(c, col, table, thing):
   q = "SELECT sc FROM %s WHERE %s = %s" % (table, col, '%s')

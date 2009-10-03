@@ -7,7 +7,7 @@ from logging import debug, info, warn, error
 
 import loaddb
 from loaddb import Query, query_do, query_first, query_row, query_rows
-from loaddb import query_first_col, query_first_def
+from loaddb import query_first_col, query_first_def, game_is_win
 
 import crawl
 import crawl_utils
@@ -294,3 +294,87 @@ def top_combo_scorers(c):
 
 def find_all_players(c):
   return query_first_col(c, '''SELECT name FROM players''')
+
+def player_wins(c, player):
+  return find_games(c, 'wins', name = player, sort_min = 'id')
+
+def find_streak_breaker(c, sid):
+  return row_to_xdict(
+    query_row(c, game_select_from('streak_breakers') + " WHERE streak_id = %s",
+              sid))
+
+def player_streaks(c, player):
+  """Returns a list of streaks for a player, ordered by longest streak
+first."""
+  logf = ",".join(["g." + x for x in loaddb.LOG_DB_COLUMNS])
+  sgames = query_rows(c,
+                      "SELECT s.id, s.ngames, s.start_game_time, " +
+                      "s.end_game_time, s.active, " + logf +
+                      ''' FROM streaks s, streak_games g
+                         WHERE s.player = %s AND g.name = s.player
+                           AND g.end_time >= s.start_game_time
+                           AND g.end_time <= s.end_game_time
+                         ORDER BY s.id''',
+                      player)
+  # Streak table: ngames, active, all games in streak.
+  streak_id_map = { }
+
+  def register_game(g):
+    sid = g[0]
+    if not streak_id_map.has_key(sid):
+      breaker = None
+      # If the streak is not active, grab the breaker:
+      if not g[4]:
+        breaker = find_streak_breaker(c, sid)
+        if breaker:
+          breaker = linked_text(breaker, morgue_link, breaker['charabbr'])
+      streak_id_map[sid] = {'ngames': g[1],
+                            'start': g[2],
+                            'end': g[3],
+                            'active': g[4],
+                            'games': [],
+                            'breaker': breaker}
+    smap = streak_id_map[sid]
+    game = row_to_xdict(g[5:])
+    smap['games'].append(linked_text(game, morgue_link, game['charabbr']))
+
+  for g in sgames:
+    register_game(g)
+
+  streaks = streak_id_map.values()
+
+  def streak_comparator(a, b):
+    bn = b['ngames']
+    an = a['ngames']
+    if bn == an:
+      be = b['end']
+      ae = a['end']
+      return ((ae > be and -1) or
+              (ae < be and 1) or
+              0)
+    else:
+      return int(bn - an)
+
+  streaks.sort(streak_comparator)
+  return streaks
+
+def player_recent_games(c, player):
+  return find_games(c, 'player_recent_games',
+                    sort_max = 'id',
+                    name = player)
+
+def player_top_thing_scores(c, player, table, label):
+  return [(linked_text(g, morgue_link, g[label])
+           + (game_is_win(g) and '*' or ''),
+           g['sc'])
+          for g in
+          find_games(c, table, name=player, sort_max='sc')]
+
+def curry_player_top_thing(table, label):
+  return lambda c, player: player_top_thing_scores(c, player, table, label)
+
+player_combo_highscores = curry_player_top_thing('top_combo_scores', 'charabbr')
+player_species_highscores = curry_player_top_thing('top_species_scores',
+                                                   'raceabbr')
+player_class_highscores = curry_player_top_thing('top_class_scores',
+                                                 'clsabbr')

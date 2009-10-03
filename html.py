@@ -167,8 +167,24 @@ def column_class(cname, data):
   else:
     return isinstance(data, str) and "celltext" or "numeric"
 
-def table_text(headers, data, cls='bordered', count=True, link=None,
-               fixup=False, width=None, place_column=-1, stub_text='No data'):
+def player_streaks_table(streaks):
+  def rowcls(s):
+    return s['active'] and 'active-streak' or ''
+  def rowdata(s):
+    return [s['ngames'], s['start'], s['end'],
+            ", ".join(s['games']), s['breaker']]
+  return table_text(['Wins', 'Start', 'End', 'Games', 'Streak Breaker'],
+                    streaks, rowclsfn = rowcls, rowdatafn = rowdata)
+
+def table_text(headers, data, cls='bordered',
+               count=True,
+               link=None,
+               fixup=False,
+               width=None,
+               rowclsfn=None,
+               rowdatafn=None,
+               place_column=-1,
+               stub_text='No data'):
   if cls:
     cls = ''' class="%s"''' % cls
   if width:
@@ -195,7 +211,10 @@ def table_text(headers, data, cls='bordered', count=True, link=None,
 
   for row in data:
     nrow += 1
-    out += '''<tr class="%s">''' % (odd and "odd" or "even")
+    rowcls = odd and "odd" or "even"
+    if rowclsfn:
+      rowcls += " " + rowclsfn(row)
+    out += '''<tr class="%s">''' % rowcls
     odd = not odd
 
     if place_column == -1 or last_value != row[place_column]:
@@ -206,8 +225,10 @@ def table_text(headers, data, cls='bordered', count=True, link=None,
     if count:
       out += '''<td class="numeric">%s</td>''' % nplace
 
+    rdat = rowdatafn and rowdatafn(row) or row
+
     for c in range(len(headers)):
-      val = row[c]
+      val = rdat[c]
       header = headers[c]
       tcls = column_class(header[0], val)
       if fixup:
@@ -475,6 +496,8 @@ def player_scores_block(c, scores, title):
     text += "<p class='fineprint'>* Winning Game</p>"
   return text
 
+def player_wins(wins, **pars):
+  return games_table(wins, excluding='name', **pars)
 
 def best_players_by_total_score(rows):
   return table_text( [ 'Total Score', 'Player', 'Games Played', 'Games Won',

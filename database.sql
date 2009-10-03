@@ -2,16 +2,24 @@
 -- SET storage_engine=InnoDB;
 
 DROP TABLE IF EXISTS logfile_offsets;
+DROP TABLE IF EXISTS player_recent_games;
+DROP TABLE IF EXISTS all_recent_games;
 DROP TABLE IF EXISTS player_best_games;
 DROP TABLE IF EXISTS player_last_games;
 DROP TABLE IF EXISTS player_first_games;
 DROP TABLE IF EXISTS streak_games;
+DROP TABLE IF EXISTS streak_breakers;
+DROP TABLE IF EXISTS wins;
 DROP TABLE IF EXISTS streaks;
 DROP TABLE IF EXISTS top_games;
 DROP TABLE IF EXISTS top_combo_scores;
 DROP TABLE IF EXISTS top_species_scores;
 DROP TABLE IF EXISTS top_class_scores;
 DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS player_char_stats;
+DROP TABLE IF EXISTS top_killers;
+DROP TABLE IF EXISTS killer_recent_kills;
+DROP TABLE IF EXISTS ghost_victims;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (
@@ -41,6 +49,7 @@ CREATE TABLE player_best_games (
   crace VARCHAR(20),
   -- Two letter race abbreviation so we can group by it without pain.
   raceabbr CHAR(2) NOT NULL,
+  clsabbr CHAR(2) NOT NULL,
   cls VARCHAR(20),
   v VARCHAR(10),
   lv VARCHAR(8),
@@ -158,17 +167,24 @@ ON player_first_games (name);
 CREATE TABLE streak_games AS SELECT * FROM player_best_games;
 ALTER TABLE streak_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE streak_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX streak_games_name_time ON streak_games (name, end_time);
+
+CREATE TABLE streak_breakers AS SELECT * FROM player_best_games;
+ALTER TABLE streak_breakers ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE streak_breakers CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE streak_breakers ADD COLUMN streak_id BIGINT UNIQUE NOT NULL;
 
 -- Track all streaks by all players.
 CREATE TABLE streaks (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   player VARCHAR(20),
-  start_game_id BIGINT,
-  end_game_id BIGINT,
+  start_game_time DATETIME,
+  end_game_time DATETIME,
   active BOOLEAN DEFAULT 0,
-  ngames INT DEFAULT 0,
-  FOREIGN KEY (start_game_id) REFERENCES streak_games (id),
-  FOREIGN KEY (end_game_id) REFERENCES streak_games (id)
+  ngames INT DEFAULT 0
 );
+CREATE INDEX streaks_player ON streaks (player);
+CREATE INDEX streaks_player_active ON streaks (player, active);
 
 -- Player statistics
 CREATE TABLE players (
@@ -218,4 +234,4 @@ CREATE TABLE ghost_victims (
   victim VARCHAR(20)
 );
 CREATE INDEX ghost_victims_ghost ON ghost_victims (ghost);
-CREATE INDEX ghost_victims_ghost ON ghost_victims (victim);
+CREATE INDEX ghost_victims_victim ON ghost_victims (victim);
