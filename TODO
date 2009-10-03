@@ -4,20 +4,65 @@ New scoring script ideas:
 - Most recent allruners, most recent ziggurat:27 visits.
 
 General thoughts:
- - streaks (overall best streaks)
- - clevels (Character level stats)
- - species (Species stats)
- - classes (Class stats)
- - gods (God stats)
- - runes (Rune stats)
- - specie_class (Combo stat?)
- - specie_class_table (Whuh?)
- - per_day (line chart of activity)
- - recent (recent wins, recent ended games)
-
+ - streaks (overall best streaks, but only one streak per player):
+    Player, Streak (ngames), Start time, End time, Games, Streak Breaker
+    
+ - recent (recent wins, recent ended games):
+    Most recent wins on servers.
+    Most recent games ended on servers.
+    
+ - overview page
+   - active streaks!
 
 Later
 ------
+
+ - clevels (Character level stats):
+     # of games ended at XL, % of games ended at XL, XL
+     Mean XL:
+     Median XL:
+     Standard deviation?
+
+     Remove quitters and escapees from these stats.
+    
+ - species (Species stats):
+     # of games, % of games, Wins, Win %, % of wins, Species
+     Remove quitters and escapees from these stats.
+
+ - classes: Ditto ^^^^ but for classes
+
+ - gods (God stats):
+    # of chars, % of chars, God; divide gods into XL<10, XL>=10
+
+    For Trog: note number of berserkers.
+    For Makhleb, Lugonu, Xom, note # of CK.
+    For Yredelemnul, Beogh, Zin, note # of priests
+    For TSO, note # of paladins
+    For Ely, note # of healers
+    For Yred, note # of DK
+
+    Likewise stats for winners.
+ 
+ - runes (Rune stats):
+    All games:
+    # of times found, % of all runes, Rune (where)
+
+    Winning games:
+    # of times found, % of all runes, Rune (where)
+
+    Branch stats:
+    # entries, % of entries, # of deaths, death %, % of all deaths, Branch
+    
+ - specie_class (Combo stats?):
+    Count, %, Win, Win%, % of all wins, Character
+ 
+ - per_day (line chart of activity):
+    Table showing activity per day:
+       games ended, distinct players, wins, winners
+
+    Line chart of activity, showing # of players, # of games, # of wins
+    per day.
+
  - per player page:
      - All wins
      - All streaks
