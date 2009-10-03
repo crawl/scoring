@@ -2,15 +2,15 @@
    import loaddb, query, crawl_utils, html, re
    c = attributes['cursor']
 
-   death_causes = query.get_death_causes(c)
+   killers = query.top_killers(c)
 
    r_ghost = re.compile(r'^player ghost')
-   for c in death_causes:
+   for c in killers:
      if c[0].startswith('player ghost'):
        c[0] = r_ghost.sub('<a href="gkills.html">player ghost</a>', c[0])
 
    table = html.table_text([ 'Killer', '%', 'Kills', 'Last Victim' ],
-                           death_causes, width='100')
+                           killers, width='100')
 
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"

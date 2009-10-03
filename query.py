@@ -133,7 +133,7 @@ def calc_perc(num, den):
   if den <= 0:
     return 0.0
   else:
-    return num * 100.0 / den
+    return int(num) * 100.0 / int(den)
 
 def calc_perc_pretty(num, den):
   return "%.2f" % calc_perc(num, den)
@@ -306,7 +306,7 @@ def find_streak_breaker(c, sid):
 def player_streaks(c, player):
   """Returns a list of streaks for a player, ordered by longest streak
 first."""
-  logf = ",".join(["g." + x for x in loaddb.LOG_DB_COLUMNS])
+  logf = logfields_prefixed('g.')
   sgames = query_rows(c,
                       "SELECT s.id, s.ngames, s.start_game_time, " +
                       "s.end_game_time, s.active, " + logf +
@@ -378,3 +378,22 @@ player_species_highscores = curry_player_top_thing('top_species_scores',
                                                    'raceabbr')
 player_class_highscores = curry_player_top_thing('top_class_scores',
                                                  'clsabbr')
+
+def logfields_prefixed(prefix):
+  return ",".join([prefix + x for x in loaddb.LOG_DB_COLUMNS])
+
+def top_killers(c):
+  deaths = query_first(c, '''SELECT SUM(kills) FROM top_killers''')
+  logf = logfields_prefixed('k.')
+  rows = query_rows(c,
+                    "SELECT t.ckiller, t.kills, " +
+                    logf +
+                    ''' FROM top_killers t, killer_recent_kills k
+                       WHERE t.ckiller = k.ckiller
+                         AND t.ckiller NOT IN ('leaving', 'quitting', 'winning')
+                       ORDER BY t.kills DESC, t.ckiller''')
+  def fix_killer_row(r):
+    perc = calc_perc_pretty(r[1], deaths) + '%'
+    g = row_to_xdict(r[2:])
+    return [r[0], perc, r[1], linked_text(g, morgue_link, g['name'])]
+  return [fix_killer_row(x) for x in rows]

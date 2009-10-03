@@ -328,6 +328,28 @@ def update_combo_scores(c, g):
   update_topscore_table_for(c, g, top_score_for_class,
                             'top_class_scores', 'cls')
 
+@DBMemoizer
+def ckiller_record_exists(c, ckiller):
+  return query_first_def(c, False,
+                         '''SELECT id FROM killer_recent_kills
+                                     WHERE ckiller = %s''',
+                         ckiller)
+
+def update_killer_stats(c, g):
+  ckiller = g['ckiller']
+  query_do(c, '''INSERT INTO top_killers
+                             (ckiller, kills, most_recent_victim)
+                      VALUES (%s, %s, %s)
+                 ON DUPLICATE KEY UPDATE kills = kills + 1,
+                                         most_recent_victim = %s''',
+           ckiller, 1, g['name'], g['name'])
+  if ckiller_record_exists(c, ckiller):
+    query_do(c, '''DELETE FROM killer_recent_kills WHERE ckiller = %s''',
+             ckiller)
+  else:
+    ckiller_record_exists.set_key(True, ckiller)
+  insert_game(c, g, 'killer_recent_kills')
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
@@ -342,3 +364,5 @@ def act_on_logfile_line(c, this_game):
   update_player_stats(c, this_game)
 
   update_combo_scores(c, this_game)
+
+  update_killer_stats(c, this_game)

@@ -126,6 +126,9 @@ class Memoizer (object):
     except KeyError:
       pass
 
+  def set_key(self, value, *args):
+    self.cache[args] = value
+
   def record(self, args, value):
     self.cache[self.extractor(args)] = value
 

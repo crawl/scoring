@@ -63,6 +63,7 @@ PAGE_DEFS = [
   { 'name': 'top-combo-scores' },
   { 'name': 'combo-scoreboard' },
   { 'name': 'all-players' },
+  { 'name': 'killers' },
 ]
 
 if __name__ == '__main__':

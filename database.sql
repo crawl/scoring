@@ -217,7 +217,7 @@ CREATE UNIQUE INDEX player_cstats_name_char
 CREATE INDEX player_char_stats_name_cab ON player_char_stats (name, charabbr);
 
 CREATE TABLE top_killers (
-  ckiller VARCHAR(100),
+  ckiller VARCHAR(100) UNIQUE PRIMARY KEY,
   kills BIGINT DEFAULT 0,
   most_recent_victim VARCHAR(20)
 );

@@ -320,20 +320,20 @@ def xlog_set_killer_group(d):
   if not killer:
     ktyp = d.get('ktyp')
     if ktyp:
-      d['kgroup'] = ktyp
+      d['ckiller'] = ktyp
     return
 
   m = R_GHOST_NAME.search(killer)
   if m:
-    d['kgroup'] = 'player ghost'
+    d['ckiller'] = 'player ghost'
     return
 
   m = R_HYDRA.search(killer)
   if m:
-    d['kgroup'] = 'hydra'
+    d['ckiller'] = m.group(1)
     return
-
-  d['kgroup'] = killer
+  killer = R_ARTICLE.sub('', killer)
+  d['ckiller'] = killer
 
 def xlog_milestone_fixup(d):
   for field in [x for x in ['lv', 'uid'] if d.has_key(x)]:
@@ -374,6 +374,9 @@ associated with the same values in the target dictionary."""
     if ref[key] != target.get(key):
       return False
   return True
+
+def canonical_killer(g):
+  raw = g.get('killer') or g.get('ktyp')
 
 def xlog_dict(logline):
   d = parse_logline(logline.strip())
@@ -445,7 +448,6 @@ RAW_LOG_DB_MAPPINGS = [
   'ktyp',
   'killer',
   'ckiller',
-  'kgroup',
   'dam',
   'piety',
   'pen',
@@ -515,7 +517,8 @@ R_KILL_UNIQUE = re.compile(r'^killed (.*)\.$')
 R_MILE_UNIQ = re.compile(r'^(\w+) (.*)\.$')
 R_MILE_GHOST = re.compile(r'^(\w+) the ghost of (\S+)')
 R_RUNE = re.compile(r"found an? (.*) rune")
-R_HYDRA = re.compile(r'^an? (\w+)-headed hydra')
+R_HYDRA = re.compile(r'^an? (?:\w+)-headed (hydra.*)')
+R_ARTICLE = re.compile(r'an? ')
 R_PLACE_DEPTH = re.compile(r'^\w+:(\d+)')
 R_GOD_WORSHIP = re.compile(r'^became a worshipper of (.*)\.$')
 R_GOD_MOLLIFY = re.compile(r'^mollified (.*)\.$')
@@ -618,7 +621,7 @@ dbfield_to_sqltype = {
 	'urune':sql_int,
 	'ktyp':char,
 	'killer':char,
-        'kgroup' : char,
+        'ckiller': char,
         'kaux':char,
 	'dam':sql_int,
 	'piety':sql_int,
