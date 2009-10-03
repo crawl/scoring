@@ -15,6 +15,11 @@ h1 {
   margin-bottom: 3px;
 }
 
+h2 {
+  border-bottom: 2px solid #eee;
+  margin-bottom: 7px;
+} 
+
 h3 {
   margin-top: 10px;
   margin-bottom: 3px;
