@@ -66,6 +66,8 @@ PAGE_DEFS = [
   { 'name': 'killers' },
   { 'name': 'gkills' },
   { 'name': 'winners' },
+  { 'name': 'fastest-wins-turns' },
+  { 'name': 'fastest-wins-time' }
 ]
 
 if __name__ == '__main__':

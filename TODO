@@ -4,10 +4,6 @@ New scoring script ideas:
 - Most recent allruners, most recent ziggurat:27 visits.
 
 General thoughts:
- - winners:
-     - nwins, name, games, win%, urune max, top score, average score.
- - escapes_turns:
- - escapes_score
  - streaks (overall best streaks)
  - clevels (Character level stats)
  - species (Species stats)

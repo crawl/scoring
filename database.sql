@@ -97,6 +97,9 @@ CREATE TABLE wins AS SELECT * FROM player_best_games;
 ALTER TABLE wins ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE wins CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 CREATE INDEX wins_name ON wins (name);
+CREATE INDEX wins_dur ON wins (dur);
+CREATE INDEX wins_turn ON wins (turn);
+CREATE INDEX wins_sc ON wins (sc);
 
 CREATE TABLE all_recent_games AS SELECT * FROM player_best_games;
 ALTER TABLE all_recent_games ADD CONSTRAINT PRIMARY KEY (id);
