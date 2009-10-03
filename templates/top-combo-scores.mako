@@ -23,6 +23,10 @@
 
           <h2>Top Combo Scores</h2>
 
+          <div class="fineprint" style="margin-bottom: 4px">
+            The best scoring games for each character combo.
+          </div>
+
           ${html.top_combo_scores(top_combo_scores)}
         </div>
       </div>

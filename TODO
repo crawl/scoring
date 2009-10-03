@@ -4,10 +4,6 @@ New scoring script ideas:
 - Most recent allruners, most recent ziggurat:27 visits.
 
 General thoughts:
- - all_players: List of all players (alphabetic) with:
-    - games (won), best XL, best sc, av score, first game, most recent game
-    
- - players_best_score: List of players (best score)
  - per player page:
      - Ten best games.
      - Ten most recent games.
