@@ -66,6 +66,7 @@ CREATE TABLE player_best_games (
   ktyp VARCHAR(20),
   killer VARCHAR(100),
   kgroup VARCHAR(100),
+  ckiller VARCHAR(100),
   kaux VARCHAR(255),
   -- Kills may be null.
   kills INT,
@@ -81,8 +82,24 @@ CREATE TABLE player_best_games (
   nrune INT DEFAULT 0,
   urune INT DEFAULT 0
 );
-
 CREATE INDEX player_best_game_pscores ON player_best_games (name, sc);
+
+CREATE TABLE wins AS SELECT * FROM player_best_games;
+ALTER TABLE wins ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE wins CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX wins_name ON wins (name);
+
+CREATE TABLE all_recent_games AS SELECT * FROM player_best_games;
+ALTER TABLE all_recent_games ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE all_recent_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX all_recent_games_end
+ON all_recent_games (end_time DESC);
+
+CREATE TABLE player_recent_games AS SELECT * FROM player_best_games;
+ALTER TABLE player_recent_games ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE player_recent_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+CREATE INDEX player_recent_games_name_end
+ON player_recent_games (name, end_time DESC);
 
 -- Table for the top games on the servers. How many games we keep here
 -- is controlled by the Python code.
@@ -155,7 +172,7 @@ CREATE TABLE streaks (
 
 -- Player statistics
 CREATE TABLE players (
-  name VARCHAR(20) PRIMARY KEY,
+  name VARCHAR(20) UNIQUE PRIMARY KEY,
   games_played INT DEFAULT 0,
   games_won INT DEFAULT 0,
   total_score BIGINT,
@@ -170,3 +187,35 @@ CREATE TABLE players (
   current_combo CHAR(4)
   );
 CREATE INDEX player_total_scores ON players (name, total_score);
+
+-- Statistics on the games the player has played.
+CREATE TABLE player_char_stats (
+  name VARCHAR(20),
+  charabbr CHAR(4),
+  games_played INT DEFAULT 0,
+  best_xl INT DEFAULT 0,
+  wins INT DEFAULT 0
+);
+CREATE UNIQUE INDEX player_cstats_name_char
+                 ON player_char_stats (name, charabbr);
+CREATE INDEX player_char_stats_name_cab ON player_char_stats (name, charabbr);
+
+CREATE TABLE top_killers (
+  ckiller VARCHAR(100),
+  kills BIGINT DEFAULT 0,
+  most_recent_victim VARCHAR(20)
+);
+CREATE INDEX top_killers_kills ON top_killers (kills DESC, ckiller);
+
+CREATE TABLE killer_recent_kills AS SELECT * FROM player_best_games;
+ALTER TABLE killer_recent_kills ADD CONSTRAINT PRIMARY KEY (id);
+ALTER TABLE killer_recent_kills CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE killer_recent_kills Add CONSTRAINT UNIQUE (ckiller);
+CREATE INDEX killer_recent_kills_ckiller ON killer_recent_kills (ckiller);
+
+CREATE TABLE ghost_victims (
+  ghost VARCHAR(100),
+  victim VARCHAR(20)
+);
+CREATE INDEX ghost_victims_ghost ON ghost_victims (ghost);
+CREATE INDEX ghost_victims_ghost ON ghost_victims (victim);

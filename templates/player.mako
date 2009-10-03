@@ -4,51 +4,7 @@
    c = attributes['cursor']
    player = attributes['player']
 
-   stats = query.get_player_stats(c, player)
-
-   won_games = query.find_games(c, player = player, killertype = 'winning',
-                                sort_max = 'end_time', limit=None)
-   recent_games = query.find_games(c, player = player, sort_max = 'end_time',
-                                   limit = 15)
-
-   streak_games = query.get_player_best_streak_games(c, player)
-
-   won_gods = [x or 'No God' for x in query.get_player_won_gods(c, player)]
-
-   audit = query.audit_trail_player_points(c, player)
-   audit_team = query.audit_trail_player_team_points(c, player)
-
    whereis = html.whereis(False, player)
-
-   def point_breakdown(audit):
-     if not audit:
-       return '<tr><td colspan="3">No points</td></tr>'
-     text = ''
-     total = 0
-     n = 0
-     for entry in audit:
-       cls = entry[0] and 'point_temp' or 'point_perm'
-       text += '<tr class="%s">' % cls
-       text += '''<td class="numeric">%s</td>
-                  <td class="numeric">%s</td>
-                  <td>%s</td>''' % \
-               (entry[3], entry[2], entry[1])
-       text += '</tr>\n'
-       n += entry[3]
-       total += entry[2]
-     text += '''<tr><th class="numeric">%d</th>
-                    <th class="numeric">%d</th>
-                    <th>Total</th>''' % (n, total)
-     return text
-
-   uniq_slain = query.player_uniques_killed(c, player)
-   uniq_unslain = query.uniques_unkilled(uniq_slain)
-   banners = html.banner_images(query.get_player_banners(c, player))
-
-   combo_highscores = html.player_combo_scores(c, player)
-   species_highscores = html.player_species_scores(c, player)
-   class_highscores = html.player_class_scores(c, player)
-   asterisk = """<p class='fineprint'>* Winning Game</p>"""
  %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -64,41 +20,10 @@
     <div class="page bannered">
       <%include file="toplink.mako"/>
 
-      <div id="player-banners">
-        ${html.banner_div(banners)}
-      </div>
-
-      <div class="page_content content-bannered">
-        <div class="heading_left">
-          <h1>Player information for ${player}</h1>
-        </div>
-
-        <hr>
+      <div class="page_content">
+        <h2>Player: ${player}</h2>
 
         <div class="content">
-          <div class="player_clan">
-            <span class="inline_heading">Clan: </span>
-            ${html.clan_affiliation(c, player)}
-          </div>
-
-          <div class="player_status">
-            <table class="bordered">
-              <tr>
-                <th>Tourney points total</th>
-                <td class="numeric">${stats['points']}</td>
-              </tr>
-
-              <tr>
-                <th>Tourney team points</th>
-                <td class="numeric">${stats['team_points']}</td>
-              </tr>
-              <tr>
-                <th>Games won / played</th>
-                <td>${stats['won']} / ${stats['played']}
-                  (${stats['win_perc']})</td>
-              </tr>
-            </table>
-          </div>
 
           %if whereis:
           <div class="game_table">

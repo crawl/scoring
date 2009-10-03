@@ -291,3 +291,6 @@ def top_class_scorers(c):
 
 def top_combo_scorers(c):
   return top_thing_scorers(c, 'top_combo_scores', 'charabbr')
+
+def find_all_players(c):
+  return query_first_col(c, '''SELECT name FROM players''')

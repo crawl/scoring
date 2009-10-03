@@ -5,18 +5,25 @@ New scoring script ideas:
 
 General thoughts:
  - per player page:
-     - Ten best games.
+     - All wins
+     - All streaks
+     - Ten topscoring games.
      - Ten most recent games.
-     Break up of:
-     - Highest CL.
+
+     Break up by race and class of:
+     - Highest CL
      - Escapes with orb.
      - Games played
-     Break up by race and class.
 
- - top_killers
- - gkills
- - winners
- - escapes_turns
+ - top_killers:
+     - number of kills, kill %,
+ - gkills:
+     - Ghost with the most kills.
+ - winners:
+     - nwins, name, games, win%, urune max, top score, average score.
+
+ - escapes_turns:
+     -
  - escapes_score
  - streaks
  - clevels (Character level stats)
@@ -28,4 +35,3 @@ General thoughts:
  - specie_class_table (Whuh?)
  - per_day (line chart of activity)
  - recent (recent wins, recent ended games)
- 

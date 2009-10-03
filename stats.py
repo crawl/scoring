@@ -17,7 +17,9 @@ from loaddb import query_first_def
 import nemchoice
 
 TOP_N = 1000
-MAX_PLAYER_BEST_GAMES = 10
+MAX_PLAYER_BEST_GAMES = 15
+MAX_PLAYER_RECENT_GAMES = 15
+MAX_ALL_RECENT_GAMES = 100
 
 # So there are a few problems we have to solve:
 # 1. Intercepting new logfile events
@@ -114,6 +116,36 @@ def player_first_game_exists(c, player):
                          '''SELECT id FROM player_first_games
                                 WHERE name = %s''', player)
 
+@DBMemoizer
+def player_recent_game_count(c, player):
+  return query_first(c, '''SELECT COUNT(*) FROM player_recent_games
+                                          WHERE name = %s''',
+                     player)
+
+@DBMemoizer
+def all_recent_game_count(c):
+  return query_first(c, '''SELECT COUNT(*) FROM all_recent_games''')
+
+def update_all_recent_games(c, g):
+  if all_recent_game_count(c) >= MAX_PLAYER_RECENT_GAMES:
+    query_do(c, '''DELETE FROM all_recent_games WHERE id = %s''',
+             query_first(c, '''SELECT id FROM all_recent_games
+                                     ORDER BY id LIMIT 1'''))
+  else:
+    all_recent_game_count.flush()
+  insert_game(c, g, 'all_recent_games')
+
+def update_player_recent_games(c, g):
+  player = g['name']
+  if player_recent_game_count(c, player) >= MAX_PLAYER_RECENT_GAMES:
+    query_do(c, '''DELETE FROM player_recent_games WHERE id = %s''',
+             query_first(c, '''SELECT id FROM player_recent_games
+                                        WHERE name = %s ORDER BY id LIMIT 1''',
+                         player))
+  else:
+    player_recent_game_count.flush_key(c, player)
+  insert_game(c, g, 'player_recent_games')
+
 def update_player_best_games(c, g):
   player = g['name']
   if player_best_game_count(c, player) >= MAX_PLAYER_BEST_GAMES:
@@ -128,6 +160,19 @@ def update_player_best_games(c, g):
   else:
     insert_game(c, g, 'player_best_games')
     player_best_game_count.flush_key(player)
+
+def update_player_char_stats(c, g):
+  winc = game_is_win(g) and 1 or 0
+  query_do(c, '''INSERT INTO player_char_stats
+                             (name, charabbr, games_played, best_xl, wins)
+                      VALUES (%s, %s, %s, %s, %s)
+                 ON DUPLICATE KEY UPDATE games_played = games_played + 1,
+                                         best_xl = CASE WHEN best_xl < %s
+                                                        THEN %s
+                                                        ELSE best_xl END,
+                                         wins = wins + %s''',
+           g['name'], g['charabbr'], 1, g['xl'], winc,
+           g['xl'], g['xl'], winc)
 
 def update_player_first_game(c, g):
   player = g['name']
@@ -167,6 +212,9 @@ def update_player_stats(c, g):
            winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'], g['end_time'])
 
   update_player_best_games(c, g)
+  update_player_char_stats(c, g)
+  update_player_recent_games(c, g)
+  update_all_recent_games(c, g)
   update_player_first_game(c, g)
   update_player_last_game(c, g)
 

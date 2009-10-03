@@ -41,12 +41,14 @@ def tourney_overview(c):
 def player_pages(c):
   for p in PAGE_DEFS:
     render(c, p['name'])
+  for p in query.find_all_players(c):
+    player_page(c, p)
 
 def player_page(c, player):
   info("Updating player page for %s" % player)
-  #render(c, 'player',
-  #       dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
-  #       pars = { 'player' : player })
+  render(c, 'player',
+         dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
+         pars = { 'player' : player })
 
 # Update tourney overview every 5 mins.
 INTERVAL = crawl_utils.UPDATE_INTERVAL
@@ -61,7 +63,7 @@ PAGE_DEFS = [
   { 'name': 'top-combo-scores' },
   { 'name': 'combo-scoreboard' },
   { 'name': 'all-players' },
-  ]
+]
 
 if __name__ == '__main__':
   db = loaddb.connect_db()
