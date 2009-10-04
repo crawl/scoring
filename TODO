@@ -1,9 +1,14 @@
 New scoring script ideas:
 -------------------------
-- taildb rig up.
- 
+ - per_day (line chart of activity):
+    Table showing activity per day:
+       games ended, distinct players, wins, winners
+
+    Line chart of activity, showing # of players, # of games, # of wins
+    per day.
+
 Later
-------
+-----
 
  - clevels (Character level stats):
      # of games ended at XL, % of games ended at XL, XL
@@ -44,13 +49,6 @@ Later
  - specie_class (Combo stats?):
     Count, %, Win, Win%, % of all wins, Character
  
- - per_day (line chart of activity):
-    Table showing activity per day:
-       games ended, distinct players, wins, winners
-
-    Line chart of activity, showing # of players, # of games, # of wins
-    per day.
-
  - per player page:
      - All wins
      - All streaks

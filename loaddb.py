@@ -17,7 +17,7 @@ oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 OPT, ARGS = oparser.parse_args()
 
 # Limit rows read to so many for testing.
-LIMIT_ROWS = 30000
+LIMIT_ROWS = 0
 
 # Start and end of the tournament, UTC.
 START_TIME = '20090801'
@@ -921,7 +921,7 @@ def process_xlog(c, filename, offset, d, flambda):
       flambda(listener)(cursor, d)
     # Update the offsets table.
     update_xlog_offset(c, filename, offset)
-  wrap_transaction(do_xlogline)(cursor)
+  wrap_transaction(do_xlogline)(c)
 
 def process_log(c, filename, offset, d):
   """Processes a logfile record for scoring purposes."""

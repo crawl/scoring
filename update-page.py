@@ -50,7 +50,6 @@ def player_page(c, player):
          dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
          pars = { 'player' : player })
 
-# Update tourney overview every 5 mins.
 INTERVAL = crawl_utils.UPDATE_INTERVAL
 TIMER = [ loaddb.define_timer( INTERVAL, scoring_overview ),
           loaddb.define_timer( INTERVAL, player_pages ) ]

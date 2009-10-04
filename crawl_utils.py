@@ -11,7 +11,7 @@ UPDATE_INTERVAL = 7 * 60
 
 LOCK = None
 BASEDIR = '/home/snark'
-LOCKFILE = BASEDIR + '/tourney-py.lock'
+LOCKFILE = BASEDIR + '/scoring.lock'
 SCORE_FILE_DIR = 'scoring'
 PLAYER_BASE = 'players'
 PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
@@ -36,7 +36,6 @@ MKDIRS = [ SCORE_FILE_DIR, PLAYER_FILE_DIR ]
 for d in MKDIRS:
   if not os.path.exists(d):
     os.makedirs(d)
-
 
 def write_taildb_stop_request():
   f = open(TAILDB_STOP_REQUEST_FILE, 'w')

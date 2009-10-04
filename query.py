@@ -511,6 +511,7 @@ def youngest_rune_finds(c, limit=6):
                           ORDER BY xl, rune_time LIMIT %s''', limit)
 
 def best_ziggurats(c, limit=6):
-  return query_rows(c, '''SELECT player, place, zig_time
+  return [list(r) for r in
+          query_rows(c, '''SELECT player, place, zig_time
                             FROM ziggurats
-                          ORDER BY deepest DESC, zig_time DESC''')
+                          ORDER BY deepest DESC, zig_time DESC''')]

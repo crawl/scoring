@@ -1,5 +1,5 @@
 <%
-   import query, loaddb, html, time, nemchoice
+   import query, loaddb, html, time
    c = attributes['cursor']
 
    title = "CAO/CDO Scoring Overview"

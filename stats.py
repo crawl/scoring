@@ -9,12 +9,9 @@ from logging import debug, info, warn, error
 import crawl_utils
 from crawl_utils import DBMemoizer
 import crawl
-import uniq
 
 from loaddb import query_do, query_first, query_first_col, wrap_transaction
 from loaddb import query_first_def, game_is_win, query_row
-
-import nemchoice
 
 TOP_N = 1000
 MAX_PLAYER_BEST_GAMES = 15
@@ -53,14 +50,7 @@ class OutlineListener (loaddb.CrawlEventListener):
     finally:
       cursor.close()
 
-class OutlineTimer (loaddb.CrawlTimerListener):
-  def run(self, cursor, elapsed):
-    update_player_scores(cursor)
-
 LISTENER = [ OutlineListener() ]
-
-# Update player scores every so often.
-TIMER = [ ( crawl_utils.UPDATE_INTERVAL, OutlineTimer() ) ]
 
 @DBMemoizer
 def low_xl_rune_count(c):
@@ -148,7 +138,7 @@ def add_ziggurat_milestone(c, g):
     if ziggurat_entry_count(c) >= MAX_ZIGGURAT_VISITS:
       row = ziggurat_row_inferior_to(c, depth)
       if row:
-        query_do('''DELETE FROM ziggurats WHERE id = %s''', row)
+        query_do(c, '''DELETE FROM ziggurats WHERE id = %s''', row)
         ziggurat_row_inferior_to.flush_key(depth)
         insert()
     else:

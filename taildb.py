@@ -44,13 +44,15 @@ def tail_logfiles(logs, milestones, interval=60):
     db.close()
 
 if __name__ == '__main__':
-  if crawl_utils.taildb_stop_requested():
-    print("""The taildb sentinel %s exists. The Nemelex' Choice script may be active.""" 
-          % crawl_utils.TAILDB_STOP_REQUEST_FILE)
-    print ("""If you're sure it is not, please remove the file and restart taildb.py""")
-    sys.exit(1)
-  logging.basicConfig(level=logging.DEBUG,
-                      filename = (crawl_utils.BASEDIR + '/taildb.log'))
+  daemon = "-n" not in sys.argv
+
+  if daemon:
+    logging.basicConfig(level=logging.DEBUG,
+                        filename = (crawl_utils.BASEDIR + '/taildb.log'))
+  else:
+    logging.basicConfig(level=logging.DEBUG)
+
   loaddb.load_extensions()
-  crawl_utils.daemonize()
+  if daemon:
+    crawl_utils.daemonize()
   tail_logfiles( loaddb.LOGS, loaddb.MILESTONES, 30 )
