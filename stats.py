@@ -118,7 +118,7 @@ def add_ziggurat_milestone(c, g):
   if mtype == 'zig.exit':
     depth += 1
   player = g['name']
-  deepest = player_ziggurat_deepest(c, g['name'])
+  deepest = player_ziggurat_deepest(c, player)
 
   def insert():
     query_do(c,
@@ -126,6 +126,7 @@ def add_ziggurat_milestone(c, g):
                                        start_time)
                                VALUES (%s, %s, %s, %s, %s)''',
              player, depth, place, g['time'], g['start'])
+    player_ziggurat_deepest.flush_key(player)
 
   if deepest:
     if depth >= deepest:
