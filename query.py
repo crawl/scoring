@@ -386,10 +386,11 @@ first."""
             player)
   return extract_streaks(c, q, max_streaks = max_streaks)
 
-def player_recent_games(c, player):
+def player_recent_games(c, player, limit=15):
   return find_games(c, 'player_recent_games',
                     sort_max = 'id',
-                    name = player)
+                    name = player,
+                    limit = limit)
 
 def player_top_thing_scores(c, player, table, label):
   return [(linked_text(g, morgue_link, g[label])
