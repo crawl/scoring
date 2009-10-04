@@ -297,7 +297,7 @@ def find_all_players(c):
   return query_first_col(c, '''SELECT name FROM players''')
 
 def player_wins(c, player):
-  return find_games(c, 'wins', name = player, sort_min = 'id')
+  return find_games(c, 'wins', name = player, sort_min = 'end_time')
 
 def find_streak_breaker(c, sid):
   return row_to_xdict(
@@ -388,7 +388,7 @@ first."""
 
 def player_recent_games(c, player, limit=15):
   return find_games(c, 'player_recent_games',
-                    sort_max = 'id',
+                    sort_max = 'end_time',
                     name = player,
                     limit = limit)
 
@@ -493,10 +493,10 @@ def get_fastest_turn_player_games(c, limit=5):
   return find_games(c, 'wins', sort_min='turn', limit=limit)
 
 def recent_wins(c, limit=5):
-  return find_games(c, 'wins', sort_max='id', limit=limit)
+  return find_games(c, 'wins', sort_max='end_time', limit=limit)
 
 def recent_allrune_wins(c, limit=5):
-  return find_games(c, 'wins', urune=15, sort_max='id', limit=limit)
+  return find_games(c, 'wins', urune=15, sort_max='end_time', limit=limit)
 
 def most_pacific_wins(c, limit=5):
   return xdict_rows(
