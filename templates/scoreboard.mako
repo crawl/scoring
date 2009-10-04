@@ -17,7 +17,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <title>Scoreboard</title>
-    <link rel="stylesheet" type="text/css" href="tourney-score.css">
+    <link rel="stylesheet" type="text/css" href="score.css">
   </head>
 
   <body class="page_back">

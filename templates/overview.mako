@@ -15,7 +15,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <title>${title}</title>
-    <link rel="stylesheet" type="text/css" href="tourney-score.css">
+    <link rel="stylesheet" type="text/css" href="score.css">
   </head>
   <body class="page_back">
     <div class="page">
@@ -60,12 +60,12 @@
           <div class="row">
             <div>
 	          <h3>Best Streaks</h3>
-              ${html.all_streaks_table(streaks[:9])}
+              ${html.all_streaks_table(streaks[:10])}
             </div>
 
             <div>
               <h3>Active Streaks</h3>
-              ${html.all_streaks_table(active_streaks[:9])}
+              ${html.all_streaks_table(active_streaks[:10])}
             </div>
           </div>
 

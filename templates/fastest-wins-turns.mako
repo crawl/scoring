@@ -12,7 +12,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <title>The ${n} Fastest Wins (turncount)</title>
-    <link rel="stylesheet" type="text/css" href="tourney-score.css">
+    <link rel="stylesheet" type="text/css" href="score.css">
   </head>
 
   <body class="page_back">
