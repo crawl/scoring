@@ -559,7 +559,8 @@ def fixup_winners(winners):
 
 def fixup_month(c, month):
   mwin = month['winners'].items()
-  month['players'] = query_first(c, '''SELECT COUNT(*) FROM date_players
+  month['players'] = query_first(c, '''SELECT COUNT(DISTINCT player)
+                                        FROM date_players
                                        WHERE which_month = %s''',
                                  month['month'].replace('-', ''))
   def sort_winners(a, b):
