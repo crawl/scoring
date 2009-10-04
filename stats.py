@@ -12,6 +12,7 @@ import crawl
 
 from loaddb import query_do, query_first, query_first_col, wrap_transaction
 from loaddb import query_first_def, game_is_win, query_row
+from query import count_players_per_day, winners_for_day
 
 TOP_N = 1000
 MAX_PLAYER_BEST_GAMES = 15
@@ -443,6 +444,32 @@ def update_gkills(c, g):
                '''INSERT INTO ghost_victims (ghost, victim) VALUES (%s, %s)''',
                ghost, g['name'])
 
+def update_per_day_stats(c, g):
+  # Grab just the date portion.
+  edate = g['end_time'][:8]
+  winc = game_is_win(g) and 1 or 0
+
+  count_players_per_day.flush_key(edate)
+  if winc:
+    winners_for_day.flush_key(edate)
+
+  query_do(c, '''INSERT INTO per_day_stats (which_day, games_ended,
+                                            games_won)
+                                    VALUES (%s, %s, %s)
+                        ON DUPLICATE KEY UPDATE
+                                     games_ended = games_ended + 1,
+                                     games_won = games_won + %s''',
+           edate, 1, winc, winc)
+
+  player = g['name']
+  query_do(c, '''INSERT INTO date_players (which_day, which_month, player,
+                                           games, wins)
+                                   VALUES (%s, %s, %s, %s, %s)
+                        ON DUPLICATE KEY UPDATE
+                                        games = games + 1,
+                                        wins = wins + %s''',
+           edate, edate[:6], player, 1, winc, winc)
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
@@ -461,3 +488,5 @@ def act_on_logfile_line(c, this_game):
   update_killer_stats(c, this_game)
 
   update_gkills(c, this_game)
+
+  update_per_day_stats(c, this_game)

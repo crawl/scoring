@@ -9,6 +9,8 @@ locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 # Update every so often (seconds)
 UPDATE_INTERVAL = 7 * 60
 
+LOGFORMAT = "%(asctime)s [%(levelname)s] %(message)s"
+
 LOCK = None
 BASEDIR = '/home/snark'
 LOCKFILE = BASEDIR + '/scoring.lock'

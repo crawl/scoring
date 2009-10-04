@@ -12,6 +12,7 @@ from loaddb import query_first_col, query_first_def, game_is_win
 import crawl
 import crawl_utils
 from crawl_utils import DBMemoizer, morgue_link, linked_text, human_number
+from crawl_utils import player_link
 import uniq
 import os.path
 import re
@@ -515,3 +516,105 @@ def best_ziggurats(c, limit=6):
           query_rows(c, '''SELECT player, place, zig_time
                             FROM ziggurats
                           ORDER BY deepest DESC, zig_time DESC''')]
+
+@DBMemoizer
+def count_players_per_day(c, day):
+  return query_first(c,
+                     '''SELECT COUNT(*) FROM date_players
+                                       WHERE which_day = %s''',
+                     day)
+
+@DBMemoizer
+def winners_for_day(c, day):
+  return query_rows(c,
+                    '''SELECT player, wins FROM date_players
+                        WHERE which_day = %s AND wins > 0
+                        ORDER BY wins DESC, player''',
+                    day)
+
+def per_day_stats(c, day, fullday, games_ended, games_won):
+  distinct_players = count_players_per_day(c, day)
+  winners = winners_for_day(c, day)
+  return {'day': fullday.strftime('%Y-%m-%d'),
+          'games': games_ended,
+          'players': distinct_players,
+          'wins': games_won,
+          'winners': winners}
+
+def string_date(d):
+  assert(isinstance(d, datetime))
+  return d.strftime('%Y%m%d')
+
+def counted_thing(thing, n):
+  if n == 1:
+    return thing
+  else:
+    return "%s (%d)" % (thing, n)
+
+def fixup_winners(winners):
+  def plink(p):
+    return linked_text(p, player_link)
+  return ", ".join([counted_thing(plink(x[0]), x[1]) for x in winners])
+
+def fixup_month(c, month):
+  mwin = month['winners'].items()
+  month['players'] = query_first(c, '''SELECT COUNT(*) FROM date_players
+                                       WHERE which_month = %s''',
+                                 month['month'].replace('-', ''))
+  def sort_winners(a, b):
+    if a[1] != b[1]:
+      return int(b[1] - a[1])
+    else:
+      return (a[1] < b[1] and -1) or (a[1] > b[1] and 1) or 0
+  mwin.sort(sort_winners)
+  month['winners'] = fixup_winners(mwin)
+  return month
+
+def date_stats(c):
+  dates = query_rows(c,
+                     '''SELECT which_day, games_ended, games_won
+                         FROM per_day_stats ORDER BY which_day DESC''')
+  result = []
+
+  month = [None]
+
+  def new_month_stat(this_month):
+    return { 'month': this_month,
+             'games': 0,
+             'players': 0,
+             'wins': 0,
+             'winners': { } }
+
+  def flush_month(month):
+    if not month:
+      return
+    result.append(fixup_month(c, month))
+
+  def inc_month_stats(date, eday, stats):
+    this_month = date.strftime('%Y-%m')
+    if not month[0] or month[0]['month'] != this_month:
+      flush_month(month[0])
+      month[0] = new_month_stat(this_month)
+    m = month[0]
+    m['games'] += stats['games']
+    m['wins'] += stats['wins']
+    mwinners = m['winners']
+    for wstat in stats['winners']:
+      if not mwinners.has_key(wstat[0]):
+        mwinners[wstat[0]] = 0
+      mwinners[wstat[0]] += wstat[1]
+
+  def record_date(d):
+    date = d[0]
+    edate = string_date(d[0])
+    stats = per_day_stats(c, edate, d[0], d[1], d[2])
+    inc_month_stats(date, edate, stats)
+    stats['winners'] = fixup_winners(stats['winners'])
+    result.append(stats)
+
+  for d in dates:
+    record_date(d)
+
+  flush_month(month[0])
+
+  return result

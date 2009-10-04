@@ -17,7 +17,7 @@ oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 OPT, ARGS = oparser.parse_args()
 
 # Limit rows read to so many for testing.
-LIMIT_ROWS = 0
+LIMIT_ROWS = 35000
 
 # Start and end of the tournament, UTC.
 START_TIME = '20090801'
@@ -934,7 +934,8 @@ def process_milestone(c, filename, offset, d):
                       lambda l: l.milestone_event)
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.INFO)
+  logging.basicConfig(level=logging.INFO,
+                      format=crawl_utils.LOGFORMAT)
 
   crawl_utils.lock_or_die()
   print "Populating db (one-off) with logfiles and milestones. " + \

@@ -17,6 +17,7 @@ def render(c, page, dest=None, pars=None):
   """Given a db context and a .mako template (without the .mako extension)
   renders the template and writes it back to <page>.html in the tourney
   scoring directory. Setting dest overrides the destination filename."""
+  info("Rendering " + page)
   target = "%s/%s.html" % (crawl_utils.SCORE_FILE_DIR, dest or page)
   t = MAKO_LOOKUP.get_template(page + '.mako')
   try:
@@ -35,7 +36,6 @@ def render(c, page, dest=None, pars=None):
     # Don't rethrow.
 
 def scoring_overview(c):
-  info("Updating overview page")
   render(c, 'overview')
 
 def player_pages(c):
@@ -69,6 +69,7 @@ PAGE_DEFS = [
   { 'name': 'fastest-wins-time' },
   { 'name': 'streaks' },
   { 'name': 'recent' },
+  { 'name': 'per-day' },
 ]
 
 if __name__ == '__main__':

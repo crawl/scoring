@@ -546,3 +546,15 @@ def winner_stats(stats):
   return table_text(['Wins', 'Player', 'Games Played', 'Win %',
                      'Max Runes', 'Best Score', 'Total Score', 'Average Score'],
                     stats)
+
+def date_stats(stats):
+  def daterowcls(r):
+    return r.has_key('month') and 'date-month' or 'date-day'
+  def daterowdata(r):
+    return [r.get('day') or r.get('month'),
+            r['games'], r['players'], r['wins'], r['winners']]
+  return table_text(['Date', 'Games', 'Players', 'Wins', 'Winners'],
+                    stats,
+                    rowclsfn=daterowcls,
+                    rowdatafn=daterowdata,
+                    count=False)

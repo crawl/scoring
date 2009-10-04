@@ -46,11 +46,13 @@ def tail_logfiles(logs, milestones, interval=60):
 if __name__ == '__main__':
   daemon = "-n" not in sys.argv
 
+  logformat = crawl_utils.LOGFORMAT
   if daemon:
     logging.basicConfig(level=logging.DEBUG,
-                        filename = (crawl_utils.BASEDIR + '/taildb.log'))
+                        filename = (crawl_utils.BASEDIR + '/taildb.log'),
+                        format = logformat)
   else:
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format = logformat)
 
   loaddb.load_extensions()
   if daemon:

@@ -264,3 +264,19 @@ CREATE TABLE ziggurats (
   start_time DATETIME
 );
 CREATE INDEX ziggurats_time ON ziggurats (zig_time);
+
+CREATE TABLE per_day_stats (
+  which_day DATETIME UNIQUE PRIMARY KEY,
+  games_ended INT DEFAULT 0,
+  games_won INT DEFAULT 0
+);
+
+CREATE TABLE date_players (
+  which_day DATETIME,
+  which_month CHAR(6),
+  player VARCHAR(20),
+  games INT DEFAULT 0,
+  wins INT DEFAULT 0,
+  PRIMARY KEY (which_day, player)
+);
+CREATE INDEX date_players_month ON date_players (which_month);
