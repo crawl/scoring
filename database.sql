@@ -20,6 +20,8 @@ DROP TABLE IF EXISTS player_char_stats;
 DROP TABLE IF EXISTS top_killers;
 DROP TABLE IF EXISTS killer_recent_kills;
 DROP TABLE IF EXISTS ghost_victims;
+DROP TABLE IF EXISTS low_xl_rune_finds;
+DROP TABLE IF EXISTS ziggurats;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (
@@ -241,3 +243,24 @@ CREATE TABLE ghost_victims (
 );
 CREATE INDEX ghost_victims_ghost ON ghost_victims (ghost);
 CREATE INDEX ghost_victims_victim ON ghost_victims (victim);
+
+CREATE TABLE low_xl_rune_finds (
+  player VARCHAR(20),
+  start_time DATETIME,
+  rune_time DATETIME,
+  rune VARCHAR(50),
+  xl TINYINT
+);
+CREATE INDEX rune_finds_xl ON low_xl_rune_finds (xl, rune_time);
+
+-- Ziggurat visits; newer visits will overwrite older ones, unlike
+-- most other tables.
+CREATE TABLE ziggurats (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  player VARCHAR(20),
+  deepest INT,
+  place VARCHAR(20),
+  zig_time DATETIME,
+  start_time DATETIME
+);
+CREATE INDEX ziggurats_time ON ziggurats (zig_time);

@@ -498,9 +498,19 @@ def recent_allrune_wins(c, limit=5):
 
 def most_pacific_wins(c, limit=5):
   return xdict_rows(
-    query(c,
-          game_select_from('wins') +
-          # This filters all games where the statistic is unavailable.
-          """ WHERE kills > 0
-              ORDER BY kills, id LIMIT %s""",
-          limit))
+    query_rows(c,
+               game_select_from('wins') +
+               # This filters all games where the statistic is unavailable.
+               """ WHERE kills > 0
+                ORDER BY kills, id LIMIT %s""",
+               limit))
+
+def youngest_rune_finds(c, limit=6):
+  return query_rows(c, '''SELECT player, rune, xl, rune_time
+                            FROM low_xl_rune_finds
+                          ORDER BY xl, rune_time LIMIT %s''', limit)
+
+def best_ziggurats(c, limit=6):
+  return query_rows(c, '''SELECT player, place, zig_time
+                            FROM ziggurats
+                          ORDER BY deepest DESC, zig_time DESC''')

@@ -350,13 +350,13 @@ def ext_games_table(games, win=False, **pars):
 
 def combo_highscorers(c, limit=10):
   hs = query.top_combo_scorers(c)
-  return table_text( [ '&nbsp', 'Highscores', 'Player', 'Characters' ],
+  return table_text( [ 'Highscores', 'Player', 'Characters' ],
                      hs[:limit], count = True, place_column = 1 )
 
 def most_pacific_wins(c, limit=6):
   games = query.most_pacific_wins(c, limit)
-  return ext_games_table(games,
-                         columns = STOCK_WIN_COLUMNS + [('kills', 'Kills')])
+  return games_table(games,
+                     columns = STOCK_WIN_COLUMNS + [('kills', 'Kills')])
 
 def hyperlink_games(games, field):
   hyperlinks = [ crawl_utils.morgue_link(g) for g in games ]
@@ -365,7 +365,7 @@ def hyperlink_games(games, field):
   return ", ".join(text)
 
 def best_ziggurats(c):
-  ziggurats = query.get_top_ziggurats(c)
+  ziggurats = query.best_ziggurats(c)
 
   def fixup_ziggurats(zigs):
     for z in zigs:

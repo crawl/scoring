@@ -12,7 +12,7 @@ import crawl
 import uniq
 
 from loaddb import query_do, query_first, query_first_col, wrap_transaction
-from loaddb import query_first_def, game_is_win
+from loaddb import query_first_def, game_is_win, query_row
 
 import nemchoice
 
@@ -20,6 +20,8 @@ TOP_N = 1000
 MAX_PLAYER_BEST_GAMES = 15
 MAX_PLAYER_RECENT_GAMES = 15
 MAX_ALL_RECENT_GAMES = 100
+MAX_LOW_XL_RUNE_FINDS = 10
+MAX_ZIGGURAT_VISITS = 10
 
 # So there are a few problems we have to solve:
 # 1. Intercepting new logfile events
@@ -60,13 +62,102 @@ LISTENER = [ OutlineListener() ]
 # Update player scores every so often.
 TIMER = [ ( crawl_utils.UPDATE_INTERVAL, OutlineTimer() ) ]
 
-def act_on_milestone(c, this_mile):
-  """This function takes a milestone line, which is a string composed of key/
-  value pairs separated by colons, and parses it into a dictionary.
-  Then, depending on what type of milestone it is (key "type"), another
-  function may be called to finish the job on the milestone line. Milestones
-  have the same broken :: behavior as logfile lines, yay."""
-  pass
+@DBMemoizer
+def low_xl_rune_count(c):
+  return query_first(c, '''SELECT COUNT(*) FROM low_xl_rune_finds''')
+
+@DBMemoizer
+def worst_xl_rune_find(c):
+  row = query_row(c, '''SELECT xl, rune_time FROM low_xl_rune_finds
+                        ORDER BY xl DESC, rune_time DESC LIMIT 1''')
+  return (row[0], row[1])
+
+def add_rune_milestone(c, g):
+  if g['type'] != 'rune':
+    return
+  xl = g['xl']
+  rune = loaddb.extract_rune(g['milestone'])
+  if rune == 'abyssal':
+    return
+  def rinsert():
+    query_do(c,
+             '''INSERT INTO low_xl_rune_finds (player, start_time,
+                                               rune_time, rune, xl)
+                     VALUES (%s, %s, %s, %s, %s)''',
+             g['name'], g['start'], g['time'], rune, xl)
+
+  if low_xl_rune_count(c) >= MAX_LOW_XL_RUNE_FINDS:
+    worst_rune = worst_xl_rune_find(c)
+    if xl < worst_rune[0]:
+      query_do(c, '''DELETE FROM low_xl_rune_finds
+                           WHERE xl = %s AND rune_time = %s''',
+               *worst_rune)
+      rinsert()
+  else:
+    low_xl_rune_count.flush()
+    rinsert()
+
+@DBMemoizer
+def player_ziggurat_deepest(c, player):
+  return query_first_def(c, 0,
+                         '''SELECT deepest FROM ziggurats
+                              WHERE player = %s''',
+                         player)
+
+@DBMemoizer
+def ziggurat_entry_count(c):
+  return query_first(c, '''SELECT COUNT(*) FROM ziggurats''')
+
+@DBMemoizer
+def ziggurat_row_inferior_to(c, depth):
+  return query_first_def(c, 0,
+                         '''SELECT id FROM ziggurats
+                             WHERE deepest <= %s
+                          ORDER BY zig_time LIMIT 1''', depth)
+
+def add_ziggurat_milestone(c, g):
+  if not g['type'].startswith('zig'):
+    return
+
+  place = g['place']
+  mtype = g['type']
+  level = int(loaddb.R_PLACE_DEPTH.findall(place)[0])
+  depth = level * 2
+  # Leaving a ziggurat level by the exit gets more props than merely
+  # entering the level.
+  if mtype == 'zig.exit':
+    depth += 1
+  player = g['name']
+  deepest = player_ziggurat_deepest(c, g['name'])
+
+  def insert():
+    query_do(c,
+             '''INSERT INTO ziggurats (player, deepest, place, zig_time,
+                                       start_time)
+                               VALUES (%s, %s, %s, %s, %s)''',
+             player, depth, place, g['time'], g['start'])
+
+  if deepest:
+    if depth >= deepest:
+      query_do(c,
+               '''UPDATE ziggurats SET deepest = %s, place = %s,
+                                       zig_time = %s, start_time = %s
+                                 WHERE player = %s''',
+               depth, place, g['time'], g['start'], player)
+  else:
+    if ziggurat_entry_count(c) >= MAX_ZIGGURAT_VISITS:
+      row = ziggurat_row_inferior_to(c, depth)
+      if row:
+        query_do('''DELETE FROM ziggurats WHERE id = %s''', row)
+        ziggurat_row_inferior_to.flush_key(depth)
+        insert()
+    else:
+      ziggurat_entry_count.flush()
+      insert()
+
+def act_on_milestone(c, g):
+  add_rune_milestone(c, g)
+  add_ziggurat_milestone(c, g)
 
 @DBMemoizer
 def topN_count(c):

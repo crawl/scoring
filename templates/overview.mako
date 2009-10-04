@@ -29,16 +29,16 @@
         <div class="content">
           <div class="row">
             <div>
+              <h3>Top Scores</h3>
+              ${html.ext_games_table(top_scores)}
+            </div>
+            <div>
               <h3>Fastest Wins (Turn Count)</h3>
               <%include file="fastest-turn.mako"/>
             </div>
             <div>
               <h3>Fastest Wins (Real Time)</h3>
               <%include file="fastest-time.mako"/>
-            </div>
-            <div>
-              <h3>Top Scores</h3>
-              ${html.ext_games_table(top_scores)}
             </div>
           </div>
 
@@ -47,11 +47,11 @@
           <div class="row">
             <div>
               <h3>Recent Wins</h3>
-              ${html.ext_games_table(query.recent_wins(c))}
+              ${html.ext_games_table(query.recent_wins(c), win=True)}
             </div>
             <div>
 	          <h3>Recent All-Rune Wins</h3>
-              ${html.ext_games_table(query.recent_allrune_wins(c))}
+              ${html.ext_games_table(query.recent_allrune_wins(c), win=True)}
             </div>
           </div>
 

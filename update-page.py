@@ -54,7 +54,7 @@ def player_page(c, player):
 INTERVAL = crawl_utils.UPDATE_INTERVAL
 TIMER = [ loaddb.define_timer( INTERVAL, scoring_overview ),
           loaddb.define_timer( INTERVAL, player_pages ) ]
-LISTENER = [ loaddb.define_cleanup(tourney_overview),
+LISTENER = [ loaddb.define_cleanup(scoring_overview),
              loaddb.define_cleanup(player_pages) ]
 
 PAGE_DEFS = [
