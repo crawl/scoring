@@ -351,7 +351,7 @@ def ext_games_table(games, win=False, **pars):
 def combo_highscorers(c, limit=10):
   hs = query.top_combo_scorers(c)
   return table_text( [ 'Highscores', 'Player', 'Characters' ],
-                     hs[:limit], count = True, place_column = 1 )
+                     hs[:limit], count = True, place_column = 0 )
 
 def most_pacific_wins(c, limit=6):
   games = query.most_pacific_wins(c, limit)

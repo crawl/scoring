@@ -340,8 +340,8 @@ def extract_streaks(c, query, streak_filter=None, max_streaks=None):
     if bn == an:
       be = b['end']
       ae = a['end']
-      return ((ae > be and -1) or
-              (ae < be and 1) or
+      return ((ae < be and -1) or
+              (ae > be and 1) or
               0)
     else:
       return int(bn - an)
