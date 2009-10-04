@@ -34,9 +34,9 @@ def render(c, page, dest=None, pars=None):
     raise
     # Don't rethrow.
 
-def tourney_overview(c):
+def scoring_overview(c):
   info("Updating overview page")
-  #render(c, 'overview')
+  render(c, 'overview')
 
 def player_pages(c):
   for p in PAGE_DEFS:
@@ -52,7 +52,7 @@ def player_page(c, player):
 
 # Update tourney overview every 5 mins.
 INTERVAL = crawl_utils.UPDATE_INTERVAL
-TIMER = [ loaddb.define_timer( INTERVAL, tourney_overview ),
+TIMER = [ loaddb.define_timer( INTERVAL, scoring_overview ),
           loaddb.define_timer( INTERVAL, player_pages ) ]
 LISTENER = [ loaddb.define_cleanup(tourney_overview),
              loaddb.define_cleanup(player_pages) ]

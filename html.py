@@ -348,19 +348,15 @@ def ext_games_table(games, win=False, **pars):
     pars['count'] = False
   return games_table(games, columns=cols, **pars)
 
-def combo_highscorers(c):
-  hs = query.get_top_combo_highscorers(c)
-  return table_text( [ 'Player', 'Combo scores' ],
-                     hs )
+def combo_highscorers(c, limit=10):
+  hs = query.top_combo_scorers(c)
+  return table_text( [ '&nbsp', 'Highscores', 'Player', 'Characters' ],
+                     hs[:limit], count = True, place_column = 1 )
 
-def deepest_xl1_games(c):
-  games = query.get_deepest_xl1_games(c)
-  return games_table(games, first = 'place', win=False)
-
-def most_pacific_wins(c):
-  games = query.most_pacific_wins(c)
-  return games_table(games,
-                     columns = STOCK_WIN_COLUMNS + [('kills', 'Kills')])
+def most_pacific_wins(c, limit=6):
+  games = query.most_pacific_wins(c, limit)
+  return ext_games_table(games,
+                         columns = STOCK_WIN_COLUMNS + [('kills', 'Kills')])
 
 def hyperlink_games(games, field):
   hyperlinks = [ crawl_utils.morgue_link(g) for g in games ]

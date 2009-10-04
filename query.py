@@ -483,3 +483,24 @@ def winner_stats(c):
                     human_number(r[5]),
                     human_number(calc_avg_int(r[5], r[2]))])
   return results
+
+def get_fastest_time_player_games(c, limit=5):
+  return find_games(c, 'wins', sort_min='dur', limit=limit)
+
+def get_fastest_turn_player_games(c, limit=5):
+  return find_games(c, 'wins', sort_min='turn', limit=limit)
+
+def recent_wins(c, limit=5):
+  return find_games(c, 'wins', sort_max='id', limit=limit)
+
+def recent_allrune_wins(c, limit=5):
+  return find_games(c, 'wins', urune=15, sort_max='id', limit=limit)
+
+def most_pacific_wins(c, limit=5):
+  return xdict_rows(
+    query(c,
+          game_select_from('wins') +
+          # This filters all games where the statistic is unavailable.
+          """ WHERE kills > 0
+              ORDER BY kills, id LIMIT %s""",
+          limit))
