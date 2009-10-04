@@ -17,7 +17,7 @@ oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 OPT, ARGS = oparser.parse_args()
 
 # Limit rows read to so many for testing.
-LIMIT_ROWS = 35000
+LIMIT_ROWS = 0
 
 # Start and end of the tournament, UTC.
 START_TIME = '20090801'
@@ -40,7 +40,8 @@ LOGS = [ 'cao-logfile-0.4',
 MILESTONES = [ 'cao-milestones-0.5',
                'cao-milestones-0.4',
                ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
-               ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt') ]
+               ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
+               ]
 
 BLACKLIST_FILE = 'blacklist.txt'
 EXTENSION_FILE = 'modules.ext'
@@ -227,9 +228,10 @@ class Xlogfile:
       self.offset = newoffset
       # If this is a blank line, advance the offset and keep reading.
       if not line.strip():
-        return
+        continue
 
-      xdict = apply_dbtypes( xlog_dict(line) )
+      d = xlog_dict(line)
+      xdict = apply_dbtypes(d)
       if self.blacklist and self.blacklist.is_blacklisted(xdict):
         # Blacklisted games are mauled here:
         xdict['ktyp'] = 'blacklist'

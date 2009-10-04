@@ -3,6 +3,8 @@ import loaddb
 
 from crawl_utils import player_link, linked_text, human_number
 import re
+import os.path
+import matplotlib.pyplot as plt
 
 BANNER_IMAGES = \
     { 'pantheon': [ 'thepantheon.png', 'The Pantheon' ],
@@ -547,7 +549,32 @@ def winner_stats(stats):
                      'Max Runes', 'Best Score', 'Total Score', 'Average Score'],
                     stats)
 
+
+def create_image(filename, stats):
+  plt.figure(1)
+  plt.title('Activity on CAO/CDO')
+
+  rstats = list(stats)
+  rstats.reverse()
+
+  days = [x for x in rstats if x.has_key('day')]
+  games = [x['games'] for x in days]
+  wins = [x['wins'] for x in days]
+
+  lgames, = plt.plot(games, 'b-')
+  lwins, = plt.plot(wins, 'r-')
+
+  intervals = range(0, len(days), 15)
+  labels = [x['day'] for x in [days[i] for i in intervals]]
+  plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
+
+  plt.legend([lgames, lwins], ["Games Played", "Wins"])
+  plt.savefig(filename)
+
 def date_stats(stats):
+  create_image(os.path.join(crawl_utils.SCORE_FILE_DIR, 'date-stats.png'),
+               stats)
+
   def daterowcls(r):
     return r.has_key('month') and 'date-month' or 'date-day'
   def daterowdata(r):

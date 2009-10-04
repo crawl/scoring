@@ -444,7 +444,16 @@ def update_gkills(c, g):
                '''INSERT INTO ghost_victims (ghost, victim) VALUES (%s, %s)''',
                ghost, g['name'])
 
+def is_loser_ktyp(ktyp):
+  """The moron games"""
+  return ktyp in ['leaving', 'quitting']
+
 def update_per_day_stats(c, g):
+  ktyp = g['ktyp']
+  sc = g['sc']
+  if sc < 1000 and is_loser_ktyp(ktyp):
+    return
+
   # Grab just the date portion.
   edate = g['end_time'][:8]
   winc = game_is_win(g) and 1 or 0

@@ -616,5 +616,4 @@ def date_stats(c):
     record_date(d)
 
   flush_month(month[0])
-
   return result

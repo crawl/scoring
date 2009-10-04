@@ -22,6 +22,8 @@ DROP TABLE IF EXISTS killer_recent_kills;
 DROP TABLE IF EXISTS ghost_victims;
 DROP TABLE IF EXISTS low_xl_rune_finds;
 DROP TABLE IF EXISTS ziggurats;
+DROP TABLE IF EXISTS per_day_stats;
+DROP TABLE IF EXISTS date_players;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (

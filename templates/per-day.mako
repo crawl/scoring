@@ -23,6 +23,11 @@
 
           <div>
             <h2>Server Activity</h2>
+
+            <img src="date-stats.png" title="Activity Graph"
+                 alt="Server Activity Graph">
+            <br>
+                 
             ${html.date_stats(stats)}
           </div>
         </div>
