@@ -4,7 +4,7 @@
 
    game_text = \
       html.ext_games_table( query.get_fastest_turn_player_games(c),
-                        first = 'turn' )
+                            first = 'turn', count=True )
 %>
 
 ${game_text}

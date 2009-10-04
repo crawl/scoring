@@ -2,7 +2,7 @@
    import query, loaddb, html, time, nemchoice
    c = attributes['cursor']
 
-   title = "CAO/CDO Scores Overview"
+   title = "CAO/CDO Scoring Overview"
    top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=5)
 
    streaks = query.all_streaks(c)
@@ -30,7 +30,7 @@
           <div class="row">
             <div>
               <h3>Top Scores</h3>
-              ${html.ext_games_table(top_scores)}
+              ${html.ext_games_table(top_scores, count=True)}
             </div>
             <div>
               <h3>Fastest Wins (Turn Count)</h3>
