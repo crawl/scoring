@@ -295,7 +295,7 @@ def update_player_recent_games(c, g):
                                         WHERE name = %s ORDER BY id LIMIT 1''',
                          player))
   else:
-    player_recent_game_count.flush_key(c, player)
+    player_recent_game_count.flush_key(player)
   insert_game(c, g, 'player_recent_games')
 
 def update_player_best_games(c, g):
