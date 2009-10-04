@@ -4,7 +4,12 @@ import loaddb
 from crawl_utils import player_link, linked_text, human_number
 import re
 import os.path
-import matplotlib.pyplot as plt
+
+try:
+  import matplotlib.pyplot as plt
+  MATPLOT = True
+except:
+  MATPLOT = False
 
 BANNER_IMAGES = \
     { 'pantheon': [ 'thepantheon.png', 'The Pantheon' ],
@@ -580,8 +585,9 @@ def create_image(filename, stats):
   plt.savefig(filename)
 
 def date_stats(stats):
-  create_image(os.path.join(crawl_utils.SCORE_FILE_DIR, 'date-stats.png'),
-               stats)
+  if MATPLOT:
+    create_image(os.path.join(crawl_utils.SCORE_FILE_DIR, 'date-stats.png'),
+                 stats)
 
   def daterowcls(r):
     return r.has_key('month') and 'date-month' or 'date-day'

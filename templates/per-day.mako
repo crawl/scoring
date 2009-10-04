@@ -24,8 +24,10 @@
           <div>
             <h2>Server Activity</h2>
 
+            % if html.MATPLOT:
             <img src="date-stats.png" title="Activity Graph"
                  alt="Server Activity Graph">
+            % endif
                  
             <div style="margin-top: 20px">            
                ${html.date_stats(stats)}
