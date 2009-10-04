@@ -491,11 +491,7 @@ def act_on_logfile_line(c, this_game):
 
   # Update statistics for this player's game.
   update_player_stats(c, this_game)
-
   update_combo_scores(c, this_game)
-
   update_killer_stats(c, this_game)
-
   update_gkills(c, this_game)
-
   update_per_day_stats(c, this_game)

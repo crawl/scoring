@@ -561,14 +561,22 @@ def create_image(filename, stats):
   games = [x['games'] for x in days]
   wins = [x['wins'] for x in days]
 
+  plt.subplot(211)
   lgames, = plt.plot(games, 'b-')
+  plt.legend([lgames], ["Games Played"])
+
+  intervals = range(0, len(days), 15)
+  labels = ['' for x in [days[i] for i in intervals]]
+  plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
+
+  plt.subplot(212)
   lwins, = plt.plot(wins, 'r-')
+  plt.legend([lwins], ["Wins"])
 
   intervals = range(0, len(days), 15)
   labels = [x['day'] for x in [days[i] for i in intervals]]
   plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
 
-  plt.legend([lgames, lwins], ["Games Played", "Wins"])
   plt.savefig(filename)
 
 def date_stats(stats):
