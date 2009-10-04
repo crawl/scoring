@@ -17,7 +17,8 @@ def render(c, page, dest=None, pars=None):
   """Given a db context and a .mako template (without the .mako extension)
   renders the template and writes it back to <page>.html in the tourney
   scoring directory. Setting dest overrides the destination filename."""
-  info("Rendering " + page)
+  if not pars or not pars.has_key('quiet'):
+    info("Rendering " + page)
   target = "%s/%s.html" % (crawl_utils.SCORE_FILE_DIR, dest or page)
   t = MAKO_LOOKUP.get_template(page + '.mako')
   try:
@@ -48,7 +49,7 @@ def player_page(c, player):
   info("Updating player page for %s" % player)
   render(c, 'player',
          dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
-         pars = { 'player' : player })
+         pars = { 'player' : player, 'quiet': True })
 
 INTERVAL = crawl_utils.UPDATE_INTERVAL
 TIMER = [ loaddb.define_timer( INTERVAL, scoring_overview ),

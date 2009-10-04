@@ -935,7 +935,7 @@ def process_milestone(c, filename, offset, d):
   return process_xlog(c, filename, offset, d,
                       lambda l: l.milestone_event)
 
-if __name__ == '__main__':
+def loaddb():
   logging.basicConfig(level=logging.INFO,
                       format=crawl_utils.LOGFORMAT)
 
@@ -971,3 +971,6 @@ if __name__ == '__main__':
 
   cleanup_listeners(db)
   db.close()
+
+if __name__ == '__main__':
+  loaddb()

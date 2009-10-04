@@ -44,12 +44,7 @@ class OutlineListener (loaddb.CrawlEventListener):
     act_on_milestone(cursor, milestone)
 
   def cleanup(self, db):
-    cursor = db.cursor()
-    try:
-      pass
-      #update_player_scores(cursor)
-    finally:
-      cursor.close()
+    pass
 
 LISTENER = [ OutlineListener() ]
 
@@ -161,14 +156,17 @@ def lowest_highscore(c):
 
 def insert_game(c, g, table, extras = []):
   cols = loaddb.LOG_DB_MAPPINGS
+  colnames = loaddb.LOG_DB_SCOLUMNS
+  places = loaddb.LOG_DB_SPLACEHOLDERS
   if extras:
     cols = list(cols)
     for item in extras:
       cols.append([item, item])
+    colnames = ",".join([x[1] for x in cols])
+    places = ",".join(["%s" for x in cols])
   query_do(c,
            'INSERT INTO %s (%s) VALUES (%s)' %
-           (table, ",".join([x[1] for x in cols]),
-            ",".join(["%s" for x in cols])),
+           (table, colnames, places),
            *[g.get(x[0]) for x in cols])
 
 def update_topN(c, g, n):
@@ -280,24 +278,33 @@ def update_player_streak(c, g):
       player_streak_is_active.flush_key(player)
 
 def update_all_recent_games(c, g):
-  if all_recent_game_count(c) >= MAX_ALL_RECENT_GAMES:
-    query_do(c, '''DELETE FROM all_recent_games WHERE id = %s''',
-             query_first(c, '''SELECT id FROM all_recent_games
-                                     ORDER BY id LIMIT 1'''))
-  else:
-    all_recent_game_count.flush()
   insert_game(c, g, 'all_recent_games')
+  if all_recent_game_count.has_key():
+    all_recent_game_count.set_key(all_recent_game_count(c) + 1)
+
+  if all_recent_game_count(c) > MAX_ALL_RECENT_GAMES + 50:
+    extra = all_recent_game_count(c) - MAX_ALL_RECENT_GAMES
+    ids = query_first_col(c, '''SELECT id FROM all_recent_games
+                                 ORDER BY id LIMIT %s''',
+                          extra)
+    query_do(c, '''DELETE FROM all_recent_games WHERE id IN (%s)''',
+             ",".join([str(x) for x in ids]))
+    all_recent_game_count.flush_key()
 
 def update_player_recent_games(c, g):
   player = g['name']
-  if player_recent_game_count(c, player) >= MAX_PLAYER_RECENT_GAMES:
-    query_do(c, '''DELETE FROM player_recent_games WHERE id = %s''',
-             query_first(c, '''SELECT id FROM player_recent_games
-                                        WHERE name = %s ORDER BY id LIMIT 1''',
-                         player))
-  else:
-    player_recent_game_count.flush_key(player)
   insert_game(c, g, 'player_recent_games')
+  if player_recent_game_count.has_key(player):
+    player_recent_game_count.set_key(player_recent_game_count(c, player) + 1,
+                                     player)
+  if player_recent_game_count(c, player) > MAX_PLAYER_RECENT_GAMES + 50:
+    extra = player_recent_game_count(c, player) - MAX_PLAYER_RECENT_GAMES
+    ids = query_first_col(c, '''SELECT id FROM player_recent_games
+                                 WHERE name = %s ORDER BY id LIMIT %s''',
+                          player, extra)
+    query_do(c, '''DELETE FROM player_recent_games WHERE id IN (%s)''',
+             ",".join([str(x) for x in ids]))
+    player_recent_game_count.flush_key(player)
 
 def update_player_best_games(c, g):
   player = g['name']
