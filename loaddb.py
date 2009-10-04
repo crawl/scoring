@@ -291,7 +291,7 @@ class MasterXlogReader:
 
 def connect_db():
   connection = MySQLdb.connect(host='localhost',
-                               user='henzell',
+                               user='scoring',
                                db=SCORING_DB)
   return connection
 

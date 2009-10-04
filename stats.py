@@ -197,7 +197,7 @@ def update_player_streak(c, g):
       player_streak_is_active.flush_key(player)
 
 def update_all_recent_games(c, g):
-  if all_recent_game_count(c) >= MAX_PLAYER_RECENT_GAMES:
+  if all_recent_game_count(c) >= MAX_ALL_RECENT_GAMES:
     query_do(c, '''DELETE FROM all_recent_games WHERE id = %s''',
              query_first(c, '''SELECT id FROM all_recent_games
                                      ORDER BY id LIMIT 1'''))

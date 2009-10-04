@@ -4,9 +4,6 @@ New scoring script ideas:
 - Most recent allruners, most recent ziggurat:27 visits.
 
 General thoughts:
- - streaks (overall best streaks, but only one streak per player):
-    Player, Streak (ngames), Start time, End time, Games, Streak Breaker
-    
  - recent (recent wins, recent ended games):
     Most recent wins on servers.
     Most recent games ended on servers.

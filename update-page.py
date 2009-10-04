@@ -69,6 +69,7 @@ PAGE_DEFS = [
   { 'name': 'fastest-wins-turns' },
   { 'name': 'fastest-wins-time' },
   { 'name': 'streaks' },
+  { 'name': 'recent' },
 ]
 
 if __name__ == '__main__':
