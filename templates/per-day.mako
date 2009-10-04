@@ -26,9 +26,10 @@
 
             <img src="date-stats.png" title="Activity Graph"
                  alt="Server Activity Graph">
-            <br>
                  
-            ${html.date_stats(stats)}
+            <div style="margin-top: 20px">            
+               ${html.date_stats(stats)}
+            </div>
           </div>
         </div>
       </div>
