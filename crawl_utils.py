@@ -22,7 +22,7 @@ CDO_MORGUE_BASE = 'http://crawl.develz.org/morgues/stable'
 CAO_BASE = (('tecumseh' in os.getcwd())
             and 'file:///var/www/crawl'
             or 'http://crawl.akrasiac.org')
-CAO_SCORING_BASE = '%s/scores' % CAO_BASE
+CAO_SCORING_BASE = '%s/scoring' % CAO_BASE
 CAO_IMAGE_BASE = CAO_SCORING_BASE + '/images'
 CAO_PLAYER_BASE = '%s/players' % CAO_SCORING_BASE
 
