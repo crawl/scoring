@@ -6,7 +6,7 @@
 
    whereis = html.whereis(False, player)
    wins = query.player_wins(c, player)
-   streaks = query.player_streaks(c, player)
+   streaks = query.player_streaks(c, player, 10)
    recent_games = query.player_recent_games(c, player)
 
    combo_highscores = query.player_combo_highscores(c, player)

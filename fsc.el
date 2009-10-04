@@ -4,6 +4,5 @@
            '("lib/*.jar")
            :source "src")
 
-
 (scala-fsc-bind-finder [(control ?\,)]
-  :exclude (:path "scoring"))
+  :exclude (:path "/scoring/"))

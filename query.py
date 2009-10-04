@@ -303,39 +303,30 @@ def find_streak_breaker(c, sid):
     query_row(c, game_select_from('streak_breakers') + " WHERE streak_id = %s",
               sid))
 
-def player_streaks(c, player):
-  """Returns a list of streaks for a player, ordered by longest streak
-first."""
-  logf = logfields_prefixed('g.')
-  sgames = query_rows(c,
-                      "SELECT s.id, s.ngames, s.start_game_time, " +
-                      "s.end_game_time, s.active, " + logf +
-                      ''' FROM streaks s, streak_games g
-                         WHERE s.player = %s AND g.name = s.player
-                           AND g.end_time >= s.start_game_time
-                           AND g.end_time <= s.end_game_time
-                         ORDER BY s.id''',
-                      player)
+def extract_streaks(c, query, streak_filter=None, max_streaks=None):
+  sgames = query.rows(c)
   # Streak table: ngames, active, all games in streak.
   streak_id_map = { }
-
   def register_game(g):
+    if streak_filter and not streak_filter(g):
+      return
     sid = g[0]
     if not streak_id_map.has_key(sid):
-      breaker = None
+      breaker = ''
       # If the streak is not active, grab the breaker:
-      if not g[4]:
+      if not g[5]:
         breaker = find_streak_breaker(c, sid)
         if breaker:
           breaker = linked_text(breaker, morgue_link, breaker['charabbr'])
-      streak_id_map[sid] = {'ngames': g[1],
-                            'start': g[2],
-                            'end': g[3],
-                            'active': g[4],
+      streak_id_map[sid] = {'ngames': g[2],
+                            'player': g[1],
+                            'start': g[3],
+                            'end': g[4],
+                            'active': g[5],
                             'games': [],
                             'breaker': breaker}
     smap = streak_id_map[sid]
-    game = row_to_xdict(g[5:])
+    game = row_to_xdict(g[6:])
     smap['games'].append(linked_text(game, morgue_link, game['charabbr']))
 
   for g in sgames:
@@ -356,7 +347,43 @@ first."""
       return int(bn - an)
 
   streaks.sort(streak_comparator)
-  return streaks
+  return max_streaks and streaks[:max_streaks] or streaks
+
+def all_streaks(c, max_per_player=3, max_streaks=None):
+  logf = logfields_prefixed('g.')
+  q = Query("SELECT s.id, s.player, s.ngames, s.start_game_time, " +
+            "s.end_game_time, s.active, " + logf +
+            ''' FROM streaks s, streak_games g
+               WHERE g.name = s.player
+                 AND g.end_time >= s.start_game_time
+                 AND g.end_time <= s.end_game_time
+            ORDER BY s.ngames DESC, s.id''')
+
+  pscounts = { }
+  def player_streak_filter(g):
+    player = g[1]
+    if not pscounts.has_key(player):
+      pscounts[player] = set()
+    s = pscounts[player]
+    s.add(g[0])
+    return len(s) <= max_per_player
+
+  return extract_streaks(c, q, streak_filter = player_streak_filter,
+                         max_streaks = max_streaks)
+
+def player_streaks(c, player, max_streaks = 100):
+  """Returns a list of streaks for a player, ordered by longest streak
+first."""
+  logf = logfields_prefixed('g.')
+  q = Query("SELECT s.id, s.player, s.ngames, s.start_game_time, " +
+            "s.end_game_time, s.active, " + logf +
+            ''' FROM streaks s, streak_games g
+               WHERE s.player = %s AND g.name = s.player
+                 AND g.end_time >= s.start_game_time
+                 AND g.end_time <= s.end_game_time
+            ORDER BY s.ngames DESC, s.id''',
+            player)
+  return extract_streaks(c, q, max_streaks = max_streaks)
 
 def player_recent_games(c, player):
   return find_games(c, 'player_recent_games',

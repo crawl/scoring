@@ -167,14 +167,35 @@ def column_class(cname, data):
   else:
     return isinstance(data, str) and "celltext" or "numeric"
 
+def streak_legend(found_active):
+  return ""
+
 def player_streaks_table(streaks):
+  found_active = []
   def rowcls(s):
+    if s['active']:
+      found_active.append(True)
     return s['active'] and 'active-streak' or ''
   def rowdata(s):
     return [s['ngames'], s['start'], s['end'],
             ", ".join(s['games']), s['breaker']]
-  return table_text(['Wins', 'Start', 'End', 'Games', 'Streak Breaker'],
-                    streaks, rowclsfn = rowcls, rowdatafn = rowdata)
+  return (table_text(['Wins', 'Start', 'End', 'Games', 'Streak Breaker'],
+                     streaks, rowclsfn = rowcls, rowdatafn = rowdata)
+          + streak_legend(found_active))
+
+def all_streaks_table(streaks):
+  found_active = []
+  def rowcls(s):
+    if s['active']:
+      found_active.append(True)
+    return s['active'] and 'active-streak' or ''
+  def rowdata(s):
+    return [s['ngames'], s['player'], s['start'], s['end'],
+            ", ".join(s['games']), s['breaker']]
+  return (table_text(['Wins', 'Player', 'Start', 'End', 'Games',
+                      'Streak Breaker'],
+                     streaks, rowclsfn = rowcls, rowdatafn = rowdata)
+          + streak_legend(found_active))
 
 def table_text(headers, data, cls='bordered',
                count=True,

@@ -186,6 +186,7 @@ CREATE TABLE streaks (
   active BOOLEAN DEFAULT 0,
   ngames INT DEFAULT 0
 );
+CREATE INDEX streaks_order ON streaks (ngames DESC, id);
 CREATE INDEX streaks_player ON streaks (player);
 CREATE INDEX streaks_player_active ON streaks (player, active);
 
