@@ -220,7 +220,7 @@ def best_players_by_total_score(c):
   rows = query_rows(c, '''SELECT name, games_played, games_won,
                                  total_score, best_score,
                                  first_game_start, last_game_end
-                            FROM players
+                            FROM players WHERE total_score > 500
                           ORDER BY total_score DESC''')
   res = []
   for r in rows:

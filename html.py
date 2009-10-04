@@ -563,6 +563,18 @@ def create_image(filename, stats):
   rstats.reverse()
 
   days = [x for x in rstats if x.has_key('day')]
+
+  def rolling_average(l, field, window = 5):
+    b = []
+    for x in l:
+      value = x[field]
+      b.append(value)
+      if len(b) > window:
+        b = b[1:]
+      x[field] = sum(b) / len(b)
+
+  rolling_average(days, 'games', 5)
+  rolling_average(days, 'wins', 2)
   games = [x['games'] for x in days]
   wins = [x['wins'] for x in days]
 
