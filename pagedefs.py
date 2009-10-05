@@ -128,7 +128,7 @@ def incremental_build(c):
     done = []
     for p in things.keys():
       v = things[p]
-      if v['dirtiness'] > v['threshold']:
+      if v['dirtiness'] >= v['threshold']:
         fn(c, p)
         done.append(p)
         v['dirtiness'] = 0
