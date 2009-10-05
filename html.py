@@ -1,5 +1,5 @@
 import query, crawl_utils, time
-import loaddb
+import scload
 
 from crawl_utils import player_link, linked_text, human_number
 import re

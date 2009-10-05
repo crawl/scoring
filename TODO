@@ -1,5 +1,9 @@
 New scoring script ideas:
 -------------------------
+ - Tweak scripts to update pages only when required.
+ - Combo scores page sorted by combo? jQuery?
+ - jQuery on learndb page to find entries?
+
  - per_day (line chart of activity):
     Table showing activity per day:
        games ended, distinct players, wins, winners

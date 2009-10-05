@@ -1,6 +1,6 @@
 <%
 
-   import loaddb, query, crawl_utils, html
+   import scload, query, crawl_utils, html
    c = attributes['cursor']
 
    fastest_turns = query.find_games(c, killertype='winning',

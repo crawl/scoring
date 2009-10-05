@@ -31,7 +31,7 @@ CAO_PLAYER_BASE = '%s/players' % CAO_SCORING_BASE
 CAO_OVERVIEW = '''<a href="%s/overview.html">Overview</a>''' % CAO_SCORING_BASE
 
 RAWDATA_PATH = '/var/www/crawl/rawdata'
-TAILDB_STOP_REQUEST_FILE = os.path.join(BASEDIR, 'taildb.stop')
+SCORESD_STOP_REQUEST_FILE = os.path.join(BASEDIR, 'scoresd.stop')
 
 MKDIRS = [ SCORE_FILE_DIR, PLAYER_FILE_DIR ]
 
@@ -39,17 +39,17 @@ for d in MKDIRS:
   if not os.path.exists(d):
     os.makedirs(d)
 
-def write_taildb_stop_request():
-  f = open(TAILDB_STOP_REQUEST_FILE, 'w')
+def write_scoresd_stop_request():
+  f = open(SCORESD_STOP_REQUEST_FILE, 'w')
   f.write("\n")
   f.close()
 
-def clear_taildb_stop_request():
-  if os.path.exists(TAILDB_STOP_REQUEST_FILE):
-    os.unlink(TAILDB_STOP_REQUEST_FILE)
+def clear_scoresd_stop_request():
+  if os.path.exists(SCORESD_STOP_REQUEST_FILE):
+    os.unlink(SCORESD_STOP_REQUEST_FILE)
 
-def taildb_stop_requested():
-  return os.path.exists(TAILDB_STOP_REQUEST_FILE)
+def scoresd_stop_requested():
+  return os.path.exists(SCORESD_STOP_REQUEST_FILE)
 
 def unlock_handle():
   fcntl.flock(LOCK, fcntl.LOCK_UN)

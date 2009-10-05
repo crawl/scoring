@@ -1,5 +1,5 @@
 <%
-   import loaddb, query, crawl_utils, html
+   import scload, query, crawl_utils, html
    c = attributes['cursor']
 
    top_scores = query.best_players_by_total_score(c)

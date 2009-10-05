@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
-import loaddb
+import scload
 import query
-import banner
 
 import logging
 from logging import debug, info, warn, error
@@ -10,8 +9,8 @@ import crawl_utils
 from crawl_utils import DBMemoizer
 import crawl
 
-from loaddb import query_do, query_first, query_first_col, wrap_transaction
-from loaddb import query_first_def, game_is_win, query_row
+from scload import query_do, query_first, query_first_col, wrap_transaction
+from scload import query_first_def, game_is_win, query_row
 from query import count_players_per_day, winners_for_day
 
 TOP_N = 1000
@@ -36,7 +35,7 @@ MAX_ZIGGURAT_VISITS = 10
 #    and, if necessary, where players are: first priority is a "who is winning
 #    the obvious things"
 
-class OutlineListener (loaddb.CrawlEventListener):
+class OutlineListener (scload.CrawlEventListener):
   def logfile_event(self, cursor, logdict):
     act_on_logfile_line(cursor, logdict)
 
@@ -62,7 +61,7 @@ def add_rune_milestone(c, g):
   if g['type'] != 'rune':
     return
   xl = g['xl']
-  rune = loaddb.extract_rune(g['milestone'])
+  rune = scload.extract_rune(g['milestone'])
   if rune == 'abyssal':
     return
   def rinsert():
@@ -107,7 +106,7 @@ def add_ziggurat_milestone(c, g):
 
   place = g['place']
   mtype = g['type']
-  level = int(loaddb.R_PLACE_DEPTH.findall(place)[0])
+  level = int(scload.R_PLACE_DEPTH.findall(place)[0])
   depth = level * 2
   # Leaving a ziggurat level by the exit gets more props than merely
   # entering the level.
@@ -155,9 +154,9 @@ def lowest_highscore(c):
   return query_first(c, '''SELECT MIN(sc) FROM top_games''')
 
 def insert_game(c, g, table, extras = []):
-  cols = loaddb.LOG_DB_MAPPINGS
-  colnames = loaddb.LOG_DB_SCOLUMNS
-  places = loaddb.LOG_DB_SPLACEHOLDERS
+  cols = scload.LOG_DB_MAPPINGS
+  colnames = scload.LOG_DB_SCOLUMNS
+  places = scload.LOG_DB_SPLACEHOLDERS
   if extras:
     cols = list(cols)
     for item in extras:
@@ -239,8 +238,8 @@ def player_create_streak(c, player, g):
 
   # Record the game that started the streak:
   query_do(c,
-           "INSERT INTO streak_games (" + loaddb.LOG_DB_SCOLUMNS + ") " +
-           "SELECT " + loaddb.LOG_DB_SCOLUMNS +
+           "INSERT INTO streak_games (" + scload.LOG_DB_SCOLUMNS + ") " +
+           "SELECT " + scload.LOG_DB_SCOLUMNS +
            ''' FROM player_last_games WHERE name = %s''', player)
 
   # And the second game in the streak:
@@ -446,8 +445,8 @@ def update_killer_stats(c, g):
   insert_game(c, g, 'killer_recent_kills')
 
 def update_gkills(c, g):
-  if loaddb.is_ghost_kill(g):
-    ghost = loaddb.extract_ghost_name(g['killer'])
+  if scload.is_ghost_kill(g):
+    ghost = scload.extract_ghost_name(g['killer'])
     if ghost != g['name']:
       query_do(c,
                '''INSERT INTO ghost_victims (ghost, victim) VALUES (%s, %s)''',

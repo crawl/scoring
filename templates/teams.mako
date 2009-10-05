@@ -1,5 +1,5 @@
 <%
-   import crawl_utils, loaddb, query, html
+   import crawl_utils, scload, query, html
    c = attributes['cursor']
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"

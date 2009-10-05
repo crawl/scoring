@@ -4,7 +4,7 @@ import mako.template
 import mako.lookup
 import os
 import os.path
-import loaddb
+import scload
 import query
 import crawl_utils
 
@@ -52,10 +52,10 @@ def player_page(c, player):
          pars = { 'player' : player, 'quiet': True })
 
 INTERVAL = crawl_utils.UPDATE_INTERVAL
-TIMER = [ loaddb.define_timer( INTERVAL, scoring_overview ),
-          loaddb.define_timer( INTERVAL, player_pages ) ]
-LISTENER = [ loaddb.define_cleanup(scoring_overview),
-             loaddb.define_cleanup(player_pages) ]
+TIMER = [ scload.define_timer( INTERVAL, scoring_overview ),
+          scload.define_timer( INTERVAL, player_pages ) ]
+LISTENER = [ scload.define_cleanup(scoring_overview),
+             scload.define_cleanup(player_pages) ]
 
 PAGE_DEFS = [
   { 'name': 'top-N' },
@@ -74,7 +74,7 @@ PAGE_DEFS = [
 ]
 
 if __name__ == '__main__':
-  db = loaddb.connect_db()
+  db = scload.connect_db()
   try:
     for l in LISTENER:
       l.cleanup(db)

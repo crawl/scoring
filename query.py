@@ -1,13 +1,13 @@
 # Library to query the database and update scoring information. Raw data entry
-# from logfile and milestones is done in loaddb.py, this is for queries and
+# from logfile and milestones is done in scload.py, this is for queries and
 # post-processing.
 
 import logging
 from logging import debug, info, warn, error
 
-import loaddb
-from loaddb import Query, query_do, query_first, query_row, query_rows
-from loaddb import query_first_col, query_first_def, game_is_win
+import scload
+from scload import Query, query_do, query_first, query_row, query_rows
+from scload import query_first_col, query_first_def, game_is_win
 
 import crawl
 import crawl_utils
@@ -25,11 +25,11 @@ MAX_RUNES = 15
 
 def _cursor():
   """Easy retrieve of cursor to make interactive testing easier."""
-  d = loaddb.connect_db()
+  d = scload.connect_db()
   return d.cursor()
 
 def _filter_invalid_where(d):
-  if loaddb.is_not_tourney(d):
+  if scload.is_not_tourney(d):
     return None
   status = d['status']
   if status in [ 'quit', 'won', 'bailed out', 'dead' ]:
@@ -69,7 +69,7 @@ def whereis_player(name):
     f = open(where_path)
     try:
       line = f.readline()
-      d = loaddb.apply_dbtypes( loaddb.xlog_dict(line) )
+      d = scload.apply_dbtypes( scload.xlog_dict(line) )
       return _filter_invalid_where(d)
     finally:
       f.close()
@@ -77,7 +77,7 @@ def whereis_player(name):
     return None
 
 def row_to_xdict(row):
-  return dict( zip(loaddb.LOG_DB_COLUMNS, row) )
+  return dict( zip(scload.LOG_DB_COLUMNS, row) )
 
 def xdict_rows(rows):
   return [row_to_xdict(x) for x in rows]
@@ -98,7 +98,7 @@ def find_games(c, table, sort_min=None, sort_max=None,
   if sort_min is None and sort_max is None:
     sort_min = 'end_time'
 
-  query = Query('SELECT ' + loaddb.LOG_DB_SCOLUMNS + (' FROM %s' % table))
+  query = Query('SELECT ' + scload.LOG_DB_SCOLUMNS + (' FROM %s' % table))
   where = []
   values = []
 
@@ -179,20 +179,20 @@ def find_place_numeric(rows, player):
 
 def player_best_game(c, player):
   return (row_to_xdict(
-      query_row(c, 'SELECT ' + loaddb.LOG_DB_SCOLUMNS
+      query_row(c, 'SELECT ' + scload.LOG_DB_SCOLUMNS
                 + ''' FROM player_best_games WHERE name = %s
                      ORDER BY sc DESC LIMIT 1''',
                 player)))
 
 def player_first_game(c, player):
   return (row_to_xdict(
-      query_row(c, 'SELECT ' + loaddb.LOG_DB_SCOLUMNS
+      query_row(c, 'SELECT ' + scload.LOG_DB_SCOLUMNS
                 + ''' FROM player_first_games WHERE name = %s''',
                 player)))
 
 def player_last_game(c, player):
   return (row_to_xdict(
-      query_row(c, 'SELECT ' + loaddb.LOG_DB_SCOLUMNS
+      query_row(c, 'SELECT ' + scload.LOG_DB_SCOLUMNS
                 + ''' FROM player_last_games WHERE name = %s''',
                 player)))
 
@@ -203,10 +203,10 @@ def calc_avg_int(num, den):
     return int(num / den)
 
 def game_select_from(table):
-  return "SELECT " + loaddb.LOG_DB_SCOLUMNS + " FROM " + table + " "
+  return "SELECT " + scload.LOG_DB_SCOLUMNS + " FROM " + table + " "
 
 def player_best_first_last(c, player):
-  fields = loaddb.LOG_DB_SCOLUMNS
+  fields = scload.LOG_DB_SCOLUMNS
   q = [(game_select_from('player_best_games') +
         '''WHERE name = %s ORDER BY sc DESC LIMIT 1'''),
        (game_select_from('player_first_games') +
@@ -409,7 +409,7 @@ player_class_highscores = curry_player_top_thing('top_class_scores',
                                                  'clsabbr')
 
 def logfields_prefixed(prefix):
-  return ",".join([prefix + x for x in loaddb.LOG_DB_COLUMNS])
+  return ",".join([prefix + x for x in scload.LOG_DB_COLUMNS])
 
 def top_killers(c):
   deaths = query_first(c, '''SELECT SUM(kills) FROM top_killers''')

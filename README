@@ -1,20 +1,18 @@
-Running scripts:
+Running the scoring scripts:
 
-To run loaddb.py:
+1. Make sure MySQL is up and running, with a db 'scoring' with access to
+   the user 'scoring' with no pw.
 
-1. Make sure MySQL is up and running, with a db 'tournament' with access to
-   the user 'crawl' with no pw.
-
-2. mysql -ucrawl -p tournament < database.sql will (re)create the tables,
+2. mysql -uscoring -p scoring < database.sql will (re)create the tables,
    discarding any existing data.
 
 3. ./link-setup will link the various logfiles into the current directory
-   for loaddb to work on.
+   for scload to work on.
 
-4. python loaddb.py will update the database with logfile and milestone
-   records that are not already in the db. If interrupted, it can continue
-   where it left off.
-
-   python taildb.py will start a daemon to update the db continuously from
+4. python scoresd.py will start a daemon to update the db continuously from
    the logfile and milestones. taildb is otherwise identical in behaviour
-   to loaddb.py.
+   to scload.py.
+
+Other scripts:
+
+For a one-off scoring update, you can run python scload.py.

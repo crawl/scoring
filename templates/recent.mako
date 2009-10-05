@@ -1,5 +1,5 @@
 <%
-   import loaddb, query, crawl_utils, html, re
+   import scload, query, crawl_utils, html, re
    c = attributes['cursor']
 
    recent_wins = query.find_games(c, 'wins', sort_max='id', limit=15)

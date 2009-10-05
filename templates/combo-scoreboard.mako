@@ -1,6 +1,6 @@
 <%
 
-   import loaddb, query, crawl_utils, html, combos
+   import scload, query, crawl_utils, html, combos
    c = attributes['cursor']
 
 %>

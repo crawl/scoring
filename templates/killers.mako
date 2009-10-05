@@ -1,5 +1,5 @@
 <%
-   import loaddb, query, crawl_utils, html, re
+   import scload, query, crawl_utils, html, re
    c = attributes['cursor']
 
    killers = query.top_killers(c)

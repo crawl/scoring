@@ -1,5 +1,5 @@
 <%
-   import loaddb, query, html
+   import scload, query, html
    c = attributes['cursor']
 
    game_text = \

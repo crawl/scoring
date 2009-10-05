@@ -934,13 +934,13 @@ def process_milestone(c, filename, offset, d):
   return process_xlog(c, filename, offset, d,
                       lambda l: l.milestone_event)
 
-def loaddb():
+def scload():
   logging.basicConfig(level=logging.INFO,
                       format=crawl_utils.LOGFORMAT)
 
   crawl_utils.lock_or_die()
   print "Populating db (one-off) with logfiles and milestones. " + \
-      "Running the taildb.py daemon is preferred."
+      "Running the scoresd.py daemon is preferred."
 
   load_extensions()
 
@@ -972,4 +972,4 @@ def loaddb():
   db.close()
 
 if __name__ == '__main__':
-  loaddb()
+  scload()

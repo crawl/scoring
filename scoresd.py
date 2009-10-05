@@ -1,5 +1,5 @@
 import MySQLdb
-import loaddb
+import scload
 import time
 import crawl_utils
 import sys
@@ -13,34 +13,34 @@ def interval_work(cursor, interval, master):
   master.tail_all(cursor)
 
 def tail_logfiles(logs, milestones, interval=60):
-  db = loaddb.connect_db()
-  loaddb.init_listeners(db)
+  db = scload.connect_db()
+  scload.init_listeners(db)
 
   cursor = db.cursor()
-  loaddb.set_active_cursor(cursor)
+  scload.set_active_cursor(cursor)
   elapsed_time = 0
 
-  master = loaddb.create_master_reader()
+  master = scload.create_master_reader()
   try:
     while True:
       try:
         interval_work(cursor, interval, master)
         if not interval:
           break
-        loaddb.run_timers(cursor, elapsed_time)
+        scload.run_timers(cursor, elapsed_time)
       except IOError, e:
         error("IOError: %s" % e)
 
       time.sleep(interval)
       elapsed_time += interval
 
-      if crawl_utils.taildb_stop_requested():
-        info("Exit due to taildb stop request.")
+      if crawl_utils.scoresd_stop_requested():
+        info("Exit due to scoresd stop request.")
         break
   finally:
-    loaddb.set_active_cursor(None)
+    scload.set_active_cursor(None)
     cursor.close()
-    loaddb.cleanup_listeners(db)
+    scload.cleanup_listeners(db)
     db.close()
 
 if __name__ == '__main__':
@@ -54,7 +54,7 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(level=logging.DEBUG, format = logformat)
 
-  loaddb.load_extensions()
+  scload.load_extensions()
   if daemon:
     crawl_utils.daemonize()
-  tail_logfiles( loaddb.LOGS, loaddb.MILESTONES, 30 )
+  tail_logfiles( scload.LOGS, scload.MILESTONES, 30 )

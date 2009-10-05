@@ -1,4 +1,4 @@
 import cProfile
-import loaddb
+import scload
 
-cProfile.run('loaddb.loaddb()')
+cProfile.run('scload.scload()')
