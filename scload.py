@@ -25,23 +25,38 @@ END_TIME   = '20090901'
 
 OLDEST_VERSION = '0.4'
 
+CAO = 'http://crawl.akrasiac.org/'
 CDO = 'http://crawl.develz.org/'
 
 # Log and milestone files. A tuple indicates a remote file with t[1]
 # being the URL to wget -c from. Files can be in any order, loglines
 # will be read in strict chronological order.
 
-LOGS = [ 'cao-logfile-0.4',
-         'cao-logfile-0.5',
-         ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
-         ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
-       ]
+# Treat CAO files as remote if running on greensnark's machine
+if 'tecumseh' in os.getcwd():
+  LOGS = [ ('cao-logfile-0.4', CAO + 'logfile04'),
+           ('cao-logfile-0.5', CAO + 'logfile05'),
+           ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
+           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
+           ]
 
-MILESTONES = [ 'cao-milestones-0.5',
-               'cao-milestones-0.4',
-               ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
-               ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
-               ]
+  MILESTONES = [ ('cao-milestones-0.5', CAO + 'milestones05.txt'),
+                 ('cao-milestones-0.4', CAO + 'milestones04.txt'),
+                 ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
+                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
+                 ]
+else:
+  LOGS = [ 'cao-logfile-0.4',
+           'cao-logfile-0.5',
+           ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
+           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
+           ]
+
+  MILESTONES = [ 'cao-milestones-0.5',
+                 'cao-milestones-0.4',
+                 ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
+                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
+                 ]
 
 BLACKLIST_FILE = 'blacklist.txt'
 EXTENSION_FILE = 'modules.ext'
@@ -153,11 +168,10 @@ class Xlogfile:
       self.fetch_remote()
 
   def fetch_remote(self):
-    pass
-    #info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
-    #res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
-    #if res != 0:
-    #  raise IOError, "Failed to fetch %s with wget" % self.url
+    info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
+    res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
+    if res != 0:
+      raise IOError, "Failed to fetch %s with wget" % self.url
 
   def _open(self):
     try:
