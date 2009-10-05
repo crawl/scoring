@@ -276,6 +276,7 @@ def update_player_streak(c, g):
       player_break_streak(c, player, g)
       player_streak_is_active.flush_key(player)
       dirty_pages('streaks', 'overview')
+      dirty_player(player)
   else:
     if player_streak_is_active(c, player):
       player_extend_streak(c, player, g)

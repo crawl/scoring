@@ -92,6 +92,7 @@ def init_dirty(p):
 def dirty_player(p, increment = PLAYER_DIRTY_THRESHOLD):
   if first_run:
     return
+  debug("player_DIRTY: %s (%d)" % (p, increment))
   if not DIRTY_PLAYERS.has_key(p):
     DIRTY_PLAYERS[p] = { 'dirtiness': 0, 'threshold': PLAYER_DIRTY_THRESHOLD }
   DIRTY_PLAYERS[p]['dirtiness'] += increment
@@ -99,6 +100,7 @@ def dirty_player(p, increment = PLAYER_DIRTY_THRESHOLD):
 def dirty_page(p, increment = DEFAULT_DIRTY_THRESHOLD):
   if first_run:
     return
+  debug("page_DIRTY: %s (%d)" % (p, increment))
   DIRTY_PAGES[p]['dirtiness'] += increment
 
 def dirty_pages(*pages):
