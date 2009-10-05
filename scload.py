@@ -52,26 +52,6 @@ CRAWLRC_DIRECTORY = '/home/crawl/chroot/dgldir/rcfiles/'
 LISTENERS = [ ]
 TIMERS = [ ]
 
-class Blacklist(object):
-  def __init__(self, filename):
-    self.filename = filename
-    if os.path.exists(filename):
-      info("Loading blacklist from " + filename)
-      self.load_blacklist()
-
-  def load_blacklist(self):
-    fh = open(self.filename)
-    lines = fh.readlines()
-    fh.close()
-    self.blacklist = [apply_dbtypes(parse_logline(x.strip()))
-                      for x in lines if x.strip()]
-
-  def is_blacklisted(self, game):
-    for b in self.blacklist:
-      if xlog_match(b, game):
-        return True
-    return False
-
 class CrawlEventListener(object):
   """The way this is intended to work is that on receipt of an event
   ... we shoot the messenger. :P"""
@@ -173,10 +153,11 @@ class Xlogfile:
       self.fetch_remote()
 
   def fetch_remote(self):
-    info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
-    res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
-    if res != 0:
-      raise IOError, "Failed to fetch %s with wget" % self.url
+    pass
+    #info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
+    #res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
+    #if res != 0:
+    #  raise IOError, "Failed to fetch %s with wget" % self.url
 
   def _open(self):
     try:
@@ -220,15 +201,6 @@ class Xlogfile:
 
       d = xlog_dict(line)
       xdict = apply_dbtypes(d)
-      if self.blacklist and self.blacklist.is_blacklisted(xdict):
-        # Blacklisted games are mauled here:
-        xdict['ktyp'] = 'blacklist'
-        xdict['place'] = 'D:1'
-        xdict['xl'] = 1
-        xdict['lvl'] = 1
-        xdict['tmsg'] = 'was blacklisted.'
-        xdict['vmsg'] = 'was blacklisted.'
-
       xdict['source_file'] = self.filename
       xline = Xlogline( self, self.filename, self.offset,
                         xdict.get('end') or xdict.get('time'),
@@ -236,8 +208,8 @@ class Xlogfile:
       return xline
 
 class Logfile (Xlogfile):
-  def __init__(self, filename, blacklist):
-    Xlogfile.__init__(self, filename, process_log, blacklist)
+  def __init__(self, filename):
+    Xlogfile.__init__(self, filename, process_log)
 
 class MilestoneFile (Xlogfile):
   def __init__(self, filename):
@@ -292,18 +264,10 @@ def parse_logline(logline):
   and so we have to be careful not to split the logfile on locations like
   D:7 and such. It also works on milestones and whereis."""
   # This is taken from Henzell. Yay Henzell!
-  if not logline:
-    raise Exception, "no logline"
-  if logline[0] == ':' or (logline[-1] == ':' and not logline[-2] == ':'):
-    raise Exception,  "starts with colon"
-  if '\n' in logline:
-    raise Exception, "more than one line"
   logline = logline.replace("::", "\n")
-  details = dict([(item[:item.index('=')], item[item.index('=') + 1:])
-                  for item in logline.split(':')])
-  for key in details:
-    details[key] = details[key].replace("\n", ":")
-  return details
+  return dict([(item[:item.index('=')],
+                item[item.index('=') + 1:].replace("\n", ":"))
+               for item in logline.split(':')])
 
 def xlog_set_killer_group(d):
   killer = d.get('killer')
@@ -500,6 +464,9 @@ MILE_DB_MAPPINGS = [
 LOGLINE_TO_DBFIELD = dict(LOG_DB_MAPPINGS)
 COMBINED_LOG_TO_DB = dict(LOG_DB_MAPPINGS + MILE_DB_MAPPINGS)
 
+DB_COPY_FIELDS = [x for x in COMBINED_LOG_TO_DB.keys()
+                  if x != COMBINED_LOG_TO_DB[x]]
+
 R_MONTH_FIX = re.compile(r'^(\d{4})(\d{2})(.*)')
 R_GHOST_NAME = re.compile(r"^(.*)'s? ghost")
 R_MILESTONE_GHOST_NAME = re.compile(r"the ghost of (.*) the ")
@@ -573,10 +540,16 @@ class Query:
 
   first = count
 
-char = SqlType(lambda x: x)
+def char(x):
+  return x
+
 #remove the trailing 'D'/'S', fixup date
-datetime = SqlType(lambda x: fix_crawl_date(x[0:-1]))
-bigint = SqlType(lambda x: int(x))
+def datetime(x):
+  return fix_crawl_date(x[0:-1])
+
+def bigint(x):
+  return int(x)
+
 sql_int = bigint
 varchar = char
 
@@ -603,7 +576,7 @@ dbfield_to_sqltype = {
 	'mhp':sql_int,
  	'mmhp':sql_int,
 	'strength':sql_int,
-	'intellegence':sql_int,
+	'intelligence':sql_int,
 	'dexterity':sql_int,
 	'god':char,
 	'dur':sql_int,
@@ -626,6 +599,13 @@ dbfield_to_sqltype = {
         'goldfound': sql_int,
         'goldspent': sql_int
 	}
+
+LOGF_SQLTYPE = dict([ (x, dbfield_to_sqltype[COMBINED_LOG_TO_DB[x]])
+                      for x in COMBINED_LOG_TO_DB.keys()
+                      if dbfield_to_sqltype.has_key(COMBINED_LOG_TO_DB[x])
+                      and (dbfield_to_sqltype[COMBINED_LOG_TO_DB[x]]
+                           in [datetime, sql_int, bigint]) ])
+LOGF_SQLKEYS = LOGF_SQLTYPE.keys()
 
 def is_selected(game):
   """Accept all games that match our version criterion."""
@@ -701,20 +681,16 @@ def apply_dbtypes(game):
   """Given an xlogline dictionary, replaces all values with munged values
   that can be inserted directly into a db table. Keys that are not recognized
   (i.e. not in dbfield_to_sqltype) are ignored."""
-  new_hash = { }
-  for key, value in game.items():
-    if (COMBINED_LOG_TO_DB.has_key(key) and
-        dbfield_to_sqltype.has_key(COMBINED_LOG_TO_DB[key])):
-      new_hash[key] = dbfield_to_sqltype[COMBINED_LOG_TO_DB[key]].to_sql(value)
-    else:
-      new_hash[key] = value
-  # Another pass to populate field names with SQL column names.
-  augmented_hash = dict(new_hash)
-  for key, value in new_hash.items():
-    sqlkey = COMBINED_LOG_TO_DB.get(key)
-    if sqlkey:
-      augmented_hash[sqlkey] = value
-  return augmented_hash
+  for key in LOGF_SQLKEYS:
+    value = game.get(key)
+    if value:
+      game[key] = LOGF_SQLTYPE[key](value)
+
+  for key in DB_COPY_FIELDS:
+    if game.has_key(key):
+      game[COMBINED_LOG_TO_DB[key]] = game[key]
+
+  return game
 
 def make_xlog_db_query(db_mappings, xdict, filename, offset, table):
   fields = ['source_file']
@@ -832,6 +808,7 @@ def wrap_transaction(fn):
   """Given a function, returns a function that accepts a cursor and arbitrary
   arguments, calls the function with those args, wrapped in a transaction."""
   def transact(cursor, *args):
+    return fn(cursor, *args)
     result = None
     cursor.execute('BEGIN;')
     try:
@@ -889,9 +866,8 @@ def cleanup_listeners(db):
     e.cleanup(db)
 
 def create_master_reader():
-  blacklist = Blacklist(BLACKLIST_FILE)
   processors = ([ MilestoneFile(x) for x in MILESTONES ] +
-                [ Logfile(x, blacklist) for x in LOGS ])
+                [ Logfile(x) for x in LOGS ])
   return MasterXlogReader(processors)
 
 def update_xlog_offset(c, filename, offset):
@@ -904,7 +880,6 @@ def process_xlog(c, filename, offset, d, flambda):
   """Processes an xlog record for scoring purposes."""
   if not is_selected(d):
     return
-  # Add the player outside the transaction and suppress errors.
   def do_xlogline(cursor):
     # Tell the listeners to do their thang
     for listener in LISTENERS:
@@ -922,6 +897,9 @@ def process_milestone(c, filename, offset, d):
   """Processes a milestone record for scoring purposes."""
   return process_xlog(c, filename, offset, d,
                       lambda l: l.milestone_event)
+
+def full_load(c, master):
+  master.tail_all(c)
 
 def scload():
   logging.basicConfig(level=logging.INFO,
@@ -952,7 +930,7 @@ def scload():
   try:
     if not OPT.no_load:
       master = create_master_reader()
-      master.tail_all(cursor)
+      full_load(cursor, master)
     import pagedefs
     pagedefs.rebuild(cursor)
   finally:
