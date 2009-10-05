@@ -12,7 +12,7 @@ import crawl
 from scload import query_do, query_first, query_first_col, wrap_transaction
 from scload import query_first_def, game_is_win, query_row
 from query import count_players_per_day, winners_for_day
-from pagedefs import dirty_page, dirty_player
+from pagedefs import dirty_page, dirty_player, dirty_pages
 
 TOP_N = 1000
 MAX_PLAYER_BEST_GAMES = 15
@@ -376,7 +376,9 @@ def update_player_stats(c, g):
       factor = int(g['sc'] / 40000) + 1
       dirty_page('best-players-total-score', factor)
       dirty_page('all-players', factor)
-    dirty_player(g['name'], factor)
+      dirty_player(g['name'], factor)
+    else:
+      dirty_player(g['name'], 1)
 
   query_do(c, '''INSERT INTO players
                              (name, games_played, games_won,
