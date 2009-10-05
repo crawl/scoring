@@ -36,10 +36,7 @@ def render(c, page, dest=None, pars=None):
     raise
     # Don't rethrow.
 
-def scoring_overview(c):
-  render(c, 'overview')
-
-def player_pages(c):
+def render_pages(c):
   for p in PAGE_DEFS:
     render(c, p[0])
   for p in query.find_all_players(c):
@@ -52,19 +49,20 @@ def player_page(c, player):
          pars = { 'player' : player, 'quiet': True })
 
 PAGE_DEFS = [
-  [ 'top-N' ],
-  [ 'best-players-total-score' ],
-  [ 'top-combo-scores' ],
-  [ 'combo-scoreboard' ],
-  [ 'all-players' ],
-  [ 'killers' ],
-  [ 'gkills' ],
-  [ 'winners' ],
-  [ 'fastest-wins-turns' ],
-  [ 'fastest-wins-time' ],
-  [ 'streaks' ],
-  [ 'recent' ],
-  [ 'per-day' ],
+  [ 'overview' ],
+  [ 'top-N' ], #
+  [ 'best-players-total-score' ], #
+  [ 'top-combo-scores' ], #
+  [ 'combo-scoreboard' ], #
+  [ 'all-players' ], #
+  [ 'killers' ], #
+  [ 'gkills' ], #
+  [ 'winners' ], #
+  [ 'fastest-wins-turns' ], #
+  [ 'fastest-wins-time' ], #
+  [ 'streaks' ], #
+  [ 'recent' ], #
+  [ 'per-day' ], #
 ]
 
 DIRTY_PAGES = { }
@@ -91,17 +89,21 @@ def init_dirty(p):
     threshold = len(p) == 1 and DEFAULT_DIRTY_THRESHOLD or p[1]
     DIRTY_PAGES[p[0]] = { 'dirtiness': 0, 'threshold': threshold }
 
-def dirty_player(p, increment):
+def dirty_player(p, increment = PLAYER_DIRTY_THRESHOLD):
   if first_run:
     return
   if not DIRTY_PLAYERS.has_key(p):
     DIRTY_PLAYERS[p] = { 'dirtiness': 0, 'threshold': PLAYER_DIRTY_THRESHOLD }
   DIRTY_PLAYERS[p]['dirtiness'] += increment
 
-def dirty_page(p, increment):
+def dirty_page(p, increment = DEFAULT_DIRTY_THRESHOLD):
   if first_run:
     return
   DIRTY_PAGES[p]['dirtiness'] += increment
+
+def dirty_pages(*pages):
+  for p in pages:
+    dirty_page(p)
 
 def mark_all_clean():
   for v in DIRTY_PAGES.values():
@@ -109,8 +111,7 @@ def mark_all_clean():
   DIRTY_PLAYERS.clear()
 
 def rebuild(c):
-  scoring_overview(c)
-  player_pages(c)
+  render_pages(c)
   mark_all_clean()
 
 def incremental_build(c):
