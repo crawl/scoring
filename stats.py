@@ -278,6 +278,8 @@ def update_player_streak(c, g):
       player_streak_is_active.flush_key(player)
 
 def update_all_recent_games(c, g):
+  if is_junk_game(g):
+    return
   insert_game(c, g, 'all_recent_games')
   if all_recent_game_count.has_key():
     all_recent_game_count.set_key(all_recent_game_count(c) + 1)
@@ -451,14 +453,18 @@ def update_gkills(c, g):
                '''INSERT INTO ghost_victims (ghost, victim) VALUES (%s, %s)''',
                ghost, g['name'])
 
+
 def is_loser_ktyp(ktyp):
   """The moron games"""
   return ktyp in ['leaving', 'quitting']
 
-def update_per_day_stats(c, g):
+def is_junk_game(g):
   ktyp = g['ktyp']
   sc = g['sc']
-  if sc < 1000 and is_loser_ktyp(ktyp):
+  return sc < 2500 and is_loser_ktyp(ktyp)
+
+def update_per_day_stats(c, g):
+  if is_junk_game(g):
     return
 
   # Grab just the date portion.
