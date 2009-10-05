@@ -7,6 +7,8 @@ import sys
 import logging
 from logging import debug, info, warn, error
 
+import pagedefs
+
 # Can run as a daemon and tail a number of logfiles and milestones and
 # update the db.
 def interval_work(cursor, interval, master):
@@ -25,14 +27,16 @@ def tail_logfiles(logs, milestones, interval=60):
     while True:
       try:
         interval_work(cursor, interval, master)
+        pagedefs.incremental_build(cursor)
         if not interval:
           break
-        scload.run_timers(cursor, elapsed_time)
       except IOError, e:
         error("IOError: %s" % e)
 
       time.sleep(interval)
       elapsed_time += interval
+
+      pagedefs.tick_dirty()
 
       if crawl_utils.scoresd_stop_requested():
         info("Exit due to scoresd stop request.")
@@ -57,4 +61,4 @@ if __name__ == '__main__':
   scload.load_extensions()
   if daemon:
     crawl_utils.daemonize()
-  tail_logfiles( scload.LOGS, scload.MILESTONES, 30 )
+  tail_logfiles( scload.LOGS, scload.MILESTONES, 60 )

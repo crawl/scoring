@@ -88,17 +88,6 @@ class CrawlEventListener(object):
     """Called for each milestone record. cursor will be in a transaction."""
     pass
 
-class CrawlCleanupListener (CrawlEventListener):
-  def __init__(self, fn):
-    self.fn = fn
-
-  def cleanup(self, db):
-    c = db.cursor()
-    try:
-      self.fn(c)
-    finally:
-      c.close()
-
 class CrawlTimerListener:
   def __init__(self, fn=None):
     self.fn = fn
@@ -964,11 +953,12 @@ def scload():
     if not OPT.no_load:
       master = create_master_reader()
       master.tail_all(cursor)
+    import pagedefs
+    pagedefs.rebuild(cursor)
   finally:
     set_active_cursor(None)
     cursor.close()
 
-  cleanup_listeners(db)
   db.close()
 
 if __name__ == '__main__':
