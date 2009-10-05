@@ -126,14 +126,14 @@ def incremental_build(c):
     return
   def apply_to_dirty(things, fn, wipe=False):
     done = []
-    for p in thing.keys():
-      v = thing[p]
+    for p in things.keys():
+      v = things[p]
       if v['dirtiness'] > v['threshold']:
         fn(c, p)
         done.append(p)
         v['dirtiness'] = 0
     if wipe:
       for d in done:
-        del thing[d]
+        del things[d]
   apply_to_dirty(DIRTY_PAGES, render)
   apply_to_dirty(DIRTY_PLAYERS, player_page, wipe=True)
