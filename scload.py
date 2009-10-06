@@ -907,6 +907,7 @@ def table_names():
   return tables
 
 def full_load(c, master):
+  query.bootstrap_known_raceclasses(c)
   master.tail_all(c)
 
 def init_listeners(db):

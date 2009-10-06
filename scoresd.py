@@ -23,6 +23,7 @@ def tail_logfiles(logs, milestones, interval=60):
   elapsed_time = 0
 
   master = scload.create_master_reader()
+  query.bootstrap_known_raceclasses(cursor)
   try:
     while True:
       try:
