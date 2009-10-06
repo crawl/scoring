@@ -654,7 +654,7 @@ def player_get_stats(c, player):
   stats = { }
   rows = query_rows(c, '''SELECT charabbr, games_played, best_xl, wins
                             FROM player_char_stats
-                           WHERE player = %s''', player)
+                           WHERE name = %s''', player)
   for r in rows:
     stats[r[0]] = { 'games': r[1],
                     'xl': r[2],
