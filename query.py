@@ -619,3 +619,89 @@ def date_stats(c):
 
   flush_month(month[0])
   return result
+
+@DBMemoizer
+def is_known_raceclasses_empty(c):
+  return (query_first(c, "SELECT COUNT(*) FROM known_classes") == 0
+          or query_first(c, "SELECT COUNT(*) FROM known_races") == 0)
+
+def bootstrap_known_raceclasses(c):
+  if is_known_raceclasses_empty(c):
+    is_known_raceclasses_empty.flush()
+    query_do(c, "TRUNCATE TABLE known_classes")
+    query_do(c, "TRUNCATE TABLE known_races")
+    query_do(c, """INSERT INTO known_classes
+                 SELECT DISTINCT SUBSTR(charabbr, 3) FROM player_char_stats""")
+    query_do(c, """INSERT INTO known_races
+                 SELECT DISTINCT SUBSTR(charabbr, 1, 2)
+                 FROM player_char_stats""")
+
+@DBMemoizer
+def all_classes(c):
+  bootstrap_known_raceclasses(c)
+  clx = query_first_col(c, '''SELECT cls FROM known_classes''')
+  clx.sort()
+  return clx
+
+@DBMemoizer
+def all_races(c):
+  bootstrap_known_raceclasses(c)
+  races = query_first_col(c, '''SELECT cls FROM known_races''')
+  races.sort()
+  return races
+
+def player_get_stats(c, player):
+  stats = { }
+  rows = query_rows(c, '''SELECT charabbr, games_played, best_xl, wins
+                            FROM player_char_stats
+                           WHERE player = %s''', player)
+  for r in rows:
+    stats[r[0]] = { 'games': r[1],
+                    'xl': r[2],
+                    'wins': r[3] }
+  return stats
+
+def player_stats_matrix(c, player):
+  races = all_races(c)
+  classes = all_classes(c)
+  rows = []
+  stats = player_get_stats(c, player)
+
+  rows.append(['&nbsp;'] + classes + ['&nbsp;', '&nbsp;'])
+
+  cstats = [ {'class_total': True,
+              'games': 0,
+              'wins': 0,
+              'xl': 0} for c in classes ]
+
+  for r in races:
+    row = [ r ]
+
+    rgames = 0
+    rwins = 0
+    rxl = 0
+    for i in range(len(classes)):
+      c = classes[i]
+      char = r + c
+      s = stats.get(char)
+      row.append(s)
+      if s:
+        rgames += s['games']
+        cstats[i]['games'] += s['games']
+        rwins += s['wins']
+        cstats[i]['wins'] += s['wins']
+        if s['xl'] > rxl:
+          rxl = s['xl']
+        if s['xl'] > cstats[i]['xl']:
+          cstats[i]['xl'] = s['xl']
+    row.append({ 'race_total': True,
+                 'games': rgames,
+                 'wins': rwins,
+                 'xl': rxl })
+    row.append(r)
+    rows.append(row)
+
+  rows.append(['&nbsp;'] + cstats + ['&nbsp;', '&nbsp;'])
+  rows.append(['&nbsp;'] + classes + ['&nbsp;', '&nbsp;'])
+
+  return rows

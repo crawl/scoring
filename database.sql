@@ -24,6 +24,8 @@ DROP TABLE IF EXISTS low_xl_rune_finds;
 DROP TABLE IF EXISTS ziggurats;
 DROP TABLE IF EXISTS per_day_stats;
 DROP TABLE IF EXISTS date_players;
+DROP TABLE IF EXISTS known_races;
+DROP TABLE IF EXISTS known_classes;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (
@@ -285,3 +287,11 @@ CREATE TABLE date_players (
   PRIMARY KEY (which_day, player)
 );
 CREATE INDEX date_players_month ON date_players (which_month);
+
+CREATE TABLE known_races (
+  race CHAR(2) UNIQUE PRIMARY KEY
+);
+
+CREATE TABLE known_classes (
+  cls CHAR(2) UNIQUE PRIMARY KEY
+);

@@ -77,6 +77,9 @@
             <hr>
           % endif
 
+          <h3>Character Stats</h3>
+          ${html.player_stats_matrix(query.player_stats_matrix(c, player))}
+
         </div>
       </div> <!-- content -->
     </div> <!-- page -->

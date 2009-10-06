@@ -1,11 +1,13 @@
 New scoring script ideas:
 -------------------------
- - Combo scores page sorted by combo? jQuery?
  - Player breakdown:
    - Highest CL,
    - Wins
    - Games played
-   Breakup by race and class.
+   Breakup by race and class:
+    For each combo, show: games, wins, best CL
+    For each race/class, show: total games, total wins, best CL of all.
+   
  - jQuery on learndb page to find entries?
  - Performance tuning!
  

@@ -498,6 +498,7 @@ def is_junk_game(g):
   sc = g['sc']
   return sc < 2500 and is_loser_ktyp(ktyp)
 
+
 def update_per_day_stats(c, g):
   if is_junk_game(g):
     return
@@ -527,6 +528,36 @@ def update_per_day_stats(c, g):
                                         wins = wins + %s''',
            edate, edate[:6], player, 1, winc, winc)
 
+def is_known_cthing(c, table, key, value):
+  return query_first_def(c, False,
+                         "SELECT " + key + " FROM " + table +
+                         " WHERE " + key + " = %s",
+                         value)
+
+@DBMemoizer
+def is_known_race(c, race):
+  return is_known_cthing(c, 'known_races', 'race', race)
+
+@DBMemoizer
+def is_known_class(c, cls):
+  return is_known_cthing(c, 'known_classes', 'cls', cls)
+
+def record_known_thing(c, table, key, value):
+  query_do(c, "INSERT INTO " + table + " (" + key + ") " +
+           " VALUES (%s)", value)
+
+def update_known_races_classes(c, g):
+  race = g['raceabbr']
+  cls = g['clsabbr']
+  if not is_known_race(c, race):
+    record_known_thing(c, 'known_races', 'race', race)
+    is_known_race.set_key(True, race)
+    query.all_races.flush()
+  if not is_known_class(c, cls):
+    record_known_thing(c, 'known_classes', 'cls', cls)
+    is_known_class.set_key(True, cls)
+    query.all_classes.flush()
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
@@ -543,3 +574,4 @@ def act_on_logfile_line(c, this_game):
   update_killer_stats(c, this_game)
   update_gkills(c, this_game)
   update_per_day_stats(c, this_game)
+  update_known_races_classes(c, g)

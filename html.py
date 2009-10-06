@@ -611,3 +611,29 @@ def date_stats(stats):
                     rowclsfn=daterowcls,
                     rowdatafn=daterowdata,
                     count=False)
+
+def player_stats_cell(cell):
+  if cell is None:
+    return "<td>&nbsp;</td>"
+  elif isinstance(cell, str):
+    return "<th>" + cell + "</th>"
+  else:
+    total = cell.get('race_total') or cell.get('class_total')
+    cls = []
+    if total:
+      cls.append('stat-total')
+    if cell['wins'] > 0:
+      cls.append('stat-win')
+    text = ''
+    def keytext(cls, key):
+      return "<div class='%s'>%s</div>" % (cls,  cell[key] or '&nbsp;')
+    text += keytext('win', 'wins')
+    text += keytext('', 'games')
+    text += keytext('xl', 'xl')
+    return "<td class='%s'>%s</td>" % (" ".join(cls), text)
+
+def player_stats_matrix(stats):
+  res = '<table class="stat-table">'
+  for row in stats:
+    res += '<tr>' + "".join([player_stats_cell(x) for x in row]) + '</tr>'
+  return res + '</table>'
