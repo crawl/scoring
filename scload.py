@@ -11,10 +11,13 @@ import ConfigParser
 import imp
 import sys
 import optparse
+import time
 
 oparser = optparse.OptionParser()
 oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
+oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
 OPT, ARGS = oparser.parse_args()
+TIME_QUERIES = True
 
 # Limit rows read to so many for testing.
 LIMIT_ROWS = 0
@@ -509,6 +512,15 @@ def fix_crawl_date(date):
                          match.group(3))
   return R_MONTH_FIX.sub(inc_month, date)
 
+query_times = { }
+def record_query_time(q, delta):
+  global query_times
+  if not query_times.has_key(q):
+    query_times[q] = { 'n': 0, 'time': 0.0 }
+  h = query_times[q]
+  h['n'] += 1
+  h['time'] += delta
+
 class Query:
   def __init__(self, qstring, *values):
     self.query = qstring
@@ -527,11 +539,30 @@ class Query:
     if not self.query.endswith(';'):
       self.query += ';'
     try:
+      start = time.time()
+      cursor.execute(self.query, self.values)
+      end = time.time()
+      record_query_time(self.query, end - start)
+    except:
+      print("Failing query: " + self.query
+            + " args: " + self.values.__repr__())
+      raise
+
+  def execute_untimed(self, cursor):
+    """Executes query on the supplied cursor."""
+    print "Untimed <3"
+    self.query = self.query.strip()
+    if not self.query.endswith(';'):
+      self.query += ';'
+    try:
       cursor.execute(self.query, self.values)
     except:
       print("Failing query: " + self.query
             + " args: " + self.values.__repr__())
       raise
+
+  if not TIME_QUERIES:
+    execute = execute_untimed
 
   def row(self, cursor):
     """Executes query and returns the first row tuple, or None if there are no
@@ -553,6 +584,23 @@ class Query:
     return row[0]
 
   first = count
+
+def report_query_times():
+  global query_times
+  print "--------------------------------------------------------"
+  print "QUERY STATS"
+  import stats
+  queries = query_times.items()
+  def qsort(a, b):
+    bt = b[1]['time']
+    at = a[1]['time']
+    return (at > bt and -1) or (at < bt and 1) or 0
+  queries.sort(qsort)
+  for q in queries:
+    print "--------------------------------------------------------------"
+    print ("Runs: %d, Time: %.3f, per query" %
+           (q[1]['n'], q[1]['time']))
+    print "Query: " + q[0]
 
 def char(x):
   return x
@@ -661,36 +709,6 @@ def query_first_col(cursor, query, *values):
 def game_is_win(g):
   return g['ktyp'] == 'winning'
 
-@crawl_utils.DBMemoizer
-def player_exists(c, name):
-  """Return true if the player exists in the player table"""
-  query = Query("""SELECT name FROM players WHERE name=%s;""",
-                name)
-  return query.row(c) is not None
-
-def longest_streak_count(c, player):
-  return query_first_def(c, 0,
-                         """SELECT streak FROM streaks
-                            WHERE player = %s""",
-                         player)
-
-def update_streak_count(c, game, streak_count):
-  streak_time = game['end']
-  query_do(c,
-           '''INSERT INTO streaks (player, streak, streak_time)
-              VALUES (%s, %s, %s)
-              ON DUPLICATE KEY UPDATE streak = %s, streak_time = %s''',
-           game['name'], streak_count, streak_time,
-           streak_count, streak_time)
-
-def update_player_fullscore(c, player, addition, team_addition):
-  query_do(c,
-           '''UPDATE players
-              SET score_full = score_base + %s,
-                  team_score_full = team_score_base + %s
-              WHERE name = %s''',
-           addition, team_addition, player)
-
 def apply_dbtypes(game):
   """Given an xlogline dictionary, replaces all values with munged values
   that can be inserted directly into a db table. Keys that are not recognized
@@ -775,12 +793,6 @@ def dbfile_offset(cursor, filename):
                             WHERE filename = %s''',
                          filename)
 
-def update_db_bookmark(cursor, table, filename, offset):
-  cursor.execute('INSERT INTO ' + table + \
-                   ' (source_file, source_file_offset) VALUES (%s, %s) ' + \
-                   'ON DUPLICATE KEY UPDATE source_file_offset = %s',
-                 [ filename, offset, offset ])
-
 def update_milestone_bookmark(cursor, filename, offset):
   return update_db_bookmark(cursor, 'milestone_bookmark', filename, offset)
 
@@ -837,58 +849,29 @@ def wrap_transaction(fn):
 def extract_unique_name(kill_message):
   return R_KILL_UNIQUE.findall(kill_message)[0]
 
-def add_listener(listener):
-  LISTENERS.append(listener)
-
-def add_timed(interval, timed):
-  TIMERS.append(CrawlTimerState(interval, timed))
-
-def define_timer(interval, fn):
-  return (interval, CrawlTimerListener(fn))
-
-def define_cleanup(fn):
-  return CrawlCleanupListener(fn)
-
-def run_timers(c, elapsed_time):
-  for timer in TIMERS:
-    timer.run(c, elapsed_time)
-
-def load_extensions():
-  c = ConfigParser.ConfigParser()
-  c.read(EXTENSION_FILE)
-
-  exts = c.get('extensions', 'ext') or ''
-
-  for ext in exts.split(','):
-    key = ext.strip()
-    filename = key + '.py'
-    info("Loading %s as %s" % (filename, key))
-    module = imp.load_source(key, filename)
-    if 'LISTENER' in dir(module):
-      for l in module.LISTENER:
-        add_listener(l)
-    if 'TIMER' in dir(module):
-      for t in module.TIMER:
-        add_timed(*t)
-
-def init_listeners(db):
-  for e in LISTENERS:
-    e.initialize(db)
-
-def cleanup_listeners(db):
-  for e in LISTENERS:
-    e.cleanup(db)
-
 def create_master_reader():
   processors = ([ MilestoneFile(x) for x in MILESTONES ] +
                 [ Logfile(x) for x in LOGS ])
   return MasterXlogReader(processors)
 
+@crawl_utils.DBMemoizer
+def logfile_id(c, filename):
+  return query_first_def(c, None,
+                         '''SELECT id FROM logfile_offsets
+                             WHERE filename = %s''',
+                         filename)
+
 def update_xlog_offset(c, filename, offset):
-  query_do(c, '''INSERT INTO logfile_offsets (filename, offset)
-                      VALUES (%s, %s)
-            ON DUPLICATE KEY UPDATE offset = %s''',
-           filename, offset, offset)
+  fid = logfile_id(c, filename)
+  if fid:
+    query_do(c, '''UPDATE logfile_offsets SET offset = %s
+                    WHERE id = %s''',
+             offset, fid)
+  else:
+    query_do(c, '''INSERT INTO logfile_offsets (filename, offset)
+                      VALUES (%s, %s)''',
+             filename, offset)
+    logfile_id.flush_key(filename)
 
 def process_xlog(c, filename, offset, d, flambda):
   """Processes an xlog record for scoring purposes."""
@@ -912,8 +895,23 @@ def process_milestone(c, filename, offset, d):
   return process_xlog(c, filename, offset, d,
                       lambda l: l.milestone_event)
 
+@crawl_utils.Memoizer
+def table_names():
+  f = open('database.sql')
+  treg = re.compile(r'CREATE TABLE (\w+)')
+  tables = []
+  for line in f.readlines():
+    m = treg.search(line)
+    if m:
+      tables.append(m.group(1))
+  return tables
+
 def full_load(c, master):
   master.tail_all(c)
+
+def init_listeners(db):
+  import stats
+  LISTENERS.append(stats.OutlineListener())
 
 def scload():
   logging.basicConfig(level=logging.INFO,
@@ -922,8 +920,6 @@ def scload():
   crawl_utils.lock_or_die()
   print "Populating db (one-off) with logfiles and milestones. " + \
       "Running the scoresd.py daemon is preferred."
-
-  load_extensions()
 
   db = connect_db()
   init_listeners(db)
@@ -945,13 +941,12 @@ def scload():
     if not OPT.no_load:
       master = create_master_reader()
       full_load(cursor, master)
-    import pagedefs
-    pagedefs.rebuild(cursor)
+    if not OPT.load_only:
+      import pagedefs
+      pagedefs.rebuild(cursor)
   finally:
     set_active_cursor(None)
     cursor.close()
 
+  report_query_times()
   db.close()
-
-if __name__ == '__main__':
-  scload()

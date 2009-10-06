@@ -27,7 +27,8 @@ DROP TABLE IF EXISTS date_players;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (
-  filename VARCHAR(100) PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  filename VARCHAR(100) UNIQUE,
   offset BIGINT DEFAULT 0
 );
 
@@ -116,6 +117,8 @@ ALTER TABLE player_recent_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE player_recent_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 CREATE INDEX player_recent_games_name_end
 ON player_recent_games (name, end_time DESC);
+CREATE INDEX player_recent_games_name_id
+ON player_recent_games (name, id);
 
 -- Table for the top games on the servers. How many games we keep here
 -- is controlled by the Python code.

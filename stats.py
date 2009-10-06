@@ -299,7 +299,7 @@ def update_all_recent_games(c, g):
   if all_recent_game_count(c) > MAX_ALL_RECENT_GAMES + 50:
     extra = all_recent_game_count(c) - MAX_ALL_RECENT_GAMES
     ids = query_first_col(c, '''SELECT id FROM all_recent_games
-                                 ORDER BY end_time LIMIT %s''',
+                                 ORDER BY id LIMIT %s''',
                           extra)
     query_do(c, '''DELETE FROM all_recent_games WHERE id IN (%s)''',
              ",".join([str(x) for x in ids]))
@@ -314,7 +314,7 @@ def update_player_recent_games(c, g):
   if player_recent_game_count(c, player) > MAX_PLAYER_RECENT_GAMES + 50:
     extra = player_recent_game_count(c, player) - MAX_PLAYER_RECENT_GAMES
     ids = query_first_col(c, '''SELECT id FROM player_recent_games
-                                 WHERE name = %s ORDER BY end_time LIMIT %s''',
+                                 WHERE name = %s ORDER BY id LIMIT %s''',
                           player, extra)
     query_do(c, '''DELETE FROM player_recent_games WHERE id IN (%s)''',
              ",".join([str(x) for x in ids]))
