@@ -1,9 +1,11 @@
 New scoring script ideas:
 -------------------------
- - Tweak scripts to update pages only when required, using the dirtiness
-   metric.
-   
  - Combo scores page sorted by combo? jQuery?
+ - Player breakdown:
+   - Highest CL,
+   - Wins
+   - Games played
+   Breakup by race and class.
  - jQuery on learndb page to find entries?
  - Performance tuning!
  

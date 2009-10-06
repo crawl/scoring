@@ -259,7 +259,7 @@ def top_combo_scores(c):
 in descending order of score."""
   rows = query_rows(c,
                     game_select_from('top_combo_scores') +
-                    " ORDER BY sc DESC")
+                    " ORDER BY charabbr")
   return xdict_rows(rows)
 
 def select_fields(*fields):
