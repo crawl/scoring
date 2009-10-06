@@ -646,7 +646,7 @@ def all_classes(c):
 @DBMemoizer
 def all_races(c):
   bootstrap_known_raceclasses(c)
-  races = query_first_col(c, '''SELECT cls FROM known_races''')
+  races = query_first_col(c, '''SELECT race FROM known_races''')
   races.sort()
   return races
 
