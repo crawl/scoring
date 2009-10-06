@@ -3,6 +3,7 @@ import scload
 import time
 import crawl_utils
 import sys
+import query
 
 import logging
 from logging import debug, info, warn, error
