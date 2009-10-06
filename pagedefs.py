@@ -113,6 +113,7 @@ def mark_all_clean():
   DIRTY_PLAYERS.clear()
 
 def rebuild(c):
+  render(c, 'index')
   render_pages(c)
   mark_all_clean()
 

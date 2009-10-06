@@ -8,17 +8,7 @@
   </head>
   <body class="page_back">
     <div class="page information">
-
-      <div class="toplinks">
-        <a href="http://crawl.akrasiac.org/scoring/overview.html">Overview</a>
-        &nbsp;
-        <a href="http://crawl.akrasiac.org/scoring/best-players-total-score.html">Players</a>
-        &nbsp;
-        <a href="http://crawl.akrasiac.org/scoring/index.html">ToC</a>
-        &nbsp;
-        <a href="http://crawl.akrasiac.org">crawl.akrasiac.org</a>
-      </div>
-
+      <%include file="toplink.mako"/>
       <div class="page_content">
         <h2>CAO/CDO Scoring Pages</h2>
 
