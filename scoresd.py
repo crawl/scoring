@@ -44,7 +44,6 @@ def tail_logfiles(logs, milestones, interval=60):
   finally:
     scload.set_active_cursor(None)
     cursor.close()
-    scload.cleanup_listeners(db)
     db.close()
 
 if __name__ == '__main__':
@@ -58,7 +57,6 @@ if __name__ == '__main__':
   else:
     logging.basicConfig(level=logging.DEBUG, format = logformat)
 
-  scload.load_extensions()
   if daemon:
     crawl_utils.daemonize()
   tail_logfiles( scload.LOGS, scload.MILESTONES, 60 )

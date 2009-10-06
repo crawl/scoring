@@ -574,4 +574,4 @@ def act_on_logfile_line(c, this_game):
   update_killer_stats(c, this_game)
   update_gkills(c, this_game)
   update_per_day_stats(c, this_game)
-  update_known_races_classes(c, g)
+  update_known_races_classes(c, this_game)
