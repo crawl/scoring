@@ -667,7 +667,7 @@ def player_stats_matrix(c, player):
   rows = []
   stats = player_get_stats(c, player)
 
-  rows.append(['&nbsp;'] + classes + ['&nbsp;', '&nbsp;'])
+  rows.append(['&nbsp;'] + classes + ['&nbsp;&nbsp;', '&nbsp;'])
 
   cstats = [ {'class_total': True,
               'games': 0,

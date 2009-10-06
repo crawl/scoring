@@ -417,3 +417,27 @@ tr.date-month td {
   border-bottom: 2px solid #999;
   background: #fff0e0;
 }
+
+table.stat-table {
+  font-size: 12px;
+}
+
+table.stat-table td.stat-total {
+  background: #bfbab0;
+  color: #000;
+}
+
+table.stat-table td {
+  text-align: right;
+  font-weight: bold;
+}
+
+table.stat-table td.stat-win {
+  color: #a70;
+}
+
+table.stat-table div.xl {
+  text-align: left;
+  font-size: 10px;
+  color: #aaa;
+}

@@ -12,6 +12,7 @@
    combo_highscores = query.player_combo_highscores(c, player)
    species_highscores = query.player_species_highscores(c, player)
    class_highscores = query.player_class_highscores(c, player)
+   stats = query.player_stats_matrix(c, player)
  %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -77,9 +78,17 @@
             <hr>
           % endif
 
-          <h3>Character Stats</h3>
-          ${html.player_stats_matrix(query.player_stats_matrix(c, player))}
+          <h3>Winning Characters</h3>
+          ${html.player_stats_matrix(stats, 'wins')}
+          <hr>
 
+          <h3>Games Played</h3>
+          ${html.player_stats_matrix(stats, 'games')}
+          <hr>
+
+          <h3>Best Character Levels</h3>
+          ${html.player_stats_matrix(stats, 'xl')}
+          <hr>
         </div>
       </div> <!-- content -->
     </div> <!-- page -->

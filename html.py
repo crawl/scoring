@@ -612,7 +612,7 @@ def date_stats(stats):
                     rowdatafn=daterowdata,
                     count=False)
 
-def player_stats_cell(cell):
+def player_stats_cell(cell, thing):
   if cell is None:
     return "<td>&nbsp;</td>"
   elif isinstance(cell, str):
@@ -625,15 +625,14 @@ def player_stats_cell(cell):
     if cell['wins'] > 0:
       cls.append('stat-win')
     text = ''
-    def keytext(cls, key):
-      return "<div class='%s'>%s</div>" % (cls,  cell[key] or '&nbsp;')
-    text += keytext('win', 'wins')
-    text += keytext('', 'games')
-    text += keytext('xl', 'xl')
+    def keytext(key):
+      return str(cell[key] or '&nbsp;')
+    cls.append(thing)
+    text += keytext(thing)
     return "<td class='%s'>%s</td>" % (" ".join(cls), text)
 
-def player_stats_matrix(stats):
-  res = '<table class="stat-table">'
+def player_stats_matrix(stats, thing):
+  res = '<table class="stat-table bordered">'
   for row in stats:
-    res += '<tr>' + "".join([player_stats_cell(x) for x in row]) + '</tr>'
+    res += '<tr>' + "".join([player_stats_cell(x, thing) for x in row]) + '</tr>'
   return res + '</table>'
