@@ -24,7 +24,7 @@
           <div>
             <h2>Server Activity</h2>
 
-            % if html.MATPLOT:
+            % if html.MATPLOT and len(stats) > 100:
             <img src="date-stats.png" title="Activity Graph"
                  alt="Server Activity Graph">
             % endif

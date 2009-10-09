@@ -615,7 +615,7 @@ def create_image(filename, stats):
   plt.savefig(filename)
 
 def date_stats(stats):
-  if MATPLOT:
+  if MATPLOT and len(stats) > 100:
     create_image(os.path.join(crawl_utils.SCORE_FILE_DIR, 'date-stats.png'),
                  stats)
 
