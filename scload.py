@@ -26,7 +26,7 @@ LIMIT_ROWS = 0
 START_TIME = '20090801'
 END_TIME   = '20090901'
 
-OLDEST_VERSION = '0.4'
+OLDEST_VERSION = '0.1'
 
 CAO = 'http://crawl.akrasiac.org/'
 CDO = 'http://crawl.develz.org/'
