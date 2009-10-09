@@ -563,7 +563,6 @@ def winner_stats(stats):
                      'Max Runes', 'Best Score', 'Total Score', 'Average Score'],
                     stats)
 
-
 def create_image(filename, stats):
   plt.figure(1)
   plt.title('Activity on CAO/CDO')
@@ -571,37 +570,47 @@ def create_image(filename, stats):
   rstats = list(stats)
   rstats.reverse()
 
-  days = [x for x in rstats if x.has_key('day')]
+  days = [dict(x) for x in rstats if x.has_key('day')]
 
   def rolling_average(l, field, window = 5):
+    res = []
     b = []
+    prev = None
     for x in l:
       value = x[field]
       b.append(value)
       if len(b) > window:
         b = b[1:]
-      x[field] = sum(b) / len(b)
+      v = sum(b) * 1.0 / len(b)
+      res.append(v)
+      res.append(value)
+    return res
 
-  rolling_average(days, 'games', 5)
-  #rolling_average(days, 'wins', 2)
-  games = [x['games'] for x in days]
-  wins = [x['wins'] for x in days]
+  games = rolling_average(days, 'games', 5)
+  wins = rolling_average(days, 'wins', 5)
 
   plt.subplot(211)
-  plt.title('Games Played and Wins')
-  lgames, = plt.plot(games, 'b-')
+  plt.title('Server Activity')
+  plt.plot(games, 'b-')
+  plt.axis([0, len(games), 0, max(games) * 1.2])
 
   intervals = [x for x in range(0, len(days))
                if days[x]['day'].endswith('01')]
+  padded_intervals = [x * 2 for x in intervals]
 
   labels = ['' for x in [days[i] for i in intervals]]
-  plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.ylabel('Games')
+  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.grid(alpha=0.2, linestyle='-')
 
   plt.subplot(212)
-  lwins, = plt.plot(wins, 'r-')
 
+  plt.vlines(range(len(wins)), 0, wins, 'g')
+  plt.axis([0, len(wins), 0, max(wins) * 3])
   labels = [x['day'] for x in [days[i] for i in intervals]]
-  plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.ylabel('Wins')
+  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.grid(alpha=0.2, linestyle='-')
 
   plt.savefig(filename)
 
