@@ -564,6 +564,7 @@ def winner_stats(stats):
                     stats)
 
 def create_image(filename, stats):
+  plt.clf()
   plt.figure(1)
   plt.title('Activity on CAO/CDO')
 
