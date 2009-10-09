@@ -33,11 +33,6 @@ CREATE INDEX players_win_stats ON players (games_won DESC, games_played);
 CREATE UNIQUE INDEX player_cstats_name_char
                  ON player_char_stats (name, charabbr);
 CREATE INDEX player_char_stats_name_cab ON player_char_stats (name, charabbr);
-CREATE TABLE top_killers (
-  ckiller VARCHAR(100) UNIQUE PRIMARY KEY,
-  kills BIGINT DEFAULT 0,
-  most_recent_victim VARCHAR(20)
-);
 CREATE INDEX top_killers_kills ON top_killers (kills DESC, ckiller);
 CREATE INDEX killer_recent_kills_ckiller ON killer_recent_kills (ckiller);
 CREATE INDEX ghost_victims_ghost ON ghost_victims (ghost);
