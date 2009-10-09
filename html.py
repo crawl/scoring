@@ -596,7 +596,7 @@ def create_image(filename, stats):
   padded_intervals = [x * 2 for x in intervals]
 
 
-  plt.subplot(211)
+  plt.subplot(311)
   plt.plot(games, 'b-')
   plt.axis([0, len(games), 0, max(games) * 1.2])
   labels = ['' for x in [days[i] for i in intervals]]
@@ -604,7 +604,7 @@ def create_image(filename, stats):
   plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
-  plt.subplot(212)
+  plt.subplot(312)
   plt.vlines(range(len(wins)), 0, wins, 'g')
   plt.axis([0, len(wins), 0, max(wins) * 3])
   labels = [x['day'] for x in [days[i] for i in intervals]]
@@ -612,7 +612,7 @@ def create_image(filename, stats):
   plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
-  plt.subplot(213)
+  plt.subplot(313)
   plt.plot(players, 'r-')
   plt.axis([0, len(players), 0, max(players) * 1.2])
   labels = ['' for x in [days[i] for i in intervals]]
