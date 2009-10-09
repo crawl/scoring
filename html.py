@@ -589,26 +589,34 @@ def create_image(filename, stats):
 
   games = rolling_average(days, 'games', 5)
   wins = rolling_average(days, 'wins', 5)
-
-  plt.subplot(211)
-  plt.plot(games, 'b-')
-  plt.axis([0, len(games), 0, max(games) * 1.2])
+  players = rolling_average(days, 'players', 5)
 
   intervals = [x for x in range(0, len(days))
                if days[x]['day'].endswith('01')]
   padded_intervals = [x * 2 for x in intervals]
 
+
+  plt.subplot(211)
+  plt.plot(games, 'b-')
+  plt.axis([0, len(games), 0, max(games) * 1.2])
   labels = ['' for x in [days[i] for i in intervals]]
   plt.ylabel('Games')
   plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
   plt.subplot(212)
-
   plt.vlines(range(len(wins)), 0, wins, 'g')
   plt.axis([0, len(wins), 0, max(wins) * 3])
   labels = [x['day'] for x in [days[i] for i in intervals]]
   plt.ylabel('Wins')
+  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.grid(alpha=0.2, linestyle='-')
+
+  plt.subplot(213)
+  plt.plot(players, 'r-')
+  plt.axis([0, len(players), 0, max(players) * 1.2])
+  labels = ['' for x in [days[i] for i in intervals]]
+  plt.ylabel('Players')
   plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
