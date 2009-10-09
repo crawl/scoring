@@ -7,6 +7,7 @@ import os.path
 import scload
 import query
 import crawl_utils
+import locale
 
 from logging import debug, info, warn, error
 
@@ -17,6 +18,10 @@ def render(c, page, dest=None, pars=None):
   """Given a db context and a .mako template (without the .mako extension)
   renders the template and writes it back to <page>.html in the tourney
   scoring directory. Setting dest overrides the destination filename."""
+
+  # Something resets the locale :/
+  locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+
   if not pars or not pars.has_key('quiet'):
     info("Rendering " + page)
   target = "%s/%s.html" % (crawl_utils.SCORE_FILE_DIR, dest or page)

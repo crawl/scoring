@@ -1,5 +1,5 @@
 <%
-   import query, scload, html, time
+   import query, scload, html
    c = attributes['cursor']
 
    title = "CAO/CDO Scoring Overview"
