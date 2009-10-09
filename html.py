@@ -583,23 +583,23 @@ def create_image(filename, stats):
       x[field] = sum(b) / len(b)
 
   rolling_average(days, 'games', 5)
-  rolling_average(days, 'wins', 2)
+  #rolling_average(days, 'wins', 2)
   games = [x['games'] for x in days]
   wins = [x['wins'] for x in days]
 
   plt.subplot(211)
+  plt.title('Games Played and Wins')
   lgames, = plt.plot(games, 'b-')
-  plt.legend([lgames], ["Games Played"])
 
-  intervals = range(0, len(days), 15)
+  intervals = [x for x in range(0, len(days))
+               if days[x]['day'].endswith('01')]
+
   labels = ['' for x in [days[i] for i in intervals]]
   plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
 
   plt.subplot(212)
   lwins, = plt.plot(wins, 'r-')
-  plt.legend([lwins], ["Wins"])
 
-  intervals = range(0, len(days), 15)
   labels = [x['day'] for x in [days[i] for i in intervals]]
   plt.xticks(intervals, labels, size = 'xx-small', rotation = 'vertical')
 
