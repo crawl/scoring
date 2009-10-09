@@ -605,18 +605,18 @@ def create_image(filename, stats):
   plt.grid(alpha=0.2, linestyle='-')
 
   plt.subplot(312)
-  plt.vlines(range(len(wins)), 0, wins, 'g')
-  plt.axis([0, len(wins), 0, max(wins) * 3])
-  labels = [x['day'] for x in [days[i] for i in intervals]]
-  plt.ylabel('Wins')
-  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
-  plt.grid(alpha=0.2, linestyle='-')
-
-  plt.subplot(313)
   plt.plot(players, 'r-')
   plt.axis([0, len(players), 0, max(players) * 1.2])
   labels = ['' for x in [days[i] for i in intervals]]
   plt.ylabel('Players')
+  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.grid(alpha=0.2, linestyle='-')
+
+  plt.subplot(313)
+  plt.vlines(range(len(wins)), 0, wins, 'g')
+  plt.axis([0, len(wins), 0, max(wins) * 3])
+  labels = [x['day'] for x in [days[i] for i in intervals]]
+  plt.ylabel('Wins')
   plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
