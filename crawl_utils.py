@@ -3,6 +3,8 @@ import logging
 import fcntl
 import sys
 import locale
+import glob
+import re
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
@@ -32,6 +34,8 @@ CAO_OVERVIEW = '''<a href="%s/overview.html">Overview</a>''' % CAO_SCORING_BASE
 
 RAWDATA_PATH = '/var/www/crawl/rawdata'
 SCORESD_STOP_REQUEST_FILE = os.path.join(BASEDIR, 'scoresd.stop')
+
+R_MORGUE_TIME = re.compile(r'morgue-\w+-(.*?)\.txt$')
 
 MKDIRS = [ SCORE_FILE_DIR, PLAYER_FILE_DIR ]
 
@@ -150,9 +154,66 @@ def player_link(player):
 def banner_link(banner):
   return CAO_IMAGE_BASE + '/' + banner
 
+def morgue_time_string(raw_time):
+  return raw_time[:8] + "-" + raw_time[8:]
+
+def morgue_filename(name, timestr):
+  return RAWDATA_PATH + "/" + name + "/morgue-" + name + "-" + timestr + ".txt"
+
+def cao_morgue_url(name, timestr):
+  return "%s/%s/morgue-%s-%s.txt" % (CAO_MORGUE_BASE, name, name, timestr)
+
+def cao_morgue_files(name):
+  rawmorgues = glob.glob(morgue_filename(name, '*'))
+  rawmorgues.sort()
+  return rawmorgues
+
+def morgue_binary_search(morgues, guess):
+  size = len(morgues)
+  if size == 1:
+    return guess < morgues[0] and morgues[0]
+
+  s = 0
+  e = size
+  while e - s > 1:
+    pivot = int((s + e) / 2)
+    if morgues[pivot] == guess:
+      return morgues[pivot]
+    elif morgues[pivot] < guess:
+      s = pivot
+    else:
+      e = pivot
+  return e < size and morgues[e]
+
+@Memoizer
+def find_cao_morgue_link(name, end_time):
+  fulltime = morgue_time_string(end_time)
+  if os.path.exists(morgue_filename(name, fulltime)):
+    return cao_morgue_url(name, fulltime)
+
+  # Drop seconds for really ancient morgues.
+  parttime = fulltime[:-2]
+  if os.path.exists(morgue_filename(name, parttime)):
+    return cao_morgue_url(name, parttime)
+
+  # At this point we have no option but to brute-force the search.
+  morgue_list = cao_morgue_files(name)
+
+  # morgues are sorted. The morgue date should be greater than the
+  # full timestamp.
+  best_morgue = morgue_binary_search(morgue_list,
+                                     morgue_filename(name, fulltime))
+  if best_morgue:
+    m = R_MORGUE_TIME.search(best_morgue)
+    if m:
+      return cao_morgue_url(name, m.group(1))
+  return None
+
 def morgue_link(xdict):
   """Returns a hyperlink to the morgue file for a dictionary that contains
   all fields in the games table."""
+  if xdict['v'] < '0.4' and xdict['source_file'].find('cao') >= 0:
+    return find_cao_morgue_link(xdict['name'], xdict['end_time'])
   src = xdict['source_file']
   name = xdict['name']
 
@@ -162,7 +223,11 @@ def morgue_link(xdict):
 
 def linked_text(key, link_fn, text=None):
   link = link_fn(key)
-  return '<a href="%s">%s</a>' % (link, str(text or key).replace('_', ' '))
+  ltext = str(text or key).replace('_', ' ')
+  if link:
+    return '<a href="%s">%s</a>' % (link, ltext)
+  else:
+    return ltext
 
 def human_number(n):
   return locale.format('%d', n, True)
