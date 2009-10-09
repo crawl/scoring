@@ -187,7 +187,7 @@ def morgue_binary_search(morgues, guess):
 
 @Memoizer
 def find_cao_morgue_link(name, end_time):
-  fulltime = morgue_time_string(end_time)
+  fulltime = end_time
   if os.path.exists(morgue_filename(name, fulltime)):
     return cao_morgue_url(name, fulltime)
 
@@ -212,12 +212,12 @@ def find_cao_morgue_link(name, end_time):
 def morgue_link(xdict):
   """Returns a hyperlink to the morgue file for a dictionary that contains
   all fields in the games table."""
-  if xdict['v'] < '0.4' and xdict['source_file'].find('cao') >= 0:
-    return find_cao_morgue_link(xdict['name'], xdict['end_time'])
+
   src = xdict['source_file']
   name = xdict['name']
-
   stime = format_time( xdict['end_time'] )
+  if xdict['v'] < '0.4' and src.find('cao') >= 0:
+    return find_cao_morgue_link(name, stime)
   base = src.find('cao') >= 0 and CAO_MORGUE_BASE or CDO_MORGUE_BASE
   return "%s/%s/morgue-%s-%s.txt" % (base, name, name, stime)
 

@@ -1,7 +1,7 @@
 import query, crawl_utils, time
 import scload
 
-from crawl_utils import player_link, linked_text, human_number
+from crawl_utils import player_link, linked_text, human_number, morgue_link
 import re
 import os.path
 import locale
@@ -334,12 +334,11 @@ def games_table(games, first=None, excluding=None, columns=None,
 
       need_link = len(c) >= 3 and c[2]
       if need_link:
-        out += r'<a href="%s">' % crawl_utils.morgue_link(game)
+        out += linked_text(game, morgue_link, str(val))
       elif is_player_header(c[1]):
-        val = linked_text(val, player_link)
-      out += str(val)
-      if need_link:
-        out += '</a>'
+        out += linked_text(val, player_link)
+      else:
+        out += str(val)
       out += '</td>'
     out += "</tr>\n"
   out += "</table>\n"

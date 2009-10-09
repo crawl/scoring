@@ -556,7 +556,6 @@ class Query:
 
   def execute_untimed(self, cursor):
     """Executes query on the supplied cursor."""
-    print "Untimed <3"
     self.query = self.query.strip()
     if not self.query.endswith(';'):
       self.query += ';'
