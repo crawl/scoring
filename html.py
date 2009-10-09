@@ -590,7 +590,6 @@ def create_image(filename, stats):
   wins = rolling_average(days, 'wins', 5)
 
   plt.subplot(211)
-  plt.title('Server Activity')
   plt.plot(games, 'b-')
   plt.axis([0, len(games), 0, max(games) * 1.2])
 
