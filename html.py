@@ -42,7 +42,8 @@ STOCK_WIN_COLUMNS = \
       ('dur', 'Duration'),
       ('god', 'God'),
       ('urune', 'Runes'),
-      ('end_time', 'Time', True)
+      ('end_time', 'Time', True),
+      ('v', 'Version')
     ]
 
 EXT_WIN_COLUMNS = \
@@ -54,7 +55,8 @@ EXT_WIN_COLUMNS = \
       ('turn', 'Turns'),
       ('dur', 'Duration'),
       ('urune', 'Runes'),
-      ('end_time', 'Date')
+      ('end_time', 'Date'),
+      ('v', 'Version')
     ]
 
 STOCK_COLUMNS = \
@@ -67,7 +69,8 @@ STOCK_COLUMNS = \
       ('dur', 'Duration'),
       ('god', 'God'),
       ('urune', 'Runes'),
-      ('end_time', 'Time', True)
+      ('end_time', 'Time', True),
+      ('v', 'Version')
     ]
 
 EXT_COLUMNS = \
@@ -81,7 +84,8 @@ EXT_COLUMNS = \
       ('turn', 'Turns'),
       ('dur', 'Duration'),
       ('urune', 'Runes'),
-      ('end_time', 'Date')
+      ('end_time', 'Date'),
+      ('v', 'Version')
     ]
 
 WHERE_COLUMNS = \
@@ -169,7 +173,7 @@ def is_player_header(header):
   return header in ['Player', 'Captain']
 
 def is_numeric_column(col):
-  return (col in ['sc', 'turn']
+  return (col in ['sc', 'turn', 'v']
           or col.find('%') != -1
           or col.lower().find('score') != -1)
 

@@ -27,6 +27,20 @@
         <hr>
 
         <div class="content">
+
+          <div class="row">
+            <div>
+              <h3>Recent Wins</h3>
+              ${html.ext_games_table(query.recent_wins(c), win=True)}
+            </div>
+            <div>
+	          <h3>Recent All-Rune Wins</h3>
+              ${html.ext_games_table(query.recent_allrune_wins(c), win=True)}
+            </div>
+          </div>
+
+          <hr>
+          
           <div class="row">
             <div>
               <h3>Top Scores</h3>
@@ -39,19 +53,6 @@
             <div>
               <h3>Fastest Wins (Real Time)</h3>
               <%include file="fastest-time.mako"/>
-            </div>
-          </div>
-
-          <hr>
-
-          <div class="row">
-            <div>
-              <h3>Recent Wins</h3>
-              ${html.ext_games_table(query.recent_wins(c), win=True)}
-            </div>
-            <div>
-	          <h3>Recent All-Rune Wins</h3>
-              ${html.ext_games_table(query.recent_allrune_wins(c), win=True)}
             </div>
           </div>
 
