@@ -7,12 +7,12 @@ Running the scoring scripts:
    discarding any existing data.
 
 3. ./link-setup will link the various logfiles into the current directory
-   for scload to work on.
+   for the scoring scripts to work on.
 
 4. python scoresd.py will start a daemon to update the db continuously from
    the logfile and milestones. taildb is otherwise identical in behaviour
-   to scload.py.
+   to scbootstrap.py.
 
 Other scripts:
 
-For a one-off scoring update, you can run python scload.py.
+For a one-off scoring update, you can run python scbootstrap.py.

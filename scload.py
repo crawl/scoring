@@ -37,25 +37,31 @@ CDO = 'http://crawl.develz.org/'
 
 # Treat CAO files as remote if running on greensnark's machine
 if 'tecumseh' in os.getcwd():
-  LOGS = [ ('cao-logfile-0.4', CAO + 'logfile04'),
+  LOGS = [ ('cao-logfile-0.123', CAO + 'allgames.txt'),
+           ('cao-logfile-0.4', CAO + 'logfile04'),
            ('cao-logfile-0.5', CAO + 'logfile05'),
            ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
            ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
            ]
 
-  MILESTONES = [ ('cao-milestones-0.5', CAO + 'milestones05.txt'),
+  MILESTONES = [ ('cao-milestones-0.2', CAO + 'milestones02.txt'),
+                 ('cao-milestones-0.3', CAO + 'milestones03.txt'),
                  ('cao-milestones-0.4', CAO + 'milestones04.txt'),
+                 ('cao-milestones-0.5', CAO + 'milestones05.txt'),
                  ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
                  ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
                  ]
 else:
-  LOGS = [ 'cao-logfile-0.4',
+  LOGS = [ 'cao-logfile-0.123',
+           'cao-logfile-0.4',
            'cao-logfile-0.5',
            ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
            ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
            ]
 
-  MILESTONES = [ 'cao-milestones-0.5',
+  MILESTONES = [ 'cao-milestones-0.2',
+                 'cao-milestones-0.3',
+                 'cao-milestones-0.5',
                  'cao-milestones-0.4',
                  ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
                  ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
@@ -906,8 +912,24 @@ def table_names():
       tables.append(m.group(1))
   return tables
 
+@crawl_utils.DBMemoizer
+def is_known_raceclasses_empty(c):
+  return (query_first(c, "SELECT COUNT(*) FROM known_classes") == 0
+          or query_first(c, "SELECT COUNT(*) FROM known_races") == 0)
+
+def bootstrap_known_raceclasses(c):
+  if is_known_raceclasses_empty(c):
+    is_known_raceclasses_empty.flush()
+    query_do(c, "TRUNCATE TABLE known_classes")
+    query_do(c, "TRUNCATE TABLE known_races")
+    query_do(c, """INSERT INTO known_classes
+                 SELECT DISTINCT SUBSTR(charabbr, 3) FROM player_char_stats""")
+    query_do(c, """INSERT INTO known_races
+                 SELECT DISTINCT SUBSTR(charabbr, 1, 2)
+                 FROM player_char_stats""")
+
 def full_load(c, master):
-  query.bootstrap_known_raceclasses(c)
+  bootstrap_known_raceclasses(c)
   master.tail_all(c)
 
 def init_listeners(db):

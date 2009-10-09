@@ -1,5 +1,9 @@
 #!/bin/bash
 
+ln -s /var/www/crawl/allgames.txt cao-logfile-0.123
+ln -s /home/crawl/chroot/var/games/crawl02/saves/milestones.txt cao-milestones-0.2
+ln -s /home/crawl/chroot/var/games/crawl03/saves/milestones.txt cao-milestones-0.3
+
 ln -s /home/crawl/chroot/var/games/crawl04/saves/logfile cao-logfile-0.4
 ln -s /home/crawl/chroot/var/games/crawl04/saves/milestones.txt cao-milestones-0.4
 

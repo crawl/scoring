@@ -621,31 +621,15 @@ def date_stats(c):
   return result
 
 @DBMemoizer
-def is_known_raceclasses_empty(c):
-  return (query_first(c, "SELECT COUNT(*) FROM known_classes") == 0
-          or query_first(c, "SELECT COUNT(*) FROM known_races") == 0)
-
-def bootstrap_known_raceclasses(c):
-  if is_known_raceclasses_empty(c):
-    is_known_raceclasses_empty.flush()
-    query_do(c, "TRUNCATE TABLE known_classes")
-    query_do(c, "TRUNCATE TABLE known_races")
-    query_do(c, """INSERT INTO known_classes
-                 SELECT DISTINCT SUBSTR(charabbr, 3) FROM player_char_stats""")
-    query_do(c, """INSERT INTO known_races
-                 SELECT DISTINCT SUBSTR(charabbr, 1, 2)
-                 FROM player_char_stats""")
-
-@DBMemoizer
 def all_classes(c):
-  bootstrap_known_raceclasses(c)
+  scload.bootstrap_known_raceclasses(c)
   clx = query_first_col(c, '''SELECT cls FROM known_classes''')
   clx.sort()
   return clx
 
 @DBMemoizer
 def all_races(c):
-  bootstrap_known_raceclasses(c)
+  scload.bootstrap_known_raceclasses(c)
   races = query_first_col(c, '''SELECT race FROM known_races''')
   races.sort()
   return races
