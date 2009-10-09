@@ -4,6 +4,7 @@ import scload
 from crawl_utils import player_link, linked_text, human_number
 import re
 import os.path
+import locale
 
 try:
   import matplotlib.pyplot as plt
@@ -96,6 +97,10 @@ WHERE_COLUMNS = \
     ]
 
 R_STR_DATE = re.compile(r'^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})')
+
+def force_locale():
+  # Something resets the locale :/
+  locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 def fixup_column(col, data, game):
   if col.find('time') != -1:
@@ -213,6 +218,7 @@ def table_text(headers, data, cls='bordered',
                rowdatafn=None,
                place_column=-1,
                stub_text='No data'):
+  force_locale()
   if cls:
     cls = ''' class="%s"''' % cls
   if width:

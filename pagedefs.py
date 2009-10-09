@@ -8,19 +8,21 @@ import scload
 import query
 import crawl_utils
 import locale
+import html
 
 from logging import debug, info, warn, error
 
 TEMPLATE_DIR = os.path.abspath('templates')
 MAKO_LOOKUP = mako.lookup.TemplateLookup(directories = [ TEMPLATE_DIR ])
 
+force_locale = html.force_locale
+
 def render(c, page, dest=None, pars=None):
   """Given a db context and a .mako template (without the .mako extension)
   renders the template and writes it back to <page>.html in the tourney
   scoring directory. Setting dest overrides the destination filename."""
 
-  # Something resets the locale :/
-  locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+  force_locale()
 
   if not pars or not pars.has_key('quiet'):
     info("Rendering " + page)
@@ -54,7 +56,7 @@ def player_page(c, player):
          pars = { 'player' : player, 'quiet': True })
 
 PAGE_DEFS = [
-  [ 'overview' ],
+  [ 'overview' ], #
   [ 'top-N' ], #
   [ 'best-players-total-score' ], #
   [ 'top-combo-scores' ], #

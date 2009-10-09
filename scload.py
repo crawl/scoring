@@ -17,7 +17,7 @@ oparser = optparse.OptionParser()
 oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
 OPT, ARGS = oparser.parse_args()
-TIME_QUERIES = True
+TIME_QUERIES = False
 
 # Limit rows read to so many for testing.
 LIMIT_ROWS = 0
