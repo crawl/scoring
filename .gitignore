@@ -1,4 +1,5 @@
 scoring
+*.dump
 out.txt
 *.out
 \#*
