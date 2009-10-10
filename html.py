@@ -550,7 +550,7 @@ def top_combo_scores(rows):
 
 def top_thing_scorers(thingname, rows):
   return table_text( ['Scores', 'Player', thingname],
-                     rows )
+                     rows, place_column=0 )
 
 def curried_scorer(thing):
   return lambda rows: top_thing_scorers(thing, rows)
