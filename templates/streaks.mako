@@ -2,7 +2,7 @@
    import scload, query, crawl_utils, html, re
    c = attributes['cursor']
 
-   streaks = query.all_streaks(c, max_per_player=3)
+   streaks = query.all_streaks(c)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
