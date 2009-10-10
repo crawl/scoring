@@ -350,15 +350,19 @@ def extract_streaks(c, query, streak_filter=None, max_streaks=None):
   streaks.sort(streak_comparator)
   return max_streaks and streaks[:max_streaks] or streaks
 
-def all_streaks(c, max_per_player=3, max_streaks=None):
+def all_streaks(c, max_per_player=10, max_streaks=None, active_streaks=False):
   logf = logfields_prefixed('g.')
+
+  extra = ''
+  if active_streaks:
+    extra = 's.active = 1 AND '
   q = Query("SELECT s.id, s.player, s.ngames, s.start_game_time, " +
             "s.end_game_time, s.active, " + logf +
             ''' FROM streaks s, streak_games g
-               WHERE g.name = s.player
+               WHERE %s g.name = s.player
                  AND g.end_time >= s.start_game_time
                  AND g.end_time <= s.end_game_time
-            ORDER BY s.ngames DESC, s.id''')
+            ORDER BY s.ngames DESC, s.id''' % extra)
 
   pscounts = { }
   def player_streak_filter(g):

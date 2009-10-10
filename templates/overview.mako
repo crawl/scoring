@@ -6,7 +6,7 @@
    top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=5)
 
    streaks = query.all_streaks(c)
-   active_streaks = [x for x in streaks if x['active']]
+   active_streaks = query.all_streaks(c, active=True)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
