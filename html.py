@@ -199,7 +199,7 @@ def player_streaks_table(streaks):
                      streaks, rowclsfn = rowcls, rowdatafn = rowdata)
           + streak_legend(found_active))
 
-def all_streaks_table(streaks):
+def all_streaks_table(streaks, active=False):
   found_active = []
   def rowcls(s):
     if s['active']:
@@ -208,9 +208,10 @@ def all_streaks_table(streaks):
   def rowdata(s):
     return [s['ngames'], s['player'], s['start'], s['end'],
             ", ".join(s['games']), s['breaker']]
-  return (table_text(['Wins', 'Player', 'Start', 'End', 'Games',
-                      'Streak Breaker'],
-                     streaks, rowclsfn = rowcls, rowdatafn = rowdata)
+  heads = ['Wins', 'Player', 'Start', 'End', 'Games']
+  if not active:
+    heads.append('Streak Breaker')
+  return (table_text(heads, streaks, rowclsfn = rowcls, rowdatafn = rowdata)
           + streak_legend(found_active))
 
 def table_text(headers, data, cls='bordered',

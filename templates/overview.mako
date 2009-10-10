@@ -66,7 +66,7 @@
 
             <div>
               <h3>Active Streaks</h3>
-              ${html.all_streaks_table(active_streaks[:10])}
+              ${html.all_streaks_table(active_streaks[:10], active=True)}
             </div>
           </div>
 
