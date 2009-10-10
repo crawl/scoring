@@ -1,7 +1,11 @@
 New scoring script ideas:
 -------------------------
- - Add unique players per day.
- 
+ - Per-player stats:
+   - Overall games played, games won, win %, average score, best score.
+   - Player activity bar chart. Make sure we fill in the blank dates. :P
+   - Pie chart of species played, classes played, gods played,
+     species won, classes won, gods won.
+
 Later
 -----
 
