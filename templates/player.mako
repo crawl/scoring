@@ -4,6 +4,8 @@
    c = attributes['cursor']
    player = attributes['player']
 
+   ostats = html.overall_player_stats(c, player)
+   
    whereis = html.whereis(False, player)
    wins = query.player_wins(c, player)
    streaks = query.player_streaks(c, player, 10)
@@ -33,6 +35,9 @@
 
         <div class="content">
 
+          <h3>Overall Stats</h3>
+          ${ostats}
+        
           %if whereis:
           <div class="game_table">
             <h3>Ongoing Game (cao)</h3>

@@ -233,23 +233,40 @@ def best_players_by_total_score(c):
                + [avg_score] + list(rl[5:]))
   return res
 
+def fixup_player_stats(c, rl):
+  games = player_best_first_last(c, rl[0])
+  rl[5] = linked_text(games[0], morgue_link, human_number(rl[5]))
+  rl[6] = linked_text(games[1], morgue_link, rl[6])
+  rl[7] = linked_text(games[2], morgue_link, rl[7])
+  win_perc = calc_perc_pretty(rl[2], rl[1]) + "%"
+  avg_score = calc_avg_int(rl[3], rl[1])
+  return { 'total_score': rl[3],
+           'name': rl[0],
+           'games_played': rl[1],
+           'games_won': rl[2],
+           'win_perc': win_perc,
+           'best_xl': rl[4],
+           'best_score': rl[5],
+           'avg_score': avg_score,
+           'first_game': rl[6],
+           'last_game': rl[7] }
+
 def all_player_stats(c):
   rows = query_rows(c, '''SELECT name, games_played, games_won,
                                  total_score, best_xl, best_score,
                                  first_game_start, last_game_end
                             FROM players
                            ORDER BY name''')
+
+  def flatten_row(r):
+    return [r[s] for s in
+            ("total_score name games_played games_won win_perc " +
+             "best_xl best_score avg_score first_game last_game").split()]
+
   res = []
   for r in rows:
     rl = list(r)
-    games = player_best_first_last(c, rl[0])
-    rl[5] = linked_text(games[0], morgue_link, human_number(rl[5]))
-    rl[6] = linked_text(games[1], morgue_link, rl[6])
-    rl[7] = linked_text(games[2], morgue_link, rl[7])
-    win_perc = calc_perc_pretty(rl[2], rl[1]) + "%"
-    avg_score = calc_avg_int(rl[3], rl[1])
-    res.append([rl[3]] + list(rl[0:3]) + [win_perc] + rl[4:6]
-               + [avg_score] + list(rl[6:]))
+    res.append(flatten_row(fixup_player_stats(c, rl)))
   return res
 
 def top_combo_scores(c):
@@ -691,3 +708,11 @@ def player_stats_matrix(c, player):
   rows.append(['&nbsp;'] + classes + ['&nbsp;', '&nbsp;'])
 
   return rows
+
+def overall_player_stats(c, player):
+  row = query_row(c, '''SELECT name, games_played, games_won,
+                                 total_score, best_xl, best_score,
+                                 first_game_start, last_game_end
+                          FROM players
+                         WHERE name = %s''', player)
+  return fixup_player_stats(c, list(row))

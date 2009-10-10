@@ -663,3 +663,14 @@ def player_stats_matrix(stats, thing):
   for row in stats:
     res += '<tr>' + "".join([player_stats_cell(x, thing) for x in row]) + '</tr>'
   return res + '</table>'
+
+def overall_player_stats(c, player):
+  ostats = [ query.overall_player_stats(c, player) ]
+  def pstat_row(r):
+    return [ r['total_score'], r['games_played'], r['games_won'],
+             r['win_perc'], r['best_xl'], r['best_score'], r['avg_score'],
+             r['first_game'], r['last_game'] ]
+  return table_text(['Total Score', 'Games', 'Wins', 'Win %', 'Best XL',
+                     'Best Score', 'Average Score', 'First Game',
+                     'Most Recent Game'],
+                    ostats, rowdatafn=pstat_row, count=False, fixup=True)
