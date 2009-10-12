@@ -615,7 +615,7 @@ def create_image(filename, stats):
 
   plt.subplot(313)
   plt.vlines(range(len(wins)), 0, wins, 'g')
-  plt.axis([0, len(wins), 0, max(wins) * 3])
+  plt.axis([0, len(wins), 0, max(wins) * 1.5])
   labels = [x['day'] for x in [days[i] for i in intervals]]
   plt.ylabel('Wins')
   plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
