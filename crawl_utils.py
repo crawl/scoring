@@ -1,3 +1,4 @@
+import os
 import os.path
 import logging
 import fcntl
@@ -8,13 +9,22 @@ import re
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
+# Scoring script running on greensnark's machines are in debug mode.
+SNARK_USER = 'tecumseh'
+DEBUG_SCORES = (SNARK_USER in os.getcwd() or
+                (os.getenv('PWD') and SNARK_USER in os.getenv('PWD')))
+
 # Update every so often (seconds)
 UPDATE_INTERVAL = 21 * 60
 
 LOGFORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 
 LOCK = None
-BASEDIR = '/home/snark'
+
+if DEBUG_SCORES:
+  BASEDIR = os.getenv('HOME')
+else:
+  BASEDIR = '/home/snark'
 LOCKFILE = BASEDIR + '/scoring.lock'
 SCORE_FILE_DIR = 'scoring'
 PLAYER_BASE = 'players'
@@ -23,7 +33,7 @@ PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
 CAO_MORGUE_BASE = 'http://crawl.akrasiac.org/rawdata'
 CDO_MORGUE_BASE = 'http://crawl.develz.org/morgues/stable'
 # Use file URLs when testing on greensnark's machines.
-CAO_BASE = (('tecumseh' in os.getcwd())
+CAO_BASE = (DEBUG_SCORES
             and 'file:///var/www/crawl'
             or 'http://crawl.akrasiac.org')
 CAO_SCORING_BASE = '%s/scoring' % CAO_BASE

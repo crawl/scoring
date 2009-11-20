@@ -36,7 +36,7 @@ CDO = 'http://crawl.develz.org/'
 # will be read in strict chronological order.
 
 # Treat CAO files as remote if running on greensnark's machine
-if 'tecumseh' in os.getcwd():
+if crawl_utils.DEBUG_SCORES:
   LOGS = [ ('cao-logfile-0.123', CAO + 'allgames.txt'),
            ('cao-logfile-0.4', CAO + 'logfile04'),
            ('cao-logfile-0.5', CAO + 'logfile05'),
