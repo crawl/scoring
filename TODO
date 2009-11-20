@@ -49,12 +49,5 @@ Later
     Count, %, Win, Win%, % of all wins, Character
  
  - per player page:
-     - All wins
-     - All streaks
      - Ten topscoring games.
      - Ten most recent games.
-
-     Break up by race and class of:
-     - Highest CL
-     - Escapes with orb.
-     - Games played
