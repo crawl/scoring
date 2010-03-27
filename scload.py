@@ -42,7 +42,7 @@ if crawl_utils.DEBUG_SCORES:
            ('cao-logfile-0.5', CAO + 'logfile05'),
            ('cao-logfile-0.6', CAO + 'logfile06'),
            ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
-           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
+           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt'),
            ('cdo-logfile-0.6', CDO + 'allgames-0.6.txt')
            ]
 
@@ -52,7 +52,7 @@ if crawl_utils.DEBUG_SCORES:
                  ('cao-milestones-0.5', CAO + 'milestones05.txt'),
                  ('cao-milestones-0.5', CAO + 'milestones06.txt'),
                  ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
-                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
+                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt'),
                  ('cdo-milestones-0.6', CDO + 'milestones-0.6.txt')
                  ]
 else:
@@ -61,7 +61,7 @@ else:
            'cao-logfile-0.5',
            'cao-logfile-0.6',
            ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
-           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt')
+           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt'),
            ('cdo-logfile-0.6', CDO + 'allgames-0.6.txt')
            ]
 
@@ -71,7 +71,7 @@ else:
                  'cao-milestones-0.5',
                  'cao-milestones-0.6',
                  ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
-                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt')
+                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt'),
                  ('cdo-milestones-0.6', CDO + 'milestones-0.6.txt')
                  ]
 
