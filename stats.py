@@ -108,7 +108,9 @@ def add_ziggurat_milestone(c, g):
 
   place = g['place']
   mtype = g['type']
-  level = int(scload.R_PLACE_DEPTH.findall(place)[0])
+
+  place_matches = scload.R_PLACE_DEPTH.findall(place) or ['1']
+  level = int(place_matches[0])
   depth = level * 2
   # Leaving a ziggurat level by the exit gets more props than merely
   # entering the level.
