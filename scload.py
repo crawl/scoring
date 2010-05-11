@@ -347,7 +347,9 @@ def xlog_milestone_fixup(d):
   elif verb == 'god.renounce':
     noun = R_GOD_RENOUNCE.findall(milestone)[0]
   elif verb == 'god.mollify':
-    noun = R_GOD_MOLLIFY.findall(milestone)[0]
+    matches = R_GOD_MOLLIFY.findall(milestone)[0]
+    if matches:
+      noun = R_GOD_MOLLIFY.findall(milestone)[0]
   noun = noun or milestone
   d['verb'] = verb
   d['noun'] = noun
