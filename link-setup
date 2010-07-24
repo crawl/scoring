@@ -12,3 +12,6 @@ ln -s /home/crawl/chroot/var/games/crawl05/saves/milestones.txt cao-milestones-0
 
 ln -s /home/crawl/chroot/var/games/crawl06/saves/logfile cao-logfile-0.6
 ln -s /home/crawl/chroot/var/games/crawl06/saves/milestones.txt cao-milestones-0.6
+
+ln -s /home/crawl/chroot/var/games/crawl07/saves/logfile cao-logfile-0.7
+ln -s /home/crawl/chroot/var/games/crawl07/saves/milestones.txt cao-milestones-0.7
