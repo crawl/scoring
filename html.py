@@ -566,7 +566,7 @@ def winner_stats(stats):
 
 def create_image(filename, stats):
   plt.clf()
-  plt.figure(1)
+  plt.figure(1, figsize=(12,6))
   plt.title('Activity on CAO/CDO')
 
   rstats = list(stats)

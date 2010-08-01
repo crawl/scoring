@@ -22,10 +22,6 @@ TIME_QUERIES = False
 # Limit rows read to so many for testing.
 LIMIT_ROWS = 0
 
-# Start and end of the tournament, UTC.
-START_TIME = '20090801'
-END_TIME   = '20090901'
-
 OLDEST_VERSION = '0.1'
 
 CAO = 'http://crawl.akrasiac.org/'
