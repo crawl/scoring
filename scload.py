@@ -7,7 +7,7 @@ import crawl_utils
 import logging
 from logging import debug, info, warn, error
 
-from memoizer import DBMemoizer
+from memoizer import Memoizer, DBMemoizer
 
 import ConfigParser
 import imp
