@@ -6,7 +6,7 @@ import query
 import logging
 from logging import debug, info, warn, error
 import crawl_utils
-from crawl_utils import DBMemoizer
+from memoizer import DBMemoizer
 import crawl
 
 from scload import query_do, query_first, query_first_col, wrap_transaction

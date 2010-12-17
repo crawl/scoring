@@ -7,6 +7,8 @@ import crawl_utils
 import logging
 from logging import debug, info, warn, error
 
+from memoizer import DBMemoizer
+
 import ConfigParser
 import imp
 import sys
@@ -872,7 +874,7 @@ def create_master_reader():
                 [ Logfile(x) for x in LOGS ])
   return MasterXlogReader(processors)
 
-@crawl_utils.DBMemoizer
+@DBMemoizer
 def logfile_id(c, filename):
   return query_first_def(c, None,
                          '''SELECT id FROM logfile_offsets
@@ -913,7 +915,7 @@ def process_milestone(c, filename, offset, d):
   return process_xlog(c, filename, offset, d,
                       lambda l: l.milestone_event)
 
-@crawl_utils.Memoizer
+@Memoizer
 def table_names():
   f = open('database.sql')
   treg = re.compile(r'CREATE TABLE (\w+)')
@@ -924,7 +926,7 @@ def table_names():
       tables.append(m.group(1))
   return tables
 
-@crawl_utils.DBMemoizer
+@DBMemoizer
 def is_known_raceclasses_empty(c):
   return (query_first(c, "SELECT COUNT(*) FROM known_classes") == 0
           or query_first(c, "SELECT COUNT(*) FROM known_races") == 0)

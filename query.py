@@ -11,8 +11,9 @@ from scload import query_first_col, query_first_def, game_is_win
 
 import crawl
 import crawl_utils
-from crawl_utils import DBMemoizer, morgue_link, linked_text, human_number
-from crawl_utils import player_link
+from memoizer import DBMemoizer
+from crawl_utils import linked_text, human_number, player_link
+from morgue import morgue_link
 import uniq
 import os.path
 import re

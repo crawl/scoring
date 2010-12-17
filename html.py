@@ -1,7 +1,8 @@
 import query, crawl_utils, time
 import scload
 
-from crawl_utils import player_link, linked_text, human_number, morgue_link
+from crawl_utils import player_link, linked_text, human_number
+from morgue import morgue_link
 import re
 import os.path
 import locale
@@ -376,7 +377,7 @@ def most_pacific_wins(c, limit=6):
                      columns = STOCK_WIN_COLUMNS + [('kills', 'Kills')])
 
 def hyperlink_games(games, field):
-  hyperlinks = [ crawl_utils.morgue_link(g) for g in games ]
+  hyperlinks = [ morgue_link(g) for g in games ]
   text = [ '<a href="%s">%s</a>' % (link, g[field])
            for link, g in zip(hyperlinks, games) ]
   return ", ".join(text)
@@ -490,7 +491,7 @@ def _scored_win_text(g, text):
 
 def player_combo_scores(c, player):
   games = query.get_combo_scores(c, player=player)
-  games = [ [ crawl_utils.linked_text(g, crawl_utils.morgue_link,
+  games = [ [ crawl_utils.linked_text(g, morgue_link,
                                       _scored_win_text(g, g['charabbr'])),
               g['sc'] ]
             for g in games ]
@@ -500,7 +501,7 @@ def player_species_scores(c, player):
   games = query.game_hs_species(c, player)
 
   games = [
-    [ crawl_utils.linked_text(g, crawl_utils.morgue_link,
+    [ crawl_utils.linked_text(g, morgue_link,
                               _scored_win_text(g, g['charabbr'][:2])),
       g['sc'] ]
     for g in games ]
@@ -509,7 +510,7 @@ def player_species_scores(c, player):
 def player_class_scores(c, player):
   games = query.game_hs_classes(c, player)
   games = [
-    [ crawl_utils.linked_text(g, crawl_utils.morgue_link,
+    [ crawl_utils.linked_text(g, morgue_link,
                               _scored_win_text(g, g['charabbr'][2:])),
       g['sc'] ]
     for g in games ]
