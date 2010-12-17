@@ -4,7 +4,6 @@ import logging
 import fcntl
 import sys
 import locale
-import glob
 import re
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
@@ -109,10 +108,6 @@ def daemonize(lockfile = LOCKFILE):
     lock_handle(False)
   else:
     sys.exit(0)
-
-def format_time(time):
-  return "%04d%02d%02d-%02d%02d%02d" % (time.year, time.month, time.day,
-                                       time.hour, time.minute, time.second)
 
 def player_link(player):
   return "%s/%s.html" % (CAO_PLAYER_BASE, player.lower())

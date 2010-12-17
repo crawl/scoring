@@ -1,5 +1,8 @@
 from memoizer import Memoizer
 import re
+import os
+import glob
+from crawl_utils import RAWDATA_PATH
 
 R = re.compile
 
@@ -80,6 +83,10 @@ def find_cao_morgue_link(name, end_time):
 
 def game_is_cao(g):
   return g['source_file'].find('cao') >= 0
+
+def format_time(time):
+  return "%04d%02d%02d-%02d%02d%02d" % (time.year, time.month, time.day,
+                                       time.hour, time.minute, time.second)
 
 def morgue_link(g):
   """Given a game dictionary, returns a URL to the game's morgue."""

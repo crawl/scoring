@@ -567,6 +567,9 @@ def act_on_logfile_line(c, this_game):
   points (high scores, lowest dungeon level, fastest wins) should be
   calculated elsewhere."""
 
+  if 'start_time' not in this_game:
+    return
+
   # Update top-1000.
   update_topN(c, this_game, TOP_N)
 
