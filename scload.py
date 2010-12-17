@@ -43,7 +43,8 @@ if crawl_utils.DEBUG_SCORES:
            ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
            ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt'),
            ('cdo-logfile-0.6', CDO + 'allgames-0.6.txt'),
-           ('cdo-logfile-0.7', CDO + 'allgames-0.7.txt')
+           ('cdo-logfile-0.7', CDO + 'allgames-0.7.txt'),
+           ('cdo-logfile-svn', CDO + 'allgames-svn.txt')
            ]
 
   MILESTONES = [ ('cao-milestones-0.2', CAO + 'milestones02.txt'),
@@ -54,7 +55,8 @@ if crawl_utils.DEBUG_SCORES:
                  ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
                  ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt'),
                  ('cdo-milestones-0.6', CDO + 'milestones-0.6.txt'),
-                 ('cdo-milestones-0.7', CDO + 'milestones-0.7.txt')
+                 ('cdo-milestones-0.7', CDO + 'milestones-0.7.txt'),
+                 ('cdo-milestones-svn', CDO + 'milestones-svn.txt')
                ]
 else:
   LOGS = [ 'cao-logfile-0.123',
@@ -65,7 +67,8 @@ else:
            ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
            ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt'),
            ('cdo-logfile-0.6', CDO + 'allgames-0.6.txt'),
-           ('cdo-logfile-0.7', CDO + 'allgames-0.7.txt')
+           ('cdo-logfile-0.7', CDO + 'allgames-0.7.txt'),
+           ('cdo-logfile-svn', CDO + 'allgames-svn.txt')
            ]
 
   MILESTONES = [ 'cao-milestones-0.2',
@@ -77,7 +80,8 @@ else:
                  ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
                  ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt'),
                  ('cdo-milestones-0.6', CDO + 'milestones-0.6.txt'),
-                 ('cdo-milestones-0.7', CDO + 'milestones-0.7.txt')
+                 ('cdo-milestones-0.7', CDO + 'milestones-0.7.txt'),
+                 ('cdo-milestones-svn', CDO + 'milestones-svn.txt')
                  ]
 
 BLACKLIST_FILE = 'blacklist.txt'

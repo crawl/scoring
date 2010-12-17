@@ -9,7 +9,7 @@ import re
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
-# Scoring script running on greensnark's machines are in debug mode.
+# Scoring scripts running on greensnark's machines are in debug mode.
 SNARK_USER = 'tecumseh'
 DEBUG_SCORES = (SNARK_USER in os.getcwd() or
                 (os.getenv('PWD') and SNARK_USER in os.getenv('PWD')))
@@ -25,8 +25,10 @@ if DEBUG_SCORES:
   BASEDIR = os.getenv('HOME')
 else:
   BASEDIR = '/home/snark'
-LOCKFILE = BASEDIR + '/scoring.lock'
-SCORE_FILE_DIR = 'scoring'
+
+SCORING_KEY = 'scoring'
+LOCKFILE = BASEDIR + ('/%s.lock' % SCORING_KEY)
+SCORE_FILE_DIR = SCORING_KEY
 PLAYER_BASE = 'players'
 PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
 
@@ -34,7 +36,7 @@ PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
 CAO_BASE = (DEBUG_SCORES
             and 'file:///var/www/crawl'
             or 'http://crawl.akrasiac.org')
-CAO_SCORING_BASE = '%s/scoring' % CAO_BASE
+CAO_SCORING_BASE = '%s/%s' % (CAO_BASE, SCORING_KEY)
 CAO_IMAGE_BASE = CAO_SCORING_BASE + '/images'
 CAO_PLAYER_BASE = '%s/players' % CAO_SCORING_BASE
 
