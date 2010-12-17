@@ -54,7 +54,7 @@ if __name__ == '__main__':
   logformat = crawl_utils.LOGFORMAT
   if daemon:
     logging.basicConfig(level=logging.DEBUG,
-                        filename = (crawl_utils.BASEDIR + '/scores.log'),
+                        filename = crawl_utils.LOGFILE,
                         format = logformat)
   else:
     logging.basicConfig(level=logging.DEBUG, format = logformat)
