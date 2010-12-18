@@ -2,7 +2,6 @@
    import query, scload, html
    c = attributes['cursor']
 
-   title = "CAO/CDO Scoring Overview"
    top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=5)
 
    streaks = query.all_streaks(c)
@@ -11,12 +10,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-    <title>${title}</title>
-    <link rel="stylesheet" type="text/css" href="score.css">
-  </head>
+  <%include file="head.mako"/>
   <body class="page_back">
     <div class="page">
       <%include file="toplink.mako"/>

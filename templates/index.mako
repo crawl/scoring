@@ -1,16 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
            "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>CAO/CDO Scoring Pages</title>
-    <link rel="stylesheet" type="text/css" href="score.css">
-  </head>
+  <%include file="head.mako"/>
   <body class="page_back">
     <div class="page information">
       <%include file="toplink.mako"/>
       <div class="page_content">
-        <h2>CAO/CDO Scoring Pages</h2>
+        <h2>CAO/CDO Scoring Pages (stable and alpha versions)</h2>
 
         <div class="content">
 
