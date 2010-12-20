@@ -16,7 +16,7 @@
       <%include file="toplink.mako"/>
       <div class="page_content">
         <div class="heading">
-          <h1>${title}</h1>
+          <h1>${html.TITLE}</h1>
         </div>
         <hr>
 

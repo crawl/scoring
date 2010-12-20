@@ -7,6 +7,8 @@ import re
 import os.path
 import locale
 
+TITLE = "CAO/CDO Scoring (stable and alpha versions)"
+
 try:
   import matplotlib.pyplot as plt
   MATPLOT = True
