@@ -211,9 +211,10 @@ def all_streaks_table(streaks, active=False):
   def rowdata(s):
     return [s['ngames'], s['player'], s['start'], s['end'],
             ", ".join(s['games']), s['breaker']]
-  heads = ['Wins', 'Player', 'Start', 'End', 'Games']
-  if not active:
-    heads.append('Streak Breaker')
+  if active:
+    heads = ['Wins', 'Player', 'Start', 'Last', 'Games']
+  else:
+    heads = ['Wins', 'Player', 'Start', 'End', 'Games', 'Streak Breaker']
   return (table_text(heads, streaks, rowclsfn = rowcls, rowdatafn = rowdata)
           + streak_legend(found_active))
 
