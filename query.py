@@ -660,9 +660,9 @@ def player_get_stats(c, player):
                             FROM player_char_stats
                            WHERE name = %s''', player)
   for r in rows:
-    stats[r[0]] = { 'games': r[1],
-                    'xl': r[2],
-                    'wins': r[3] }
+    stats[r[0].lower()] = { 'games': r[1],
+                            'xl': r[2],
+                            'wins': r[3] }
   return stats
 
 def player_stats_matrix(c, player):
@@ -687,7 +687,7 @@ def player_stats_matrix(c, player):
     for i in range(len(classes)):
       c = classes[i]
       char = r + c
-      s = stats.get(char)
+      s = stats.get(char.lower())
       row.append(s)
       if s:
         rgames += s['games']
