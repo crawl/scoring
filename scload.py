@@ -235,8 +235,9 @@ class Xlogfile:
         return None
 
       self.offset = newoffset
-      # If this is a blank line, advance the offset and keep reading.
-      if not line.strip():
+      # If this is a blank line or a broken xlogline, advance the offset
+      # and keep reading.
+      if not line.strip() or invalid_xlog_line(line.strip()):
         continue
 
       d = xlog_dict(line)
@@ -373,6 +374,11 @@ associated with the same values in the target dictionary."""
 
 def canonical_killer(g):
   raw = g.get('killer') or g.get('ktyp')
+
+def invalid_xlog_line(logline):
+  logline = logline.strip()
+  # Reject anything with less than 6 fields
+  return logline.count(':') < 5
 
 def xlog_dict(logline):
   d = parse_logline(logline.strip())
