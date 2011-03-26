@@ -27,7 +27,7 @@
   </head>
 
   <body class="page_back">
-    <div class="page bannered">
+    <div class="page">
       <%include file="toplink.mako"/>
 
       <div class="page_content">
