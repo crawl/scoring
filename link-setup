@@ -19,5 +19,11 @@ ln -s /home/crawl/chroot/var/games/crawl07/saves/milestones cao-milestones-0.7
 ln -s /home/crawl/chroot/var/games/crawl08/saves/logfile cao-logfile-0.8
 ln -s /home/crawl/chroot/var/games/crawl08/saves/milestones cao-milestones-0.8
 
+ln -s /home/crawl/chroot/var/games/crawl09/saves/logfile cao-logfile-0.9
+ln -s /home/crawl/chroot/var/games/crawl09/saves/milestones cao-milestones-0.9
+
+ln -s /home/crawl/chroot/var/games/crawl10/saves/logfile cao-logfile-0.10
+ln -s /home/crawl/chroot/var/games/crawl10/saves/milestones cao-milestones-0.10
+
 ln -s /var/lib/dgamelaunch/crawl-master/crawl-git/saves/logfile cao-logfile-git
 ln -s /var/lib/dgamelaunch/crawl-master/crawl-git/saves/milestones cao-milestones-git
