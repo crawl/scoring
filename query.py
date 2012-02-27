@@ -13,7 +13,7 @@ import crawl
 import crawl_utils
 from memoizer import DBMemoizer
 from crawl_utils import linked_text, human_number, player_link
-from morgue import morgue_link
+from morgue.util import morgue_link
 import uniq
 import os.path
 import re

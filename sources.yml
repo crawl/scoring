@@ -55,6 +55,9 @@ sources:
       - milestones-0.11.txt
       - milestones-svn.txt
     morgues:
+      - - time_gt: ['end_time', '20110819-1740']
+          version_match: ['v', '0.9']
+        - http://crawl.develz.org/morgues/0.9
       - ['cdo.*-(?:svn)', 'http://crawl.develz.org/morgues/trunk']
       - ['cdo.*-(.*)$', 'http://crawl.develz.org/morgues/$1']
 

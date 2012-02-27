@@ -1,7 +1,7 @@
 import xlog.xlog_def
 import yaml
 import re
-from morgue_base import MorgueBase
+from morgue.base import MorgueBase
 
 class Sources (object):
   def __init__(self, definition_file):

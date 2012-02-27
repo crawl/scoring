@@ -1,5 +1,6 @@
 import re
-from morgue_time import morgue_timestring
+from morgue.time import morgue_timestring
+from morgue.game_matcher import GameMatcher
 
 R_FIELD = re.compile(r'\$(\w+)\$')
 R_GROUP = re.compile(r'\$(\d)')
@@ -7,7 +8,7 @@ R_GROUP = re.compile(r'\$(\d)')
 class MorgueBase (object):
   def __init__(self, _cfg):
     if isinstance(_cfg, list):
-      self.pattern = re.compile(_cfg[0])
+      self.pattern = GameMatcher(_cfg[0])
       self.url_base = _cfg[1]
     else:
       self.pattern  = None
@@ -18,7 +19,7 @@ class MorgueBase (object):
     if not self.pattern:
       return self.resolve_morgue_url(self.url_base, game_dict)
 
-    match = self.pattern.search(source_file)
+    match = self.pattern.match(source_file, game_dict)
     if match:
       return self.resolve_morgue_url(self.url_base, game_dict, match)
 

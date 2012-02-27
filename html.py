@@ -2,7 +2,7 @@ import query, crawl_utils, time
 import scload
 
 from crawl_utils import player_link, linked_text, human_number
-from morgue import morgue_link
+from morgue.util import morgue_link
 import re
 import os.path
 import locale

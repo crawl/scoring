@@ -6,7 +6,7 @@ import glob
 from crawl_utils import RAWDATA_PATH
 
 import config
-from morgue_time import morgue_timestring
+from morgue.time import morgue_timestring
 
 from version import version_less_than
 
