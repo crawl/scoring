@@ -303,8 +303,7 @@ def update_all_recent_games(c, g):
     ids = query_first_col(c, '''SELECT id FROM all_recent_games
                                  ORDER BY id LIMIT %s''',
                           extra)
-    query_do(c, '''DELETE FROM all_recent_games WHERE id IN (%s)''',
-             ",".join([str(x) for x in ids]))
+    scload.delete_table_rows_by_id(c, 'all_recent_games', ids)
     all_recent_game_count.flush_key()
 
 def update_player_recent_games(c, g):
@@ -318,8 +317,7 @@ def update_player_recent_games(c, g):
     ids = query_first_col(c, '''SELECT id FROM player_recent_games
                                  WHERE name = %s ORDER BY id LIMIT %s''',
                           player, extra)
-    query_do(c, '''DELETE FROM player_recent_games WHERE id IN (%s)''',
-             ",".join([str(x) for x in ids]))
+    scload.delete_table_rows_by_id(c, 'player_recent_games', ids)
     player_recent_game_count.flush_key(player)
 
 def update_player_best_games(c, g):

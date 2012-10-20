@@ -14,6 +14,7 @@ import imp
 import sys
 import optparse
 import time
+import sources
 
 oparser = optparse.OptionParser()
 oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
@@ -26,88 +27,16 @@ LIMIT_ROWS = 0
 
 OLDEST_VERSION = '0.1'
 
-CAO = 'http://crawl.akrasiac.org/'
-CDO = 'http://crawl.develz.org/'
+SOURCES = sources.Sources('sources.yml')
 
 # Log and milestone files. A tuple indicates a remote file with t[1]
 # being the URL to wget -c from. Files can be in any order, loglines
 # will be read in strict chronological order.
 
-# Treat CAO files as remote if running on greensnark's machine
-if crawl_utils.DEBUG_SCORES:
-  LOGS = [ ('cao-logfile-0.123', CAO + 'allgames.txt'),
-           ('cao-logfile-0.4', CAO + 'logfile04'),
-           ('cao-logfile-0.5', CAO + 'logfile05'),
-           ('cao-logfile-0.6', CAO + 'logfile06'),
-           ('cao-logfile-0.7', CAO + 'logfile07'),
-           ('cao-logfile-0.8', CAO + 'logfile08'),
-           ('cao-logfile-0.9', CAO + 'logfile09'),
-           ('cao-logfile-0.10', CAO + 'logfile10'),
-           ('cao-logfile-git', CAO + 'logfile-git'),
-           ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
-           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt'),
-           ('cdo-logfile-0.6', CDO + 'allgames-0.6.txt'),
-           ('cdo-logfile-0.7', CDO + 'allgames-0.7.txt'),
-           ('cdo-logfile-0.8', CDO + 'allgames-0.8.txt'),
-           ('cdo-logfile-svn', CDO + 'allgames-svn.txt')
-           ]
-
-  MILESTONES = [ ('cao-milestones-0.2', CAO + 'milestones02.txt'),
-                 ('cao-milestones-0.3', CAO + 'milestones03.txt'),
-                 ('cao-milestones-0.4', CAO + 'milestones04.txt'),
-                 ('cao-milestones-0.5', CAO + 'milestones05.txt'),
-                 ('cao-milestones-0.6', CAO + 'milestones06.txt'),
-                 ('cao-milestones-0.7', CAO + 'milestones07.txt'),
-                 ('cao-milestones-0.8', CAO + 'milestones08.txt'),
-                 ('cao-milestones-0.9', CAO + 'milestones09.txt'),
-                 ('cao-milestones-git', CAO + 'milestones-git'),
-                 ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
-                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt'),
-                 ('cdo-milestones-0.6', CDO + 'milestones-0.6.txt'),
-                 ('cdo-milestones-0.7', CDO + 'milestones-0.7.txt'),
-                 ('cdo-milestones-0.8', CDO + 'milestones-0.8.txt'),
-                 ('cdo-milestones-svn', CDO + 'milestones-svn.txt')
-               ]
-else:
-  LOGS = [ 'cao-logfile-0.123',
-           'cao-logfile-0.4',
-           'cao-logfile-0.5',
-           'cao-logfile-0.6',
-           'cao-logfile-0.7',
-           'cao-logfile-0.8',
-           'cao-logfile-0.9',
-           'cao-logfile-0.10',
-           'cao-logfile-git',
-           ('cdo-logfile-0.4', CDO + 'allgames-0.4.txt'),
-           ('cdo-logfile-0.5', CDO + 'allgames-0.5.txt'),
-           ('cdo-logfile-0.6', CDO + 'allgames-0.6.txt'),
-           ('cdo-logfile-0.7', CDO + 'allgames-0.7.txt'),
-           ('cdo-logfile-0.8', CDO + 'allgames-0.8.txt'),
-           ('cdo-logfile-svn', CDO + 'allgames-svn.txt')
-           ]
-
-  MILESTONES = [ 'cao-milestones-0.2',
-                 'cao-milestones-0.3',
-                 'cao-milestones-0.4',
-                 'cao-milestones-0.5',
-                 'cao-milestones-0.6',
-                 'cao-milestones-0.7',
-                 'cao-milestones-0.8',
-                 'cao-milestones-0.9',
-                 'cao-milestones-git',
-                 ('cdo-milestones-0.4', CDO + 'milestones-0.4.txt'),
-                 ('cdo-milestones-0.5', CDO + 'milestones-0.5.txt'),
-                 ('cdo-milestones-0.6', CDO + 'milestones-0.6.txt'),
-                 ('cdo-milestones-0.7', CDO + 'milestones-0.7.txt'),
-                 ('cdo-milestones-0.8', CDO + 'milestones-0.8.txt'),
-                 ('cdo-milestones-svn', CDO + 'milestones-svn.txt')
-                 ]
-
 BLACKLIST_FILE = 'blacklist.txt'
 EXTENSION_FILE = 'modules.ext'
 SCORING_DB = 'scoring'
 COMMIT_INTERVAL = 3000
-CRAWLRC_DIRECTORY = '/home/crawl/chroot/dgldir/rcfiles/'
 
 LISTENERS = [ ]
 TIMERS = [ ]
@@ -185,14 +114,11 @@ class Xlogline:
     self.processor(cursor, self.filename, self.offset, self.xdict)
 
 class Xlogfile:
-  def __init__(self, filename, proc_op, blacklist=None):
-    if isinstance(filename, tuple):
-      self.local = False
-      self.filename = filename[0]
-      self.url = filename[1]
-    else:
-      self.local = True
-      self.filename = filename
+  def __init__(self, xlog_def, proc_op, blacklist=None):
+    self.xlog = xlog_def
+    self.local = xlog_def.local
+    self.url = xlog_def.source_path
+    self.filename = xlog_def.local_path
     self.handle = None
     self.offset = None
     self.proc_op = proc_op
@@ -207,16 +133,18 @@ class Xlogfile:
     # them from the remote server, so we should not read past the point
     # in the local file corresponding to the point where we pulled from the
     # remote server.
+    self.xlog.prepare()
     if self.local:
-      self.size = os.path.getsize(self.filename)
+      self.size = os.path.getsize(self.xlog.local_path)
     else:
       self.fetch_remote()
 
   def fetch_remote(self):
     info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
-    res = os.system("wget -q -c %s -O %s" % (self.url, self.filename))
-    if res != 0:
-      raise IOError, "Failed to fetch %s with wget" % self.url
+    try:
+      self.xlog.fetch()
+    except IOError as e:
+      warn("Could not fetch %s: %s" % (self.url, e))
 
   def _open(self):
     try:
@@ -268,12 +196,12 @@ class Xlogfile:
       return xline
 
 class Logfile (Xlogfile):
-  def __init__(self, filename):
-    Xlogfile.__init__(self, filename, process_log)
+  def __init__(self, xlog_def):
+    Xlogfile.__init__(self, xlog_def, process_log)
 
 class MilestoneFile (Xlogfile):
-  def __init__(self, filename):
-    Xlogfile.__init__(self, filename, process_milestone)
+  def __init__(self, xlog_def):
+    Xlogfile.__init__(self, xlog_def, process_milestone)
 
 class MasterXlogReader:
   """Given a list of Xlogfile objects, calls the process operation on the oldest
@@ -604,6 +532,7 @@ class Query:
     if not self.query.endswith(';'):
       self.query += ';'
     try:
+      #print("Execute: %s, values: %s" % (self.query, repr(self.values)))
       cursor.execute(self.query, self.values)
     except:
       print("Failing query: " + self.query
@@ -734,6 +663,13 @@ def active_cursor():
 
 def query_do(cursor, query, *values):
   Query(query, *values).execute(cursor)
+
+def delete_table_rows_by_id(cursor, table_name, ids):
+  """Deletes all rows from the given table with numeric ids in the set of
+  ids supplied."""
+  query_do(cursor,
+           '''DELETE FROM %s WHERE id in (%s)''' %
+           (table_name, ",".join([str(x) for x in ids])))
 
 def query_first(cursor, query, *values):
   return Query(query, *values).first(cursor)
@@ -899,8 +835,8 @@ def extract_unique_name(kill_message):
   return R_KILL_UNIQUE.findall(kill_message)[0]
 
 def create_master_reader():
-  processors = ([ MilestoneFile(x) for x in MILESTONES ] +
-                [ Logfile(x) for x in LOGS ])
+  processors = ([ MilestoneFile(x) for x in SOURCES.milestones() ] +
+                [ Logfile(x) for x in SOURCES.logfiles() ])
   return MasterXlogReader(processors)
 
 @DBMemoizer
