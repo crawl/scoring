@@ -1,5 +1,4 @@
 import os.path
-import urlparse
 import xlog.version
 import errno
 
@@ -13,7 +12,7 @@ def xlog_resolve_source_path(path, local_base, source_base_url):
     if os.path.exists(localpath):
       return local, True
 
-  return (urlparse.urljoin(source_base_url, path), False)
+  return (source_base_url + '/' + path, False)
 
 class XlogDef (object):
   """Metadata on a logfile/milestones file: its associated server,

@@ -1,34 +1,18 @@
 from memoizer import Memoizer
 import re
 import os
+import os.path
 import glob
 from crawl_utils import RAWDATA_PATH
 
+import config
+from morgue_time import morgue_timestring
+
+from version import version_less_than
+
 R = re.compile
-
-MORGUE_BASES = [
- [ R(r'cao-.*'),       'http://crawl.akrasiac.org/rawdata' ],
- [ R(r'cdo.*-0.4$'),   'http://crawl.develz.org/morgues/0.4' ],
- [ R(r'cdo.*-0.5$'),   'http://crawl.develz.org/morgues/0.5' ],
- [ R(r'cdo.*-0.6$'),   'http://crawl.develz.org/morgues/0.6' ],
- [ R(r'cdo.*-0.7'),    'http://crawl.develz.org/morgues/0.7' ],
- [ R(r'cdo.*-0.8'),    'http://crawl.develz.org/morgues/0.8' ],
- [ R(r'cdo.*-svn$'),   'http://crawl.develz.org/morgues/trunk' ],
- [ R(r'cdo.*-zd$'),    'http://crawl.develz.org/morgues/trunk' ],
- [ R(r'cdo.*-spr$'),   'http://crawl.develz.org/morgues/sprint' ],
- [ R(r'rhf.*-0.5$'),   'http://rl.heh.fi/crawl/stuff' ],
- [ R(r'rhf.*-0.6$'),   'http://rl.heh.fi/crawl-0.6/stuff' ],
- [ R(r'rhf.*-0.7$'),   'http://rl.heh.fi/crawl-0.7/stuff' ],
- [ R(r'rhf.*-trunk$'), 'http://rl.heh.fi/trunk/stuff' ],
- [ R(r'rhf.*-spr$'),   'http://rl.heh.fi/sprint/stuff' ],
-]
-
-CAO_MORGUE_BASE = 'http://crawl.akrasiac.org/rawdata'
-CDO_MORGUE_BASE = 'http://crawl.develz.org/morgues/stable'
 R_MORGUE_TIME = re.compile(r'morgue-\w+-(.*?)\.txt$')
-
-def morgue_time_string(raw_time):
-  return raw_time[:8] + "-" + raw_time[8:]
+R_SRC_SERVER = re.compile(r'^(\w+)')
 
 def morgue_filename(name, timestr):
   return RAWDATA_PATH + "/" + name + "/morgue-" + name + "-" + timestr + ".txt"
@@ -85,23 +69,24 @@ def find_cao_morgue_link(name, end_time):
 def game_is_cao(g):
   return g['source_file'].find('cao') >= 0
 
-def format_time(time):
-  return "%04d%02d%02d-%02d%02d%02d" % (time.year, time.month, time.day,
-                                       time.hour, time.minute, time.second)
-
 def morgue_link(g):
   """Given a game dictionary, returns a URL to the game's morgue."""
-  src = g['source_file']
+  source_file = os.path.basename(g['source_file'])
+  server = R_SRC_SERVER.search(source_file).group(1)
+
+  source = config.SOURCES.source(server)
+
   name = g['name']
-  stime = format_time( g['end_time'] )
-  if g['v'] < '0.4':
+  stime = morgue_timestring( g['end_time'] )
+  if version_less_than(g['v'], '0.4'):
     if game_is_cao(g):
       return find_cao_morgue_link(name, stime)
     # Nothing we can do for anyone else with old games.
     return ''
-  for regex, url in MORGUE_BASES:
-    if regex.search(src):
-      return "%s/%s/morgue-%s-%s.txt" % (url, name, name, stime)
+  for morgue_base in source.morgue_bases():
+    morgue_url = morgue_base.url(source_file, g)
+    if morgue_url:
+      return morgue_url
 
   # Unknown morgue:
   raise Exception("Unknown source for morgues: %s" % src)

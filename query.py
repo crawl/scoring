@@ -46,7 +46,7 @@ def time_from_str(when):
 
 def canonical_where_name(name):
   test = '%s/%s' % (crawl_utils.RAWDATA_PATH, name)
-  if os.path.exists(test):
+  if os.path.exists(test) or not os.path.exists(crawl_utils.RAWDATA_PATH):
     return name
   names = os.listdir(crawl_utils.RAWDATA_PATH)
   names = [ x for x in names if x.lower() == name.lower() ]
@@ -310,7 +310,7 @@ def top_combo_scorers(c):
   return top_thing_scorers(c, 'top_combo_scores', 'charabbr')
 
 def find_all_players(c):
-  return query_first_col(c, '''SELECT name FROM players''')
+  return query_first_col(c, '''SELECT name FROM players ORDER BY name''')
 
 def player_wins(c, player):
   return find_games(c, 'wins', name = player, sort_min = 'end_time')

@@ -5,6 +5,7 @@ import fcntl
 import sys
 import locale
 import re
+import config
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
@@ -20,10 +21,7 @@ LOGFORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 
 LOCK = None
 
-if DEBUG_SCORES:
-  BASEDIR = os.getenv('HOME')
-else:
-  BASEDIR = '/home/snark'
+BASEDIR = os.getenv('HOME')
 
 SCORING_KEY = 'scoring'
 LOCKFILE = BASEDIR + ('/%s.lock' % SCORING_KEY)
@@ -33,9 +31,7 @@ PLAYER_BASE = 'players'
 PLAYER_FILE_DIR = SCORE_FILE_DIR + '/' + PLAYER_BASE
 
 # Use file URLs when testing on greensnark's machines.
-CAO_BASE = (DEBUG_SCORES
-            and 'file:///var/www/crawl'
-            or 'http://crawl.akrasiac.org')
+CAO_BASE = config.SCORING_BASE
 CAO_SCORING_BASE = '%s/%s' % (CAO_BASE, SCORING_KEY)
 CAO_IMAGE_BASE = CAO_SCORING_BASE + '/images'
 CAO_PLAYER_BASE = '%s/players' % CAO_SCORING_BASE

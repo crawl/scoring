@@ -14,7 +14,7 @@ import imp
 import sys
 import optparse
 import time
-import sources
+from config import SOURCES
 
 oparser = optparse.OptionParser()
 oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
@@ -27,8 +27,6 @@ TIME_QUERIES = False
 LIMIT_ROWS = 0
 
 OLDEST_VERSION = '0.1'
-
-SOURCES = sources.Sources('sources.yml')
 
 # Log and milestone files. A tuple indicates a remote file with t[1]
 # being the URL to wget -c from. Files can be in any order, loglines

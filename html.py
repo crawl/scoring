@@ -7,7 +7,7 @@ import re
 import os.path
 import locale
 
-TITLE = "CAO/CDO Scoring (stable and alpha versions)"
+TITLE = "Crawl Scoring (stable and alpha versions)"
 
 try:
   import matplotlib.pyplot as plt
@@ -571,7 +571,7 @@ def winner_stats(stats):
 def create_image(filename, stats):
   plt.clf()
   plt.figure(1, figsize=(12,6))
-  plt.title('Activity on CAO/CDO')
+  plt.title('Activity on public servers')
 
   rstats = list(stats)
   rstats.reverse()

@@ -1,5 +1,7 @@
 import xlog.xlog_def
 import yaml
+import re
+from morgue_base import MorgueBase
 
 class Sources (object):
   def __init__(self, definition_file):
@@ -7,6 +9,7 @@ class Sources (object):
     self._logfiles = None
     self._milestones = None
     self._sources = None
+    self._source_map = None
     self._cfg = None
 
   def cfg(self, key=None):
@@ -20,6 +23,12 @@ class Sources (object):
     if not self._sources:
       self._sources = self._resolve_sources('sources')
     return self._sources
+
+  def source(self, source_name):
+    if not self._source_map:
+      self._source_map = dict([[source.name, source]
+                                for source in self.sources()])
+    return self._source_map[source_name]
 
   def logfiles(self):
     if not self._logfiles:
@@ -46,6 +55,7 @@ class Source (object):
     self.local = cfg.get('local')
     self._logfiles = None
     self._milestones = None
+    self._morgue_bases = None
 
   def cfg(self, key):
     return self._cfg[key]
@@ -60,6 +70,11 @@ class Source (object):
       self._milestones = self._resolve_files('milestones')
     return self._milestones
 
+  def morgue_bases(self):
+    if not self._morgue_bases:
+      self._morgue_bases = self._resolve_morgue_bases('morgues')
+    return self._morgue_bases
+
   def _resolve_files(self, key, factory=xlog.xlog_def.XlogDef):
     files = []
     file_type = key[0:-1]
@@ -68,3 +83,6 @@ class Source (object):
                            base_url=self.base, local_base=self.local,
                            xlog_type=file_type))
     return files
+
+  def _resolve_morgue_bases(self, key):
+    return [MorgueBase(x) for x in self.cfg(key)]
