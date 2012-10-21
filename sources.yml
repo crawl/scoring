@@ -1,9 +1,10 @@
 sources:
   - name: cao
+    base: http://crawl.akrasiac.org
+
     # If the file exists in this path, it will be linked into the data
     # directory from the local path; otherwise it will be fetched
     # using http.
-    base: http://crawl.akrasiac.org
     local: /var/www/crawl
     logfiles:
       - allgames.txt
@@ -15,18 +16,18 @@ sources:
       - logfile09
       - logfile10
       - logfile11
-      - logfilegit
+      - logfile-git
     milestones:
-      - milestones02.txt
-      - milestones03.txt
-      - milestones04.txt
-      - milestones05.txt
-      - milestones06.txt
-      - milestones07.txt
-      - milestones08.txt
-      - milestones09.txt
-      - milestones10.txt
-      - milestones11.txt
+      - milestones02
+      - milestones03
+      - milestones04
+      - milestones05
+      - milestones06
+      - milestones07
+      - milestones08
+      - milestones09
+      - milestones10
+      - milestones11
       - milestones-git
 
   - name: cdo

@@ -19,6 +19,7 @@ import sources
 oparser = optparse.OptionParser()
 oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
+oparser.add_option('-D', '--no-download', action='store_true', dest='no_download')
 OPT, ARGS = oparser.parse_args()
 TIME_QUERIES = False
 
@@ -136,7 +137,7 @@ class Xlogfile:
     self.xlog.prepare()
     if self.local:
       self.size = os.path.getsize(self.xlog.local_path)
-    else:
+    elif not OPT.no_download:
       self.fetch_remote()
 
   def fetch_remote(self):
@@ -653,9 +654,12 @@ def is_selected(game):
 
 _active_cursor = None
 
-def set_active_cursor(c):
+def set_active_cursor(c, db=None):
   global _active_cursor
   _active_cursor = c
+  if c and db:
+    setattr(c, 'db', db)
+  return c
 
 def active_cursor():
   global _active_cursor
@@ -819,14 +823,13 @@ def wrap_transaction(fn):
   """Given a function, returns a function that accepts a cursor and arbitrary
   arguments, calls the function with those args, wrapped in a transaction."""
   def transact(cursor, *args):
-    return fn(cursor, *args)
     result = None
-    cursor.execute('BEGIN;')
     try:
       result = fn(cursor, *args)
-      cursor.execute('COMMIT;')
+      cursor.db.commit()
     except:
-      cursor.execute('ROLLBACK;')
+      print("ROLLBACK!")
+      cursor.db.rollback()
       raise
     return result
   return transact
@@ -853,9 +856,12 @@ def update_xlog_offset(c, filename, offset):
                     WHERE id = %s''',
              offset, fid)
   else:
+    print("insert: %s, %s" % (filename, offset))
     query_do(c, '''INSERT INTO logfile_offsets (filename, offset)
                       VALUES (%s, %s)''',
              filename, offset)
+    if dbfile_offset(c, filename) != offset:
+      raise Exception, "Could not save logfile offset"
     logfile_id.flush_key(filename)
 
 def process_xlog(c, filename, offset, d, flambda):
@@ -938,7 +944,7 @@ def scload():
       warn("Error reading %s, skipping it." % log)
 
   cursor = db.cursor()
-  set_active_cursor(cursor)
+  set_active_cursor(cursor, db)
   try:
     if not OPT.no_load:
       master = create_master_reader()
