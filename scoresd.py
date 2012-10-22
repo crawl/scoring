@@ -4,6 +4,7 @@ import time
 import crawl_utils
 import sys
 import query
+import config
 
 import logging
 from logging import debug, info, warn, error
@@ -20,7 +21,7 @@ def tail_logfiles(logs, milestones, interval=60):
   scload.init_listeners(db)
 
   cursor = db.cursor()
-  scload.set_active_cursor(cursor)
+  scload.set_active_cursor(cursor, db)
   elapsed_time = 0
 
   master = scload.create_master_reader()
@@ -61,4 +62,4 @@ if __name__ == '__main__':
 
   if daemon:
     crawl_utils.daemonize()
-  tail_logfiles( scload.LOGS, scload.MILESTONES, 60 )
+  tail_logfiles( config.SOURCES.logfiles(), config.SOURCES.milestones(), 60 )
