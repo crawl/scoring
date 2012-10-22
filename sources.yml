@@ -7,7 +7,7 @@ sources:
     # If the file exists in this path, it will be linked into the data
     # directory from the local path; otherwise it will be fetched
     # using http.
-    local: /var/www/crawl
+    local: /var/www
     logfiles:
       - allgames.txt
       - logfile04
