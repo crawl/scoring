@@ -10,7 +10,7 @@ def xlog_resolve_source_path(path, local_base, source_base_url):
   if local_base:
     localpath = os.path.join(local_base, path)
     if os.path.exists(localpath):
-      return local, True
+      return localpath, True
 
   return (source_base_url + '/' + path, False)
 
@@ -42,7 +42,7 @@ class XlogDef (object):
       if e.errno != errno.EEXIST:
         raise
     if self.local and not os.path.exists(self.local_path):
-      os.symlink(self.remote_path, self.local_path)
+      os.symlink(self.source_path, self.local_path)
 
   def fetch(self):
     if self.local:
