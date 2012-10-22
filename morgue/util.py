@@ -18,7 +18,9 @@ def morgue_filename(name, timestr):
   return RAWDATA_PATH + "/" + name + "/morgue-" + name + "-" + timestr + ".txt"
 
 def cao_morgue_url(name, timestr):
-  return "%s/%s/morgue-%s-%s.txt" % (CAO_MORGUE_BASE, name, name, timestr)
+  return ("%s/%s/morgue-%s-%s.txt" %
+          (config.SOURCES.source('cao').default_morgue_base(),
+           name, name, timestr))
 
 def cao_morgue_files(name):
   rawmorgues = glob.glob(morgue_filename(name, '*'))

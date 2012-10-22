@@ -70,6 +70,9 @@ class Source (object):
       self._milestones = self._resolve_files('milestones')
     return self._milestones
 
+  def default_morgue_base(self):
+    return self.morgue_bases()[-1].url_base
+
   def morgue_bases(self):
     if not self._morgue_bases:
       self._morgue_bases = self._resolve_morgue_bases('morgues')
