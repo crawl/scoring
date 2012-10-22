@@ -10,6 +10,8 @@ import locale
 TITLE = "Crawl Scoring (stable and alpha versions)"
 
 try:
+  import matplotlib
+  matplotlib.use('Agg')
   import matplotlib.pyplot as plt
   MATPLOT = True
 except:
