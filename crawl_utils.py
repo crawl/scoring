@@ -21,7 +21,10 @@ LOGFORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 
 LOCK = None
 
-BASEDIR = os.getenv('HOME')
+if DEBUG_SCORES:
+  BASEDIR = os.getenv('HOME')
+else:
+  BASEDIR = '/home/rax'
 
 SCORING_KEY = 'scoring'
 LOCKFILE = BASEDIR + ('/%s.lock' % SCORING_KEY)
