@@ -78,11 +78,7 @@ sources:
 
   - name: csn
     base: http://crawlus.somatika.net
-    logfiles:
-      - scoring/crawl-trunk/logfile
-      - scoring/crawl-0.11/logfile
-    milestones:
-      - scoring/crawl-trunk/milestones
-      - scoring/crawl-0.11/milestones
+    logfiles: {}
+    milestones: {}
     morgues:
       - http://crawlus.somatika.net/dumps
