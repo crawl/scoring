@@ -19,6 +19,7 @@ sources:
       - logfile10
       - logfile11
       - logfile12
+      - logfile13
       - logfile-git
     milestones:
       - milestones02
@@ -32,6 +33,7 @@ sources:
       - milestones10
       - milestones11
       - milestones12
+      - milestones13
       - milestones-git
 
     # Regex -> location; player name is automatically appended.
@@ -49,6 +51,7 @@ sources:
       - allgames-0.10.txt
       - allgames-0.11.txt
       - allgames-0.12.txt
+      - allgames-0.13.txt
       - allgames-svn.txt
     milestones:
       - milestones-0.6.txt
@@ -57,6 +60,7 @@ sources:
       - milestones-0.10.txt
       - milestones-0.11.txt
       - milestones-0.12.txt
+      - milestones-0.13.txt
       - milestones-svn.txt
     morgues:
       - - time_gt: ['end_time', '20110819-1740']
@@ -69,11 +73,13 @@ sources:
     base: http://dobrazupa.org
     logfiles:
       - meta/git/logfile
+      - meta/0.13/logfile
       - meta/0.12/logfile
       - meta/0.11/logfile
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.13/milestones
       - meta/0.12/milestones
       - meta/0.11/milestones
       - meta/0.10/milestones
@@ -84,16 +90,29 @@ sources:
     base: http://crawl.lantea.net/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.13/logfile
       - meta/0.12/logfile
       - meta/0.11/logfile
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.13/milestones
       - meta/0.12/milestones
       - meta/0.11/milestones
       - meta/0.10/milestones
     morgues:
       - http://crawl.lantea.net/crawl/morgue
+
+  - name: rhf
+    base: http://rl.heh.fi/
+    logfiles:
+      - meta/crawl-git/logfile
+      - meta/crawl-0.12/logfile
+    milestones:
+      - meta/crawl-git/milestones
+      - meta/crawl-0.12/milestones
+    morgues:
+      - http://rl.heh.fi/morgue/
 
   - name: csn
     base: http://crawlus.somatika.net
