@@ -114,6 +114,17 @@ sources:
     morgues:
       - http://rl.heh.fi/morgue/
 
+  - name: cbro
+    base: http://crawl.berotato.org/crawl
+    logfiles:
+      - meta/crawl-git/logfile
+      - meta/crawl-0.13/logfile
+    milestones:
+      - meta/crawl-git/milestones
+      - meta/crawl-0.13/milestones
+    morgues:
+      - http://crawl.berotato.org/crawl/morgue/
+
   - name: csn
     base: http://crawlus.somatika.net
     logfiles: {}
