@@ -94,12 +94,14 @@ sources:
     base: http://crawl.lantea.net/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.14/logfile
       - meta/0.13/logfile
       - meta/0.12/logfile
       - meta/0.11/logfile
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.14/milestones
       - meta/0.13/milestones
       - meta/0.12/milestones
       - meta/0.11/milestones
