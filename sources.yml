@@ -125,9 +125,11 @@ sources:
     logfiles:
       - meta/git/logfile
       - meta/0.13/logfile
+      - meta/0.14/logfile
     milestones:
       - meta/git/milestones
       - meta/0.13/milestones
+      - meta/0.14/milestones
     morgues:
       - http://crawl.berotato.org/crawl/morgue/
 
@@ -136,9 +138,11 @@ sources:
     logfiles:
       - www/trunk/logfile
       - www/0.13/logfile
+      - www/0.14/logfile
     milestones:
       - www/trunk/milestones
       - www/0.13/milestones
+      - www/0.14/milestone
     morgues:
       - ['.*-(?:trunk|git)', 'http://kr.dobrazupa.org/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://kr.dobrazupa.org/morgue/$1']
