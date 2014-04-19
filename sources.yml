@@ -54,6 +54,7 @@ sources:
       - allgames-0.11.txt
       - allgames-0.12.txt
       - allgames-0.13.txt
+      - allgames-0.14.txt
       - allgames-svn.txt
     milestones:
       - milestones-0.6.txt
@@ -63,6 +64,7 @@ sources:
       - milestones-0.11.txt
       - milestones-0.12.txt
       - milestones-0.13.txt
+      - milestones-0.14.txt
       - milestones-svn.txt
     morgues:
       - - time_gt: ['end_time', '20110819-1740']
