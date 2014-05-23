@@ -537,7 +537,7 @@ def player_scores_block(c, scores, title):
   return text
 
 def player_wins(wins, **pars):
-  return games_table(wins, excluding='name', **pars)
+  return games_table(wins, excluding=['name', 'place'], including=[(2, ('title', 'Title'))], **pars)
 
 def best_players_by_total_score(rows):
   return table_text( [ 'Total Score', 'Player', 'Games Played', 'Games Won',
