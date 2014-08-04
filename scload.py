@@ -234,6 +234,7 @@ class MasterXlogReader:
       if LIMIT_ROWS > 0 and proc >= LIMIT_ROWS:
         break
       if proc % 3000 == 0:
+        cursor.db.commit()
         info("Processed %d lines." % proc)
     if proc > 0:
       info("Done processing %d lines." % proc)
@@ -872,7 +873,7 @@ def process_xlog(c, filename, offset, d, flambda):
       flambda(listener)(cursor, d)
     # Update the offsets table.
     update_xlog_offset(c, filename, offset)
-  wrap_transaction(do_xlogline)(c)
+  do_xlogline(c)
 
 def process_log(c, filename, offset, d):
   """Processes a logfile record for scoring purposes."""
