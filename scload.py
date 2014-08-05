@@ -186,9 +186,14 @@ class Xlogfile:
       if not line.strip() or invalid_xlog_line(line.strip()):
         continue
 
-      d = xlog_dict(line)
-      xdict = apply_dbtypes(d)
-      xdict['source_file'] = self.filename
+      try:
+        d = xlog_dict(line)
+        xdict = apply_dbtypes(d)
+        xdict['source_file'] = self.filename
+      except:
+        info("Bad line: " + line + " in " + self.filename)
+        continue
+
       xline = Xlogline( self, self.filename, self.offset,
                         xdict.get('end') or xdict.get('time'),
                         xdict, self.proc_op )
