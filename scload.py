@@ -238,7 +238,7 @@ class MasterXlogReader:
       proc += 1
       if LIMIT_ROWS > 0 and proc >= LIMIT_ROWS:
         break
-      if proc % 3000 == 0:
+      if proc % COMMIT_INTERVAL == 0:
         cursor.db.commit()
         info("Processed %d lines." % proc)
     if proc > 0:
