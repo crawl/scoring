@@ -35,6 +35,7 @@ def tail_logfiles(logs, milestones, interval=60):
           break
       except IOError, e:
         error("IOError: %s" % e)
+      info("Finished batch.");
 
       time.sleep(interval)
       elapsed_time += interval
