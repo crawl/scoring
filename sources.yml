@@ -162,6 +162,19 @@ sources:
       - ['.*-([0-9]\.[0-9]+)', 'http://kr.dobrazupa.org/morgue/$1']
       - ['.*', 'http://kr.dobrazupa.org/morgue/0.13']
 
+  - name: lld
+    base: http://lazy-life.ddo.jp:8080
+    logfiles:
+      - meta/trunk/logfile
+      - meta/0.15/logfile
+      - meta/0.14/logfile
+    milestones:
+      - meta/trunk/milestones
+      - meta/0.14/milestones
+      - meta/0.15/milestones
+    morgues:
+      - http://lazy-life.ddo.jp:8080/morgue
+
   - name: csn
     base: http://crawlus.somatika.net
     logfiles: {}
