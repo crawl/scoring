@@ -175,6 +175,19 @@ sources:
     morgues:
       - http://lazy-life.ddo.jp:8080/morgue
 
+  - name: cxc
+    base: http://crawl.xtahua.com/crawl
+    logfiles:
+      - meta/git/logfile
+      - meta/0.14/logfile
+      - meta/0.15/logfile
+    milestones:
+      - meta/git/milestones
+      - meta/0.14/milestones
+      - meta/0.15/milestones
+    morgues:
+      - http://crawl.xtahua.com/crawl/morgue
+
   - name: csn
     base: http://crawlus.somatika.net
     logfiles: {}
