@@ -188,6 +188,17 @@ sources:
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
 
+  - name: cpo
+    base: https://crawl.project357.org/
+    logfiles:
+      - dcss-logfiles-trunk
+      - dcss-logfiles-0.15
+    milestones:
+      - dcss-milestones-trunk
+      - dcss-milestones-0.15
+    morgues:
+      - https://crawl.project357.org/morgue
+
   - name: csn
     base: http://crawlus.somatika.net
     logfiles: {}
