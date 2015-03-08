@@ -145,6 +145,23 @@ sources:
     morgues:
       - http://crawl.berotato.org/crawl/morgue/
 
+  - name: ckr2
+    base: http://webzook.net:82/
+    logfiles:
+      - trunk/logfile
+      - 0.13/logfile
+      - 0.14/logfile
+      - 0.15/logfile
+    milestones:
+      - trunk/milestones
+      - 0.13/milestones
+      - 0.14/milestones
+      - 0.15/milestones
+    morgues:
+      - ['.*-(?:trunk|git)', 'http://webzook.net:82/morgue/trunk']
+      - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net:82/morgue/$1']
+      - ['.*', 'http://webzook.net:82/morgue/0.13']
+
   - name: ckr
     base: http://kr.dobrazupa.org/
     logfiles:
@@ -158,9 +175,9 @@ sources:
       - www/0.14/milestone
       - www/0.15/milestones
     morgues:
-      - ['.*-(?:trunk|git)', 'http://kr.dobrazupa.org/morgue/trunk']
-      - ['.*-([0-9]\.[0-9]+)', 'http://kr.dobrazupa.org/morgue/$1']
-      - ['.*', 'http://kr.dobrazupa.org/morgue/0.13']
+      - ['.*-(?:trunk|git)', 'http://kr.dobrazupa.org:82/morgue/trunk']
+      - ['.*-([0-9]\.[0-9]+)', 'http://kr.dobrazupa.org:82/morgue/$1']
+      - ['.*', 'http://kr.dobrazupa.org:82/morgue/0.13']
 
   - name: lld
     base: http://lazy-life.ddo.jp:8080
