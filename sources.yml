@@ -105,7 +105,7 @@ sources:
       - http://dobrazupa.org/morgue
 
   - name: clan
-    base: http://crawl.lantea.net/crawl
+    base: http://underhound.eu:81/crawl
     logfiles:
       - meta/git/logfile
       - meta/0.16/logfile
@@ -125,7 +125,7 @@ sources:
       - meta/0.11/milestones
       - meta/0.10/milestones
     morgues:
-      - http://crawl.lantea.net/crawl/morgue
+      - http://underhound.eu:81/crawl/morgue
 
   - name: rhf
     base: http://rl.heh.fi/
