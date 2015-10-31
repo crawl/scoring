@@ -47,7 +47,7 @@ class XlogDef (object):
   def fetch(self):
     if self.local:
       return
-    command = "wget --timeout=60 -q -c %s -O %s" % (self.source_path, self.local_path)
+    command = "wget --no-check-certificate --timeout=60 -q -c %s -O %s" % (self.source_path, self.local_path)
     res = os.system(command)
     if res != 0:
       raise IOError, "Failed to fetch %s with %s" % (self.source_path, command)
