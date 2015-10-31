@@ -188,16 +188,17 @@ sources:
 
   - name: ckr
     base: http://kr.dobrazupa.org/
+    local: /home/rax/scoring/
     logfiles:
-      - www/trunk/logfile
-      - www/0.13/logfile
-      - www/0.14/logfile
-      - www/0.15/logfile
+      - data/ckr-logfile-git
+      - data/ckr-logfile-0.13
+      - data/ckr-logfile-0.14
+      - data/ckr-logfile-0.15
     milestones:
-      - www/trunk/milestones
-      - www/0.13/milestones
-      - www/0.14/milestone
-      - www/0.15/milestones
+      - data/ckr-milestone-git
+      - data/ckr-milestone-0.13
+      - data/ckr-milestone-0.14
+      - data/ckr-milestone-0.15
     morgues:
       - ['.*-(?:trunk|git)', 'http://kr.dobrazupa.org:82/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://kr.dobrazupa.org:82/morgue/$1']
@@ -248,7 +249,12 @@ sources:
 
   - name: csn
     base: http://crawlus.somatika.net
-    logfiles: {}
-    milestones: {}
+    local: /home/rax/scoring/
+    logfiles:
+      - data/csn-logfile-0.11
+      - data/csn-logfile-git
+    milestones:
+      - data/csn-milestone-0.11
+      - data/csn-milestone-git
     morgues:
       - http://crawlus.somatika.net/dumps
