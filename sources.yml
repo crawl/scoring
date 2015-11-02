@@ -250,10 +250,12 @@ sources:
     base: https://crawl.project357.org/
     logfiles:
       - dcss-logfiles-trunk
+      - dcss-logfiles-0.17
       - dcss-logfiles-0.16
       - dcss-logfiles-0.15
     milestones:
       - dcss-milestones-trunk
+      - dcss-milestones-0.17
       - dcss-milestones-0.16
       - dcss-milestones-0.15
     morgues:
