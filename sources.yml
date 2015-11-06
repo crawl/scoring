@@ -171,12 +171,14 @@ sources:
       - 0.14/logfile
       - 0.15/logfile
       - 0.16/logfile
+      - 0.17/logfile
     milestones:
       - trunk/milestones
       - 0.13/milestones
       - 0.14/milestones
       - 0.15/milestones
       - 0.16/milestones
+      - 0.17/milestones
     morgues:
       - ['.*-(?:trunk|git)', 'http://webzook.net:82/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net:82/morgue/$1']
