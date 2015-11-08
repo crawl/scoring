@@ -243,6 +243,7 @@ class MasterXlogReader:
         cursor.db.commit()
         info("Processed %d lines." % proc)
     if proc > 0:
+      cursor.db.commit()
       info("Done processing %d lines." % proc)
 
 def connect_db():
