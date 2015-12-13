@@ -166,7 +166,7 @@ sources:
       - http://crawl.berotato.org/crawl/morgue/
 
   - name: ckr2
-    base: http://webzook.net:82/
+    base: http://webzook.net/soup
     logfiles:
       - trunk/logfile
       - 0.13/logfile
@@ -182,9 +182,9 @@ sources:
       - 0.16/milestones
       - 0.17/milestones
     morgues:
-      - ['.*-(?:trunk|git)', 'http://webzook.net:82/morgue/trunk']
-      - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net:82/morgue/$1']
-      - ['.*', 'http://webzook.net:82/morgue/0.13']
+      - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
+      - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
+      - ['.*', 'http://webzook.net/soup/morgue/0.13']
 
   # These entries went missing when cwz upgraded to 0.16.1, but were
   # fortunately preserved by the tournament scripts (then copied here).
@@ -196,7 +196,7 @@ sources:
     milestones:
       - milestones
     morgues:
-      - http://webzook.net:82/morgue/0.16
+      - http://webzook.net/soup/morgue/0.16
 
   - name: ckr
     base: http://kr.dobrazupa.org/
@@ -212,9 +212,9 @@ sources:
       - data/ckr-milestone-0.14
       - data/ckr-milestone-0.15
     morgues:
-      - ['.*-(?:trunk|git)', 'http://kr.dobrazupa.org:82/morgue/trunk']
-      - ['.*-([0-9]\.[0-9]+)', 'http://kr.dobrazupa.org:82/morgue/$1']
-      - ['.*', 'http://kr.dobrazupa.org:82/morgue/0.13']
+      - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
+      - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
+      - ['.*', 'http://webzook.net/soup/morgue/0.13']
 
   - name: lld
     base: http://lazy-life.ddo.jp:8080
