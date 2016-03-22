@@ -13,7 +13,9 @@ import html
 from logging import debug, info, warn, error
 
 TEMPLATE_DIR = os.path.abspath('templates')
-MAKO_LOOKUP = mako.lookup.TemplateLookup(directories = [ TEMPLATE_DIR ])
+MAKO_LOOKUP = mako.lookup.TemplateLookup(
+  directories = [ TEMPLATE_DIR ],
+  output_encoding = 'utf-8', encoding_errors = 'replace')
 
 force_locale = html.force_locale
 
