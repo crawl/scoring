@@ -656,7 +656,7 @@ LOGF_SQLKEYS = LOGF_SQLTYPE.keys()
 
 def is_selected(game):
   """Accept all games that match our version criterion."""
-  return game['v'] >= OLDEST_VERSION
+  return 'v' in game and game['v'] >= OLDEST_VERSION
 
 _active_cursor = None
 
