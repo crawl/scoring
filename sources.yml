@@ -182,6 +182,7 @@ sources:
       - 0.15/logfile
       - 0.16/logfile
       - 0.17/logfile
+      - 0.18/logfile
     milestones:
       - trunk/milestones
       - 0.13/milestones
@@ -189,6 +190,7 @@ sources:
       - 0.15/milestones
       - 0.16/milestones
       - 0.17/milestones
+      - 0.18/milestones
     morgues:
       - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
@@ -302,4 +304,4 @@ sources:
       - meta/0.18/milestones
       - meta/0.17/milestones
     morgues:
-      - https://www.jorgrun.rocks/morgue
+      - https://crawl.jorgrun.rocks/morgue
