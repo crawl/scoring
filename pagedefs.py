@@ -12,10 +12,19 @@ import html
 
 from logging import debug, info, warn, error
 
+# Handle input encoding of strings that are actually UTF-8.
+# Based on http://stackoverflow.com/a/25235213
+def handle_unicode(value):
+  if isinstance(value, basestring):
+    return unicode(value.decode('utf-8', errors='replace'))
+  return unicode(value)
+
 TEMPLATE_DIR = os.path.abspath('templates')
 MAKO_LOOKUP = mako.lookup.TemplateLookup(
   directories = [ TEMPLATE_DIR ],
-  output_encoding = 'utf-8', encoding_errors = 'replace')
+  output_encoding = 'utf-8', encoding_errors = 'replace',
+  imports = [ "import pagedefs" ],
+  default_filters = [ "pagedefs.handle_unicode" ])
 
 force_locale = html.force_locale
 
