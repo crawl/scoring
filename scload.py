@@ -354,6 +354,9 @@ def xlog_dict(logline):
     d['nrune'] = 0
     d['urune'] = 0
 
+  if d.get('seed'):
+    del d['seed'] # placeholder until this is handled
+
   # Fixup rune madness where one or the other is set, but not both.
   if d.get('nrune') is not None or d.get('urune') is not None:
     d['nrune'] = d.get('nrune') or d.get('urune')
