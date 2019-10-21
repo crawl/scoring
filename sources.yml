@@ -28,6 +28,8 @@ sources:
       - logfile19
       - logfile20
       - logfile21
+      - logfile22
+      - logfile23
       - logfile-git
     milestones:
       - milestones02
@@ -50,6 +52,8 @@ sources:
       - milestones19
       - milestones20
       - milestones21
+      - milestones22
+      - milestones23
       - milestones-git
 
     # Regex -> location; player name is automatically appended.
@@ -76,6 +80,8 @@ sources:
       - allgames-0.19.txt
       - allgames-0.20.txt
       - allgames-0.21.txt
+      - allgames-0.22.txt
+      - allgames-0.23.txt
       - allgames-svn.txt
     milestones:
       - milestones-0.6.txt
@@ -93,6 +99,8 @@ sources:
       - milestones-0.19.txt
       - milestones-0.20.txt
       - milestones-0.21.txt
+      - milestones-0.22.txt
+      - milestones-0.23.txt
       - milestones-svn.txt
     morgues:
       - - time_gt: ['end_time', '20110819-1740']
@@ -130,6 +138,8 @@ sources:
     base: https://underhound.eu/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.23/logfile
+      - meta/0.22/logfile
       - meta/0.21/logfile
       - meta/0.20/logfile
       - meta/0.19/logfile
@@ -144,6 +154,8 @@ sources:
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.23/milestones
+      - meta/0.22/milestones
       - meta/0.21/milestones
       - meta/0.20/milestones
       - meta/0.19/milestones
@@ -183,6 +195,8 @@ sources:
       - meta/0.19/logfile
       - meta/0.20/logfile
       - meta/0.21/logfile
+      - meta/0.22/logfile
+      - meta/0.23/logfile
     milestones:
       - meta/git/milestones
       - meta/0.13/milestones
@@ -194,6 +208,8 @@ sources:
       - meta/0.19/milestones
       - meta/0.20/milestones
       - meta/0.21/milestones
+      - meta/0.22/milestones
+      - meta/0.23/milestones
     morgues:
       - http://crawl.berotato.org/crawl/morgue/
 
@@ -210,6 +226,8 @@ sources:
       - 0.19/logfile
       - 0.20/logfile
       - 0.21/logfile
+      - 0.22/logfile
+      - 0.23/logfile
     milestones:
       - trunk/milestones
       - 0.13/milestones
@@ -221,6 +239,8 @@ sources:
       - 0.19/milestones
       - 0.20/milestones
       - 0.21/milestones
+      - 0.22/milestones
+      - 0.23/milestones
     morgues:
       - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
@@ -260,6 +280,8 @@ sources:
     base: http://lazy-life.ddo.jp:8080
     logfiles:
       - meta/trunk/logfile
+      - meta/0.23/logfile
+      - meta/0.22/logfile
       - meta/0.21/logfile
       - meta/0.20/logfile
       - meta/0.19/logfile
@@ -270,6 +292,8 @@ sources:
       - meta/0.14/logfile
     milestones:
       - meta/trunk/milestones
+      - meta/0.23/milestones
+      - meta/0.22/milestones
       - meta/0.21/milestones
       - meta/0.20/milestones
       - meta/0.19/milestones
@@ -293,6 +317,8 @@ sources:
       - meta/0.19/logfile
       - meta/0.20/logfile
       - meta/0.21/logfile
+      - meta/0.22/logfile
+      - meta/0.23/logfile
     milestones:
       - meta/git/milestones
       - meta/0.14/milestones
@@ -303,6 +329,8 @@ sources:
       - meta/0.19/milestones
       - meta/0.20/milestones
       - meta/0.21/milestones
+      - meta/0.22/milestones
+      - meta/0.23/milestones
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
 
@@ -310,6 +338,8 @@ sources:
     base: https://crawl.project357.org/
     logfiles:
       - dcss-logfiles-trunk
+      - dcss-logfiles-0.23
+      - dcss-logfiles-0.22
       - dcss-logfiles-0.21
       - dcss-logfiles-0.20
       - dcss-logfiles-0.19
@@ -319,6 +349,8 @@ sources:
       - dcss-logfiles-0.15
     milestones:
       - dcss-milestones-trunk
+      - dcss-milestones-0.23
+      - dcss-milestones-0.22
       - dcss-milestones-0.21
       - dcss-milestones-0.20
       - dcss-milestones-0.19
@@ -343,16 +375,19 @@ sources:
 
   - name: cjr
     base: https://crawl.jorgrun.rocks/
+    local: /home/rax/scoring/
     logfiles:
-      - meta/git/logfile
-      - meta/0.21/logfile
-      - meta/0.20/logfile
-      - meta/0.19/logfile
+      - data/cjr-logfile-0.19
+      - data/cjr-logfile-0.20
+      - data/cjr-logfile-0.21
+      - data/cjr-logfile-0.22
+      - data/cjr-logfile-git
     milestones:
-      - meta/git/milestones
-      - meta/0.21/milestones
-      - meta/0.20/milestones
-      - meta/0.19/milestones
+      - data/cjr-milestone-0.19
+      - data/cjr-milestone-0.20
+      - data/cjr-milestone-0.21
+      - data/cjr-milestone-0.22
+      - data/cjr-milestone-git
     morgues:
       - https://crawl.jorgrun.rocks/morgue
 
@@ -367,3 +402,20 @@ sources:
       - data/cjr-milestone-0.18
     morgues:
       - https://crawl.jorgrun.rocks/morgue
+
+  - name: cko
+    base: https://crawl.kelbi.org/crawl
+    logfiles:
+      - meta/git/logfile
+      - meta/0.23/logfile
+      - meta/0.22/logfile
+      - meta/0.21/logfile
+      - meta/0.18/logfile
+    milestones:
+      - meta/git/milestones
+      - meta/0.23/milestones
+      - meta/0.22/milestones
+      - meta/0.21/milestones
+      - meta/0.18/milestones
+    morgues:
+      - https://crawl.kelbi.org/crawl/morgue
