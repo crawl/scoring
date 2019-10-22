@@ -24,7 +24,7 @@
           <div>
             <h2>Players Ranked by Total Score</h2>
 
-            <p>This page may not show accounts that have been inactivate for
+            <p>This page may not show accounts that have been inactive for
             more than a year.</p>
 
             ${html.best_players_by_total_score(top_scores)}
