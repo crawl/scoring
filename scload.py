@@ -227,7 +227,7 @@ class MasterXlogReader:
     lines = [ line for line in [ x.line(cursor) for x in self.xlogs ]
               if line ]
 
-    info("Got %d lines." % len(lines))
+    info("Got lines from %d logfiles." % len(lines))
     proc = 0
     while lines:
       # Sort dates in descending order.
