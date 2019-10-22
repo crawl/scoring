@@ -604,7 +604,6 @@ def create_image(filename, stats):
   wins = rolling_average(days, 'wins', avg_window)
   players = rolling_average(days, 'players', avg_window)
 
-  print(len(stats))
   if len(days) <= 31:
     intervals = [x for x in range(0, len(days))]
   elif len(days) <= 365 * 4:
