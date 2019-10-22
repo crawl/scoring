@@ -219,7 +219,12 @@ def best_players_by_total_score(c):
   rows = query_rows(c, '''SELECT name, games_played, games_won,
                                  total_score, best_score,
                                  first_game_start, last_game_end
-                            FROM players WHERE total_score > 500
+                            FROM players
+                            WHERE total_score > 500 and
+                                  (last_game_end >= curdate() - interval 1 week
+                                   or games_played > 40
+                                   or games_won > 0
+                                   or total_score > 100000)
                           ORDER BY total_score DESC''')
   res = []
   for r in rows:
@@ -257,6 +262,10 @@ def all_player_stats(c):
                                  total_score, best_xl, best_score,
                                  first_game_start, last_game_end
                             FROM players
+                            WHERE last_game_end >= curdate() - interval 1 year
+                                  or games_played > 40
+                                  or games_won > 0
+                                  or total_score > 100000
                            ORDER BY name''')
 
   def flatten_row(r):
