@@ -16,10 +16,14 @@ import optparse
 import time
 from config import SOURCES
 
+# this is a bit of a mess -- really should clean up how the optparse is set up.
+# right now most of these aren't used when called from scoresd.py, and -n has
+# a different meaning. (Also, optparse is deprecated...)
 oparser = optparse.OptionParser()
 oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
 oparser.add_option('-D', '--no-download', action='store_true', dest='no_download')
+oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players')
 OPT, ARGS = oparser.parse_args()
 TIME_QUERIES = False
 
@@ -960,7 +964,7 @@ def scload():
       full_load(cursor, master)
     if not OPT.load_only:
       import pagedefs
-      pagedefs.rebuild(cursor)
+      pagedefs.incremental_build(cursor) # trigger first_run processing
   finally:
     set_active_cursor(None)
     cursor.close()

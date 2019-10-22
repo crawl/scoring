@@ -8,19 +8,27 @@ Running the scoring scripts:
     create user scoring;
     grant all privileges on scoring.* to scoring;
 
-2. mysql -uscoring scoring < database.sql will (re)create the tables,
+2. `mysql -uscoring scoring < database.sql` will (re)create the tables,
    discarding any existing data.
 
-3. python scoresd.py will start a daemon to update the db continuously
-   from the logfile and milestones. scoresd.py is otherwise identical
-   in behaviour to scbootstrap.py.
+3. `python scoresd.py` will start a daemon to update the db continuously
+   from the logfile and milestones.
 
 Other scripts:
 
-For a one-off scoring update, you can run python scbootstrap.py.
+For a one-off scoring update, you can run `python scbootstrap.py`. This is
+mostly identical to running the first update pass from `scoresd.py`.
 
+Configuration and script options
+--------------------------------
 
-Configuration
--------------
+Add additional logfiles and milestones to sources.yml. For running somewhere
+besides CAO, you will probably need to change `BASEDIR` in crawl_utils.py.
 
-Add additional logfiles and milestones to sources.yml.
+Neither scoresd.py and scbootstrap.py will do a complete player page rebuild
+unless they have to. To trigger this, pass either script `-p`. (A player page
+rebuild will also be triggered if the `players` directory is empty.) This may
+be necessary if scoresd.py does not shut down gracefully for some reason; it
+usually takes 3-4 hours for the full scoring database though.
+
+To run scoresd.py without daemonizing, pass it `-n`.

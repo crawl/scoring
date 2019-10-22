@@ -3,6 +3,7 @@ import scload
 import time
 import crawl_utils
 import sys
+import signal
 import query
 import config
 
@@ -10,6 +11,10 @@ import logging
 from logging import debug, info, warn, error
 
 import pagedefs
+
+def signal_handler(signum, frame):
+  info("Received signal %i, terminating!", signum)
+  raise KeyboardInterrupt # hacky: relies on nothing else catching this
 
 # Can run as a daemon and tail a number of logfiles and milestones and
 # update the db.
@@ -45,13 +50,20 @@ def tail_logfiles(logs, milestones, interval=60):
       if crawl_utils.scoresd_stop_requested():
         info("Exit due to scoresd stop request.")
         break
+  except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
+    pass
   finally:
+    info("Flushing player pages and shutting down scoresd db connection")
+    pagedefs.flush_pages(cursor) # flush any dirty player pages
     scload.set_active_cursor(None)
     cursor.close()
     db.close()
 
 if __name__ == '__main__':
   daemon = "-n" not in sys.argv
+  signal.signal(signal.SIGTERM, signal_handler)
+  signal.signal(signal.SIGHUP, signal_handler) # TODO: restart on SIGHUP?
+  # n.b. SIGKILL may result in dirty pages not being flushed
 
   logformat = crawl_utils.LOGFORMAT
   if daemon:
