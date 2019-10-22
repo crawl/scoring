@@ -4,7 +4,11 @@ Running the scoring scripts:
    to the user 'scoring' with no password (and make sure MySQL is
    listening only on localhost or has TCP connections disabled).
 
-2. mysql -uscoring -p scoring < database.sql will (re)create the tables,
+    create database scoring;
+    create user scoring;
+    grant all privileges on scoring.* to scoring;
+
+2. mysql -uscoring scoring < database.sql will (re)create the tables,
    discarding any existing data.
 
 3. python scoresd.py will start a daemon to update the db continuously
