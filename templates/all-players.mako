@@ -22,6 +22,9 @@
           <h2>All Players</h2>
         </div>
 
+        <p>This page may not show accounts that have been inactive for more
+        than a year.</p>
+
         <hr>
 
         <div class="content">

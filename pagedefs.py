@@ -87,10 +87,10 @@ def player_pages_exist():
 PAGE_DEFS = [
   [ 'overview' ], #
   [ 'top-N' ], #
-  [ 'best-players-total-score' ], #
+  [ 'best-players-total-score', 200 ], #
   [ 'top-combo-scores' ], #
   [ 'combo-scoreboard' ], #
-  [ 'all-players' ], #
+  [ 'all-players', 200 ], #
   [ 'killers' ], #
   [ 'gkills' ], #
   [ 'winners' ], #
@@ -105,6 +105,9 @@ DIRTY_PAGES = { }
 DIRTY_PLAYERS = { }
 
 # Pages update at least once in 30 minutes if dirty.
+# TODO: these values are in something like updates per tick, where a tick on
+# CAO is *way* more than a minute. It would be nice to be able to actually use
+# time here.
 DEFAULT_DIRTY_THRESHOLD = 30
 PLAYER_DIRTY_THRESHOLD = 30
 
