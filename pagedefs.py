@@ -98,7 +98,8 @@ PAGE_DEFS = [
   [ 'fastest-wins-time' ], #
   [ 'streaks' ], #
   [ 'recent' ], #
-  [ 'per-day' ], #
+  [ 'per-day', 500 ], #
+  [ 'per-day-monthly' ], #
 ]
 
 DIRTY_PAGES = { }

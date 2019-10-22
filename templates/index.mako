@@ -6,14 +6,13 @@
     <div class="page information">
       <%include file="toplink.mako"/>
       <div class="page_content">
-        <h2>CAO/CDO Scoring Pages (stable and alpha versions)</h2>
+        <h2>DCSS Scoring Pages (stable and alpha versions)</h2>
 
         <div class="content">
 
           <p style="max-width: 500px">
-            The new scoring pages are work in progress. If you have
-            suggestions or want to report problems, please contact
-            rax on Freenode IRC channel ##crawl.
+            If you have suggestions or want to report problems with CAO scoring,
+            please contact server admin rax, or devteam members advil or gammafunk.
           </p>
 
           <ul>
@@ -44,7 +43,8 @@
             <li><a href="combo-scoreboard.html">Combo Standings</a></li>
             <li><a href="top-combo-scores.html">Combo Scores</a></li>
             <li>
-              <a href="per-day.html">Server Activity</a>
+              DCSS server activity: <a href="per-day-monthly.html">last month</a>
+              <a href="per-day.html">all time</a>
             </li>
           </ul>
         </div> <!-- Content -->

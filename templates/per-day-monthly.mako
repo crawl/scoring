@@ -2,7 +2,7 @@
    import scload, query, crawl_utils, html
    c = attributes['cursor']
 
-   stats = query.date_stats(c)
+   stats = query.date_stats(c, True)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -22,22 +22,23 @@
         <div class="content">
 
           <div>
-            <h2>Server Activity across official DCSS servers, all time</h2>
-            <p>This page updates at most once a day. For monthly stats, see <a href="per-day-monthly.html">here</a>.</p>
+            <h2>Server Activity across official DCSS servers during the last month</h2>
 
-            % if html.MATPLOT and len(stats) > 100:
-            <img src="date-stats.png" title="Activity Graph"
-                 alt="Server Activity Graph">
+            <p>For all-time stats, see <a href="per-day.html">here</a>.</p>
+
+            % if html.MATPLOT:
+            <p><img src="date-stats-monthly.png" title="Activity Graph"
+                 alt="Server Activity Graph"></p>
             % endif
                  
             <div style="margin-top: 20px">            
-               ${html.date_stats(stats)}
+               ${html.date_stats(stats, "-monthly")}
             </div>
           </div>
         </div>
       </div>
     </div>
-    ${html.update_time()}
 
+    ${html.update_time()}
   </body>
 </html>

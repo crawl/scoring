@@ -591,48 +591,62 @@ def create_image(filename, stats):
         b = b[1:]
       v = sum(b) * 1.0 / len(b)
       res.append(v)
-      res.append(value)
     return res
 
-  games = rolling_average(days, 'games', 5)
-  wins = rolling_average(days, 'wins', 5)
-  players = rolling_average(days, 'players', 5)
+  if len(days) <= 31:
+    avg_window = 1
+  elif len(days) <= 365 * 4:
+    avg_window = 5
+  else:
+    avg_window = 30
 
-  intervals = [x for x in range(0, len(days))
-               if days[x]['day'].endswith('01')]
-  padded_intervals = [x * 2 for x in intervals]
+  games = rolling_average(days, 'games', avg_window)
+  wins = rolling_average(days, 'wins', avg_window)
+  players = rolling_average(days, 'players', avg_window)
 
+  print(len(stats))
+  if len(days) <= 31:
+    intervals = [x for x in range(0, len(days))]
+  elif len(days) <= 365 * 4:
+    intervals = [x for x in range(0, len(days))
+                    if days[x]['day'].endswith('01')]
+  else:
+    intervals = [x for x in range(0, len(days))
+                    if days[x]['day'].endswith('01-01')]
+
+  point_positions = [x + 0.5 for x in intervals]
 
   plt.subplot(311)
-  plt.plot(games, 'b-')
+  plt.plot([x + 0.5 for x in range(len(wins))], games, 'b-')
   plt.axis([0, len(games), 0, max(games) * 1.2])
   labels = ['' for x in [days[i] for i in intervals]]
   plt.ylabel('Games')
-  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.xticks(point_positions, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
   plt.subplot(312)
-  plt.plot(players, 'r-')
+  plt.plot([x + 0.5 for x in range(len(wins))], players, 'r-')
   plt.axis([0, len(players), 0, max(players) * 1.2])
   labels = ['' for x in [days[i] for i in intervals]]
   plt.ylabel('Players')
-  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.xticks(point_positions, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
   plt.subplot(313)
-  plt.vlines(range(len(wins)), 0, wins, 'g')
+  plt.vlines([x + 0.5 for x in range(len(wins))], 0, wins, 'g')
   plt.axis([0, len(wins), 0, max(wins) * 1.5])
   labels = [x['day'] for x in [days[i] for i in intervals]]
   plt.ylabel('Wins')
-  plt.xticks(padded_intervals, labels, size = 'xx-small', rotation = 'vertical')
+  plt.xticks(point_positions, labels, size = 'xx-small', rotation = 'vertical')
   plt.grid(alpha=0.2, linestyle='-')
 
   plt.savefig(filename)
 
-def date_stats(stats):
-  if MATPLOT and len(stats) > 100:
-    create_image(os.path.join(crawl_utils.SCORE_FILE_DIR, 'date-stats.png'),
-                 stats)
+def date_stats(stats, file_suffix=""):
+  if MATPLOT:
+    create_image(os.path.join(crawl_utils.SCORE_FILE_DIR,
+                  'date-stats%s.png' % file_suffix),
+                  stats)
 
   def daterowcls(r):
     return r.has_key('month') and 'date-month' or 'date-day'
