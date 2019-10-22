@@ -24,6 +24,7 @@ oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
 oparser.add_option('-D', '--no-download', action='store_true', dest='no_download')
 oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players')
+oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon')
 OPT, ARGS = oparser.parse_args()
 TIME_QUERIES = False
 
@@ -937,6 +938,10 @@ def init_listeners(db):
 def scload():
   logging.basicConfig(level=logging.INFO,
                       format=crawl_utils.LOGFORMAT)
+  if OPT.stop_daemon:
+    print("Requesting daemon stop: this may take some time.")
+    crawl_utils.write_scoresd_stop_request()
+    return
 
   crawl_utils.lock_or_die()
   print "Populating db (one-off) with logfiles and milestones. " + \

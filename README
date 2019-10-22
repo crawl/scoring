@@ -14,6 +14,10 @@ Running the scoring scripts:
 3. `python scoresd.py` will start a daemon to update the db continuously
    from the logfile and milestones.
 
+4. To stop the daemon, you can run `python scoresd.py --stop`, which will
+   ensure that all currently updating pages finish. (This may take a bit of
+   time.)
+
 Other scripts:
 
 For a one-off scoring update, you can run `python scbootstrap.py`. This is

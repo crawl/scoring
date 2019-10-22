@@ -49,6 +49,7 @@ def tail_logfiles(logs, milestones, interval=60):
 
       if crawl_utils.scoresd_stop_requested():
         info("Exit due to scoresd stop request.")
+        crawl_utils.clear_scoresd_stop_request()
         break
   except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
     pass
@@ -60,7 +61,7 @@ def tail_logfiles(logs, milestones, interval=60):
     db.close()
 
 if __name__ == '__main__':
-  daemon = "-n" not in sys.argv
+  daemon = "-n" not in sys.argv # TODO: interacts with scload's optparser...
   signal.signal(signal.SIGTERM, signal_handler)
   signal.signal(signal.SIGHUP, signal_handler) # TODO: restart on SIGHUP?
   # n.b. SIGKILL may result in dirty pages not being flushed
@@ -72,6 +73,13 @@ if __name__ == '__main__':
                         format = logformat)
   else:
     logging.basicConfig(level=logging.DEBUG, format = logformat)
+
+  if scload.OPT.stop_daemon:
+    print("Requesting daemon stop: this may take some time.")
+    crawl_utils.write_scoresd_stop_request()
+    sys.exit(0)
+
+  crawl_utils.clear_scoresd_stop_request() # just in case
 
   if daemon:
     crawl_utils.daemonize()
