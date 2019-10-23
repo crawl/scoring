@@ -46,8 +46,6 @@ class OutlineListener (scload.CrawlEventListener):
   def cleanup(self, db):
     pass
 
-LISTENER = [ OutlineListener() ]
-
 @DBMemoizer
 def low_xl_rune_count(c):
   return query_first(c, '''SELECT COUNT(*) FROM low_xl_rune_finds''')

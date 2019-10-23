@@ -1,5 +1,6 @@
 import query, crawl_utils, time
 import scload
+import config
 
 from crawl_utils import player_link, linked_text, human_number
 from morgue.util import morgue_link
@@ -48,7 +49,8 @@ STOCK_WIN_COLUMNS = \
       ('god', 'God'),
       ('urune', 'Runes'),
       ('end_time', 'Time', True),
-      ('v', 'Version')
+      ('v', 'Version'),
+      ('server', 'Server')
     ]
 
 EXT_WIN_COLUMNS = \
@@ -61,7 +63,8 @@ EXT_WIN_COLUMNS = \
       ('dur', 'Duration'),
       ('urune', 'Runes'),
       ('end_time', 'Date'),
-      ('v', 'Version')
+      ('v', 'Version'),
+      ('server', 'Server')
     ]
 
 STOCK_COLUMNS = \
@@ -75,7 +78,8 @@ STOCK_COLUMNS = \
       ('god', 'God'),
       ('urune', 'Runes'),
       ('end_time', 'Time', True),
-      ('v', 'Version')
+      ('v', 'Version'),
+      ('server', 'Server')
     ]
 
 EXT_COLUMNS = \
@@ -90,7 +94,8 @@ EXT_COLUMNS = \
       ('dur', 'Duration'),
       ('urune', 'Runes'),
       ('end_time', 'Date'),
-      ('v', 'Version')
+      ('v', 'Version'),
+      ('server', 'Server')
     ]
 
 WHERE_COLUMNS = \
@@ -111,6 +116,18 @@ def force_locale():
   # Something resets the locale :/
   locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
+def pretty_server(game):
+  source = config.SOURCES.log_to_source(game.get('source_file'))
+  if not source:
+    return ''
+  name = source.get_cfg("canonical_name")
+  if not name:
+    name = source.name
+  url = source.get_cfg("server_url")
+  if url:
+    return '<a href="%s">%s</a>' % (url, name)
+  return name
+
 def fixup_column(col, data, game):
   if col.find('time') != -1:
     return pretty_date(data)
@@ -118,6 +135,8 @@ def fixup_column(col, data, game):
     return pretty_dur(data)
   elif col == 'place' and game.get('ktyp') == 'winning':
     return ''
+  elif col == 'server':
+    return pretty_server(game)
   elif (isinstance(data, (int,long)) and
         (col == 'sc' or col == 'turn' or col.lower().find('score') != -1)):
     return human_number(data)

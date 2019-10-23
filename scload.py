@@ -337,7 +337,7 @@ def canonical_killer(g):
 def invalid_xlog_line(logline):
   logline = logline.strip()
   # Reject anything with less than 6 fields
-  return logline.count(':') < 5
+  return logline.count(':') < 5 # TODO: this test is messed up by escaped ::
 
 def xlog_dict(logline):
   d = parse_logline(logline.strip())
@@ -870,7 +870,6 @@ def update_xlog_offset(c, filename, offset):
                     WHERE id = %s''',
              offset, fid)
   else:
-    print("insert: %s, %s" % (filename, offset))
     query_do(c, '''INSERT INTO logfile_offsets (filename, offset)
                       VALUES (%s, %s)''',
              filename, offset)

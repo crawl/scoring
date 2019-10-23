@@ -68,11 +68,11 @@ if __name__ == '__main__':
 
   logformat = crawl_utils.LOGFORMAT
   if daemon:
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         filename = crawl_utils.LOGFILE,
                         format = logformat)
   else:
-    logging.basicConfig(level=logging.DEBUG, format = logformat)
+    logging.basicConfig(level=logging.INFO, format = logformat)
 
   if scload.OPT.stop_daemon:
     print("Requesting daemon stop: this may take some time.")

@@ -11,6 +11,7 @@ class Sources (object):
     self._sources = None
     self._source_map = None
     self._cfg = None
+    self._logfile_map = None
 
   def cfg(self, key=None):
     if not self._cfg:
@@ -37,6 +38,15 @@ class Sources (object):
                         for log in logs]
     return self._logfiles
 
+  def log_to_source(self, log_name):
+    if not self._logfile_map:
+      self._logfile_map = dict([[log.local_path, self.source(log.source)]
+                              for logs in [src.logfiles()
+                                                    for src in self.sources()]
+                                            for log in logs])
+    # return None if not found
+    return self._logfile_map.get(log_name)
+
   def milestones(self):
     if not self._milestones:
       self._milestones = [mile for miles in
@@ -60,6 +70,12 @@ class Source (object):
   def cfg(self, key):
     return self._cfg[key]
 
+  def has_cfg(self, key):
+    return self._cfg.has_key(key)
+
+  def get_cfg(self, key):
+    return self._cfg.get(key)
+
   def logfiles(self):
     if not self._logfiles:
       self._logfiles = self._resolve_files('logfiles')
@@ -79,12 +95,13 @@ class Source (object):
     return self._morgue_bases
 
   def _resolve_files(self, key, factory=xlog.xlog_def.XlogDef):
-    files = []
+    files = list()
     file_type = key[0:-1]
-    for path in self.cfg(key):
-      files.append(factory(path, source_name=self.name,
-                           base_url=self.base, local_base=self.local,
-                           xlog_type=file_type))
+    if self.cfg(key):
+      for path in self.cfg(key):
+        files.append(factory(path, source_name=self.name,
+                             base_url=self.base, local_base=self.local,
+                             xlog_type=file_type))
     return files
 
   def _resolve_morgue_bases(self, key):
