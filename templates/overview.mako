@@ -1,5 +1,5 @@
 <%
-   import query, scload, html
+   import query, scload, html, config
    c = attributes['cursor']
 
    top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=5)
@@ -76,6 +76,7 @@
           <hr>
 
           <div class="row">
+            % if config.USE_MILESTONES:
             <div>
               <h3>Ziggurat Raiders</h3>
               ${html.best_ziggurats(c)}
@@ -88,6 +89,7 @@
                 Note: the abyssal rune is not eligible.
               </p>
             </div>
+            % endif
 
             <div>
               <h3>Most Pacific Wins</h3>

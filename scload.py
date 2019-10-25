@@ -14,6 +14,7 @@ import imp
 import sys
 import optparse
 import time
+import config
 from config import SOURCES
 
 # this is a bit of a mess -- really should clean up how the optparse is set up.
@@ -852,8 +853,10 @@ def extract_unique_name(kill_message):
   return R_KILL_UNIQUE.findall(kill_message)[0]
 
 def create_master_reader():
-  processors = ([ MilestoneFile(x) for x in SOURCES.milestones() ] +
-                [ Logfile(x) for x in SOURCES.logfiles() ])
+  processors = list()
+  if config.USE_MILESTONES:
+    processors = processors + [ MilestoneFile(x) for x in SOURCES.milestones() ]
+  processors = processors + [ Logfile(x) for x in SOURCES.logfiles() ]
   return MasterXlogReader(processors)
 
 @DBMemoizer

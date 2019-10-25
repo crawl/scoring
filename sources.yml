@@ -1,5 +1,5 @@
 scoring-base: 'http://crawl.akrasiac.org'
-
+use-milestones: False
 sources:
   - name: cao
     canonical_name: CAO
