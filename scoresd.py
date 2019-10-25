@@ -21,6 +21,13 @@ def signal_handler(signum, frame):
 def interval_work(cursor, interval, master):
   master.tail_all(cursor)
 
+def check_stop():
+  if crawl_utils.scoresd_stop_requested():
+    info("Exit due to scoresd stop request.")
+    crawl_utils.clear_scoresd_stop_request()
+    return True
+  return False
+
 def tail_logfiles(logs, milestones, interval=60):
   db = scload.connect_db()
   scload.init_listeners(db)
@@ -41,15 +48,15 @@ def tail_logfiles(logs, milestones, interval=60):
       except IOError, e:
         error("IOError: %s" % e)
       info("Finished batch.");
+      if check_stop():
+        break
 
       time.sleep(interval)
       elapsed_time += interval
 
       pagedefs.tick_dirty()
 
-      if crawl_utils.scoresd_stop_requested():
-        info("Exit due to scoresd stop request.")
-        crawl_utils.clear_scoresd_stop_request()
+      if check_stop():
         break
   except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
     pass
