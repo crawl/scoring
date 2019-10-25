@@ -4,6 +4,7 @@ import mako.template
 import mako.lookup
 import os
 import os.path
+import datetime
 import scload
 import query
 import crawl_utils
@@ -106,23 +107,37 @@ DIRTY_PAGES = { }
 DIRTY_PLAYERS = { }
 
 # Pages update at least once in 30 minutes if dirty.
-# TODO: these values are in something like updates per tick, where a tick on
-# CAO is *way* more than a minute. It would be nice to be able to actually use
-# time here.
+# TODO: the time it takes for a tick is really dependent on how much the loop
+# does. The tick_amount calculation is a hacky way of getting around this,
+# where the original design assumed that the loop did no io, so a tick was
+# equivalent to the sleep time. Is there a better way?
 DEFAULT_DIRTY_THRESHOLD = 30
 PLAYER_DIRTY_THRESHOLD = 30
 
 first_run = True
 
+last_tick_time = None
+
 def tick_dirty():
+  global last_tick_time
+  if last_tick_time is None:
+    tick_amount = 1
+    info("Ticking all pages by %d", tick_amount)
+  else:
+    td = datetime.datetime.now() - last_tick_time
+    tick_amount = max(min(td.total_seconds() / 60, 30), 1)
+    info("Ticking all pages by %d (last tick: %d seconds)",
+                                              tick_amount, td.total_seconds())
+
   def tick_thing(things):
     for p in things.keys():
       v = things[p]
       if v['dirtiness']:
-        v['dirtiness'] += 1
+        v['dirtiness'] += tick_amount
 
   tick_thing(DIRTY_PAGES)
   tick_thing(DIRTY_PLAYERS)
+  last_tick_time = datetime.datetime.now()
 
 def fully_dirty():
   def dirty_thing(things):
@@ -133,6 +148,8 @@ def fully_dirty():
   dirty_thing(DIRTY_PLAYERS)
 
 def init_dirty():
+  global last_tick_time
+  last_tick_time = datetime.datetime.now()
   for p in PAGE_DEFS:
     threshold = len(p) == 1 and DEFAULT_DIRTY_THRESHOLD or p[1]
     DIRTY_PAGES[p[0]] = { 'dirtiness': 0, 'threshold': threshold }
