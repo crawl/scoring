@@ -61,11 +61,12 @@ def tail_logfiles(logs, milestones, interval=60):
   except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
     pass
   finally:
-    info("Flushing player pages and shutting down scoresd db connection")
+    info("Flushing player pages and shutting down db connection")
     pagedefs.flush_pages(cursor) # flush any dirty player pages
     scload.set_active_cursor(None)
     cursor.close()
     db.close()
+    info("Daemon exit")
 
 if __name__ == '__main__':
   daemon = "-n" not in sys.argv # TODO: interacts with scload's optparser...
