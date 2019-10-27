@@ -21,12 +21,26 @@ def signal_handler(signum, frame):
 def interval_work(cursor, interval, master):
   master.tail_all(cursor)
 
-def check_stop():
+def check_daemon_stop():
   if crawl_utils.scoresd_stop_requested():
     info("Exit due to scoresd stop request.")
-    crawl_utils.clear_scoresd_stop_request()
+    # wait until everything actually stops to remove the stop file
     return True
   return False
+
+def stop_daemon(wait):
+  print("Requesting daemon stop: this may take some time.")
+  crawl_utils.write_scoresd_stop_request()
+  if wait:
+    sys.stdout.write("Waiting...")
+    sys.stdout.flush()
+    while crawl_utils.scoresd_stop_requested():
+      time.sleep(5)
+      sys.stdout.write(".")
+      sys.stdout.flush()
+    sys.stdout.write("\n")
+    print("Daemon exited!")
+  sys.exit(0)
 
 def tail_logfiles(logs, milestones, interval=60):
   db = scload.connect_db()
@@ -48,7 +62,7 @@ def tail_logfiles(logs, milestones, interval=60):
       except IOError, e:
         error("IOError: %s" % e)
       info("Finished batch.");
-      if check_stop():
+      if check_daemon_stop():
         break
 
       time.sleep(interval)
@@ -56,7 +70,7 @@ def tail_logfiles(logs, milestones, interval=60):
 
       pagedefs.tick_dirty()
 
-      if check_stop():
+      if check_daemon_stop():
         break
   except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
     pass
@@ -66,6 +80,7 @@ def tail_logfiles(logs, milestones, interval=60):
     scload.set_active_cursor(None)
     cursor.close()
     db.close()
+    crawl_utils.clear_scoresd_stop_request()
     info("Daemon exit")
 
 if __name__ == '__main__':
@@ -83,9 +98,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format = logformat)
 
   if scload.OPT.stop_daemon:
-    print("Requesting daemon stop: this may take some time.")
-    crawl_utils.write_scoresd_stop_request()
-    sys.exit(0)
+    stop_daemon(scload.OPT.stop_daemon_wait) # NORETURN
 
   crawl_utils.clear_scoresd_stop_request() # just in case
 

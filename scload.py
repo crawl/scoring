@@ -26,6 +26,7 @@ oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
 oparser.add_option('-D', '--no-download', action='store_true', dest='no_download')
 oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players')
 oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon')
+oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait')
 OPT, ARGS = oparser.parse_args()
 TIME_QUERIES = False
 
