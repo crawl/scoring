@@ -617,7 +617,7 @@ def create_image(filename, stats):
   elif len(days) <= 365 * 4:
     avg_window = 5
   else:
-    avg_window = 30
+    avg_window = 15
 
   games = rolling_average(days, 'games', avg_window)
   wins = rolling_average(days, 'wins', avg_window)
