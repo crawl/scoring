@@ -292,6 +292,7 @@ def update_all_recent_games(c, g):
 
   dirty_page('recent', 1)
   dirty_page('per-day', 1)
+  dirty_page('per-day-monthly', 1)
   insert_game(c, g, 'all_recent_games')
   if all_recent_game_count.has_key():
     all_recent_game_count.set_key(all_recent_game_count(c) + 1)
