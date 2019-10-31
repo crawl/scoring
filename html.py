@@ -612,7 +612,7 @@ def create_image(filename, stats):
       res.append(v)
     return res
 
-  if len(days) <= 31:
+  if len(days) <= 40:
     avg_window = 1
   elif len(days) <= 365 * 4:
     avg_window = 5
@@ -623,7 +623,7 @@ def create_image(filename, stats):
   wins = rolling_average(days, 'wins', avg_window)
   players = rolling_average(days, 'players', avg_window)
 
-  if len(days) <= 31:
+  if len(days) <= 40:
     intervals = [x for x in range(0, len(days))]
   elif len(days) <= 365 * 4:
     intervals = [x for x in range(0, len(days))

@@ -606,7 +606,7 @@ def date_stats(c, restricted=False):
     dates = query_rows(c,
                      '''SELECT which_day, games_ended, games_won
                          FROM per_day_stats
-                         WHERE which_day >= curdate() - interval 1 month
+                         WHERE which_day > curdate() - interval 1 month
                          ORDER BY which_day DESC''')
   else:
     dates = query_rows(c,
