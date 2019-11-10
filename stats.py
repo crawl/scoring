@@ -551,11 +551,13 @@ def update_known_races_classes(c, g):
   if not is_known_race(c, race):
     record_known_thing(c, 'known_races', 'race', race)
     is_known_race.set_key(True, race)
-    query.all_races.flush()
+    query.db_races.flush()
+    query.current_races.flush()
   if not is_known_class(c, cls):
     record_known_thing(c, 'known_classes', 'cls', cls)
     is_known_class.set_key(True, cls)
-    query.all_classes.flush()
+    query.db_classes.flush()
+    query.current_classes.flush()
 
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
