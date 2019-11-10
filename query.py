@@ -656,17 +656,39 @@ def date_stats(c, restricted=False):
   flush_month(month[0])
   return result
 
+def obsolete_classes():
+  return {"Cr", "DK", "He", "Jr", "Pa", "Pr", "Re", "St", "Th"}
+
+def obsolete_races():
+  return {"Bu", "Dj", "El", "GE", "Gm", "HD", "HE", "Ke", "LO", "OM", "SE"}
+
+# TODO: fix capitalization when early db entries are wrong ("Am", "OP")
+# TODO: handle gnome properly, rename to `Gm`
+# TODO: dataify
+
 @DBMemoizer
-def all_classes(c):
+def db_classes(c):
   scload.bootstrap_known_raceclasses(c)
   clx = query_first_col(c, '''SELECT cls FROM known_classes''')
   clx.sort()
   return clx
 
 @DBMemoizer
-def all_races(c):
+def current_classes(c):
+  clx = list(set(db_classes(c)) - obsolete_classes())
+  clx.sort()
+  return clx
+
+@DBMemoizer
+def db_races(c):
   scload.bootstrap_known_raceclasses(c)
   races = query_first_col(c, '''SELECT race FROM known_races''')
+  races.sort()
+  return races
+
+@DBMemoizer
+def current_races(c):
+  races = list(set(db_races(c)) - obsolete_races())
   races.sort()
   return races
 
@@ -682,8 +704,11 @@ def player_get_stats(c, player):
   return stats
 
 def player_stats_matrix(c, player):
-  races = all_races(c)
-  classes = all_classes(c)
+  races = db_races(c)
+  classes = db_classes(c)
+  obs_races = obsolete_races()
+  obs_classes = obsolete_classes()
+
   rows = []
   stats = player_get_stats(c, player)
 
@@ -692,10 +717,15 @@ def player_stats_matrix(c, player):
   cstats = [ {'class_total': True,
               'games': 0,
               'wins': 0,
-              'xl': 0} for c in classes ]
+              'xl': 0,
+              'omit': c in obs_classes} for c in classes ]
+
+  games_total = 0
+  wins_total = 0
+  max_level = 0
 
   for r in races:
-    row = [ r ]
+    row = [ r in obs_races and r + "*" or r ]
 
     rgames = 0
     rwins = 0
@@ -708,12 +738,20 @@ def player_stats_matrix(c, player):
       if s:
         rgames += s['games']
         cstats[i]['games'] += s['games']
+        if s['games']:
+          cstats[i]['omit'] = False
         rwins += s['wins']
         cstats[i]['wins'] += s['wins']
         if s['xl'] > rxl:
           rxl = s['xl']
         if s['xl'] > cstats[i]['xl']:
           cstats[i]['xl'] = s['xl']
+    if r in obs_races and rgames == 0:
+      continue
+    if rxl > max_level:
+      max_level = rxl
+    games_total += rgames
+    wins_total += rwins
     row.append({ 'race_total': True,
                  'games': rgames,
                  'wins': rwins,
@@ -721,8 +759,16 @@ def player_stats_matrix(c, player):
     row.append(r)
     rows.append(row)
 
-  rows.append(['&nbsp;'] + cstats + ['&nbsp;', '&nbsp;'])
-  rows.append(['&nbsp;'] + classes + ['&nbsp;', '&nbsp;'])
+  summary = { 'all_total': True,
+              'games': games_total,
+              'wins': wins_total,
+              'xl': max_level }
+  rows.append(['&nbsp;'] + cstats + [summary, '&nbsp;'])
+  rows.append(['&nbsp;'] + [c in obs_classes and c + "*" or c for c in classes] + ['&nbsp;', '&nbsp;'])
+  for j in range(len(cstats)):
+    if cstats[j]['omit']:
+      for i in range(len(rows)):
+        del rows[i][j+1]
 
   return rows
 

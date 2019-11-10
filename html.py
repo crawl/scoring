@@ -683,7 +683,7 @@ def player_stats_cell(cell, thing):
   elif isinstance(cell, str):
     return "<th>" + cell + "</th>"
   else:
-    total = cell.get('race_total') or cell.get('class_total')
+    total = cell.get('race_total') or cell.get('class_total') or cell.get('all_total')
     cls = []
     if total:
       cls.append('stat-total')
