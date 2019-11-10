@@ -712,7 +712,8 @@ def player_stats_matrix(c, player):
   rows = []
   stats = player_get_stats(c, player)
 
-  rows.append(['&nbsp;'] + classes + ['&nbsp;&nbsp;', '&nbsp;'])
+  rows.append(['&nbsp;'] + [c in obs_classes and c + "*" or c for c in classes]
+                  + ['&nbsp;&nbsp;', '&nbsp;'])
 
   cstats = [ {'class_total': True,
               'games': 0,
@@ -756,7 +757,7 @@ def player_stats_matrix(c, player):
                  'games': rgames,
                  'wins': rwins,
                  'xl': rxl })
-    row.append(r)
+    row.append(r in obs_races and r + "*" or r)
     rows.append(row)
 
   summary = { 'all_total': True,
@@ -765,7 +766,7 @@ def player_stats_matrix(c, player):
               'xl': max_level }
   rows.append(['&nbsp;'] + cstats + [summary, '&nbsp;'])
   rows.append(['&nbsp;'] + [c in obs_classes and c + "*" or c for c in classes] + ['&nbsp;', '&nbsp;'])
-  for j in range(len(cstats)):
+  for j in range(len(cstats) - 1, 0, -1):
     if cstats[j]['omit']:
       for i in range(len(rows)):
         del rows[i][j+1]
