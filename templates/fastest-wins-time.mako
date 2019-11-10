@@ -3,7 +3,7 @@
    c = attributes['cursor']
 
    n = 100
-   fastest_wins = query.find_games(c, 'wins', sort_min='dur', limit=n)
+   fastest_wins = query.get_fastest_time_player_games(c, limit=n)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">

@@ -461,3 +461,55 @@ sources:
       - meta/0.18/milestones
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
+
+blacklists:
+  botnames: # Bots are excluded from realtime rankings. This list was manually
+            # pulled from Sequell `!nick bot` on 11/10/19
+    - autorobin
+    - xw
+    - auto7hm
+    - rw
+    - qw
+    - ow
+    - qwrobin
+    - gw
+    - notqw
+    - jw
+    - parabodrick
+    - hyperqwbe
+    - cashybrid
+    - tstbtto
+    - parabolic
+    - oppbolic
+    - ew
+    - rushxxi
+    - gaubot
+    - cojitobot
+    - paulcdejean
+    - otabotab
+    - nakatomy
+    - testingqw
+    - beemell
+    - beem
+    - drasked
+    - phybot
+    - medicine
+    - dracbot
+    - whoyougonnacall
+    - khrogbot
+    - jwbot
+    - lovelain
+    - autocrawlbot
+    - swippen
+    - cotteux
+    - someone4956
+    - nofunallowed
+    - cosagabot
+    - cloudy120
+    - patr1k
+    - chaobot
+    - esqueletobot
+    - laya
+    - kgb0614
+    - fastman
+    - idfk

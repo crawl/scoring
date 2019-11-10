@@ -52,6 +52,7 @@ def tail_logfiles(logs, milestones, interval=60):
 
   master = scload.create_master_reader()
   scload.bootstrap_known_raceclasses(cursor)
+  scload.init_blacklists(cursor)
   try:
     while True:
       try:

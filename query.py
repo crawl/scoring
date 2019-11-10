@@ -109,6 +109,8 @@ def find_games(c, table, sort_min=None, sort_max=None,
   for key, value in dictionary.items():
     if key == 'before':
       append_where(where, "end_time < %s", value)
+    elif key == 'exclude_name':
+      append_where(where, "name NOT IN (SELECT name FROM %s)" % value)
     else:
       append_where(where, key + " = %s", value)
 
@@ -516,7 +518,7 @@ def winner_stats(c):
   return results
 
 def get_fastest_time_player_games(c, limit=5):
-  return find_games(c, 'wins', sort_min='dur', limit=limit)
+  return find_games(c, 'wins', sort_min='dur', limit=limit, exclude_name='botnames')
 
 def get_fastest_turn_player_games(c, limit=5):
   return find_games(c, 'wins', sort_min='turn', limit=limit)

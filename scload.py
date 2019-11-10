@@ -47,6 +47,19 @@ COMMIT_INTERVAL = 3000
 LISTENERS = [ ]
 TIMERS = [ ]
 
+def init_blacklists(c):
+  # this doesn't otherwise impact db structure, so it's fine to just reset it
+  # on every restart.
+  c.execute("DELETE FROM botnames;")
+  blacklists = config.CONFIG.get("blacklists")
+  if blacklists is not None:
+    bots = blacklists.get("botnames")
+    if bots is not None and len(bots) > 0:
+      print("found %d bots" % len(bots))
+      c.executemany("INSERT IGNORE INTO botnames (name) VALUES (%s);",
+                                                        [[b] for b in bots])
+  c.db.commit()
+
 class CrawlEventListener(object):
   """The way this is intended to work is that on receipt of an event
   ... we shoot the messenger. :P"""
@@ -968,6 +981,7 @@ def scload():
   set_active_cursor(cursor, db)
   try:
     if not OPT.no_load:
+      init_blacklists(cursor)
       master = create_master_reader()
       full_load(cursor, master)
     if not OPT.load_only:

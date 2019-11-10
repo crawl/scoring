@@ -26,12 +26,17 @@ DROP TABLE IF EXISTS per_day_stats;
 DROP TABLE IF EXISTS date_players;
 DROP TABLE IF EXISTS known_races;
 DROP TABLE IF EXISTS known_classes;
+DROP TABLE IF EXISTS botnames;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   filename VARCHAR(100) UNIQUE,
   offset BIGINT DEFAULT 0
+);
+
+CREATE TABLE botnames (
+  name VARCHAR(20) UNIQUE NOT NULL
 );
 
 -- [greensnark] I've changed the field names for tables containing
