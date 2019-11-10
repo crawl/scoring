@@ -660,7 +660,7 @@ def obsolete_classes():
   return {"Cr", "DK", "He", "Jr", "Pa", "Pr", "Re", "St", "Th"}
 
 def obsolete_races():
-  return {"Bu", "Dj", "El", "GE", "Gm", "HD", "HE", "Ke", "LO", "OM", "SE"}
+  return {"Bu", "Dj", "El", "GE", "Gm", "HD", "HE", "Ke", "LO", "MD", "OM", "SE"}
 
 # TODO: fix capitalization when early db entries are wrong ("Am", "OP")
 # TODO: handle gnome properly, rename to `Gm`
