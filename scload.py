@@ -55,7 +55,6 @@ def init_blacklists(c):
   if blacklists is not None:
     bots = blacklists.get("botnames")
     if bots is not None and len(bots) > 0:
-      print("found %d bots" % len(bots))
       c.executemany("INSERT IGNORE INTO botnames (name) VALUES (%s);",
                                                         [[b] for b in bots])
   c.db.commit()
