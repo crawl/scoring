@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import MySQLdb
 
 import scload
 import query
@@ -167,10 +168,17 @@ def insert_game(c, g, table, extras = []):
       cols.append([item, item])
     colnames = ",".join([x[1] for x in cols])
     places = ",".join(["%s" for x in cols])
-  query_do(c,
+  try:
+    scload.query_do_raw(c,
            'INSERT INTO %s (%s) VALUES (%s)' %
            (table, colnames, places),
            *[g.get(x[0]) for x in cols])
+  except MySQLdb.IntegrityError:
+    error("Dropping duplicate game '%s' from logfile '%s'"
+                                  % (g.get('game_key'), g.get('source_file')))
+  except:
+    error("Failing query: " + c._last_executed)
+    raise
 
 def update_topN(c, g, n):
   if topN_count(c) >= n:

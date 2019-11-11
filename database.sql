@@ -50,12 +50,17 @@ CREATE TABLE botnames (
 CREATE TABLE player_best_games (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   
-  -- Source logfile. This should be sufficient to identify the server
-  -- involved.
+  -- Source logfile.
   source_file VARCHAR(150),
+
+  -- game_key in Sequell format. This is reconstructable from other things in
+  -- the table, as long as you know the logfile->server mappings, but it is
+  -- convenient to have as its own field.
+  game_key VARCHAR(50) UNIQUE NOT NULL,
 
   name VARCHAR(20),
   start_time DATETIME,
+  seed VARCHAR(255), -- currently 64bit uint, but allow extra space for changes
   sc BIGINT,
   race VARCHAR(20),
   crace VARCHAR(20),

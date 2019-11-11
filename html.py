@@ -120,9 +120,7 @@ def pretty_server(game):
   source = config.SOURCES.log_to_source(game.get('source_file'))
   if not source:
     return ''
-  name = source.get_cfg("canonical_name")
-  if not name:
-    name = source.name
+  name = source.get_canonical_name()
   url = source.get_cfg("server_url")
   if url:
     return '<a href="%s">%s</a>' % (url, name)
@@ -598,6 +596,8 @@ def create_image(filename, stats):
   rstats.reverse()
 
   days = [dict(x) for x in rstats if x.has_key('day')]
+  if (len(days) == 0):
+    return
 
   def rolling_average(l, field, window = 5):
     res = []

@@ -230,9 +230,8 @@ class Xlogfile:
         continue
 
       try:
-        d = xlog_dict(line)
+        d = xlog_dict(line, self.filename)
         xdict = apply_dbtypes(d)
-        xdict['source_file'] = self.filename
       except:
         info("Bad line: " + line + " in " + self.filename)
         continue
@@ -410,8 +409,17 @@ def invalid_xlog_line(logline):
   # Reject anything with less than 6 fields
   return logline.count(':') < 5 # TODO: this test is messed up by escaped ::
 
-def xlog_dict(logline):
+def xlog_dict(logline, source_file=None):
   d = parse_logline(logline.strip())
+
+  if source_file is not None:
+    d['source_file'] = source_file
+    source = config.SOURCES.log_to_source(source_file).get_canonical_name()
+    if source is None:
+      error("Unknown source for game '%s:???:%s, logfile '%s'"
+              % (d['name'], d['start'], d['source_file']))
+      source = "???" # TODO: raise on this case?
+    d['game_key'] = d['name'] + ":" + source.lower() + ":" + d['start']
 
   # Fake a raceabbr field to group on race without failing on
   # draconians.
@@ -430,8 +438,8 @@ def xlog_dict(logline):
     d['nrune'] = 0
     d['urune'] = 0
 
-  if d.get('seed'):
-    del d['seed'] # placeholder until this is handled
+  if d.get('seed') is None:
+    d['seed'] = ""
 
   # Fixup rune madness where one or the other is set, but not both.
   if d.get('nrune') is not None or d.get('urune') is not None:
@@ -451,15 +459,18 @@ def xlog_dict(logline):
 # same in logfile and db.
 RAW_LOG_DB_MAPPINGS = [
   'source_file',
-  'v',
-  'lv',
+  'game_key',
   'name',
-  'uid',
+  'seed',
+  'sc',
   'race',
   'crace',
   'raceabbr',
   'clsabbr',
   'cls',
+  'v',
+  'lv',
+  'uid',
   [ 'char', 'charabbr' ],
   'xl',
   'sk',
@@ -479,7 +490,6 @@ RAW_LOG_DB_MAPPINGS = [
   [ 'start', 'start_time' ],
   'dur',
   'turn',
-  'sc',
   'ktyp',
   'killer',
   'ckiller',
@@ -596,6 +606,9 @@ class Query:
 
   def vappend(self, *values):
     self.values += values
+
+  def execute_raw(self, cursor):
+    cursor.execute(self.query, self.values)
 
   def execute(self, cursor):
     """Executes query on the supplied cursor."""
@@ -750,8 +763,12 @@ def active_cursor():
   global _active_cursor
   return _active_cursor
 
+#TODO: is this complicated abstraction really necessary??
 def query_do(cursor, query, *values):
   Query(query, *values).execute(cursor)
+
+def query_do_raw(cursor, query, *values):
+  Query(query, *values).execute_raw(cursor)
 
 def delete_table_rows_by_id(cursor, table_name, ids):
   """Deletes all rows from the given table with numeric ids in the set of

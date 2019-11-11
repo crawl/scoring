@@ -77,6 +77,12 @@ class Source (object):
   def get_cfg(self, key):
     return self._cfg.get(key)
 
+  def get_canonical_name(self):
+    if self.has_cfg("canonical_name"):
+      return self.cfg("canonical_name")
+    else:
+      return self.name
+
   def logfiles(self):
     if not self._logfiles:
       self._logfiles = self._resolve_files('logfiles')
