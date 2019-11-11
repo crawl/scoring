@@ -158,7 +158,10 @@ class Xlogfile:
       self.fetch_remote()
 
   def fetch_remote(self):
-    info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
+    if self.xlog.dormant:
+      info("Skipping dormant remote logfile at %s" % self.url)
+    else:
+      info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
     try:
       self.xlog.fetch()
     except IOError as e:

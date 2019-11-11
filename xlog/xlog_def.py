@@ -19,13 +19,14 @@ class XlogDef (object):
   path on the local filesystem, remote path, and whether the source is
   filesystem-local or remote."""
 
-  def __init__(self, remote_path, source_name, base_url, local_base, xlog_type):
+  def __init__(self, remote_path, source_name, base_url, local_base, dormant, xlog_type):
     self.raw_path = remote_path
     self.source = source_name
     self.xlog_type = xlog_type
     self.local_base = local_base
     self.source_path, self.local = self._resolve_path(remote_path, local_base,
                                                       base_url)
+    self.dormant = dormant
     self.version = xlog.version.version(self.raw_path)
     self.local_path = self._local_path(self.source,
                                        self.xlog_type,
@@ -36,6 +37,8 @@ class XlogDef (object):
                         "%s-%s-%s" % (source, xlog_type, version))
 
   def prepare(self):
+    if self.dormant:
+      return
     try:
       os.makedirs(os.path.dirname(self.local_path))
     except OSError as e:
@@ -45,7 +48,7 @@ class XlogDef (object):
       os.symlink(self.source_path, self.local_path)
 
   def fetch(self):
-    if self.local:
+    if self.local or self.dormant:
       return
     command = "wget --no-check-certificate --timeout=60 -q -c %s -O %s" % (self.source_path, self.local_path)
     res = os.system(command)

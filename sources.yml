@@ -117,6 +117,7 @@ sources:
 
   - name: cszo
     canonical_name: CSZO
+    dormant: True
     base: http://s-z.org/
     logfiles:
       - meta/git/logfile
@@ -185,6 +186,7 @@ sources:
   - name: rhf
     canonical_name: rhf
     base: http://rl.heh.fi/
+    dormant: True
     logfiles:
       - meta/crawl-git/logfile
       - meta/crawl-0.12/logfile

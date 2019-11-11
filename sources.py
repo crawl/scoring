@@ -63,6 +63,7 @@ class Source (object):
     self.name = cfg['name']
     self.base = cfg['base']
     self.local = cfg.get('local')
+    self.dormant = cfg.get('dormant')
     self._logfiles = None
     self._milestones = None
     self._morgue_bases = None
@@ -101,6 +102,7 @@ class Source (object):
       for path in self.cfg(key):
         files.append(factory(path, source_name=self.name,
                              base_url=self.base, local_base=self.local,
+                             dormant=self.dormant,
                              xlog_type=file_type))
     return files
 
