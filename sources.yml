@@ -1,5 +1,7 @@
-scoring-base: 'http://crawl.akrasiac.org'
-use-milestones: False
+scoring-base-url: 'http://crawl.akrasiac.org/scoring' # base URL for scoring pages: use 'file://...' for local testing
+scoring-local: 'scoring' # location for generated files; if relative, is relative to the location of scoresd.py
+local-base: '/home/rax' # where logs and lockfiles go
+rawdata-base: '/var/www/crawl/rawdata' # location for any whereis datause-milestones: False
 sources:
   - name: cao
     canonical_name: CAO
