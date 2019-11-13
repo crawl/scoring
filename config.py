@@ -11,7 +11,7 @@ LOGFORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 CONFIG = yaml.load(open(CONFIG_FILE).read())
 
 SOURCES = sources.Sources(CONFIG_FILE)
-USE_MILESTONES = CONFIG.get('use-milestones', False)
+USE_MILESTONES = CONFIG['use-milestones']
 LOCALBASE = CONFIG.get('local-base', '.')
 
 SCORING_KEY = CONFIG.get('daemon-name', 'scoresd')

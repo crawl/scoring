@@ -59,8 +59,7 @@ Configuration is done via `sources.yml`. Main global options:
   Default: `None` (this disables the wherefile functionality)
 * `use-milestones`: whether to read in milestone files. For the full scoring
   database this is no longer feasible, but it may be reasonable to do for
-  smaller installations.
-  Default: `False`
+  smaller installations. This must be set.
 * `daemon-name`: used for naming log, lock, and stop files. E.g.
   `scoresd.log`.
   Default: `scoresd`. (Change from previous versions: this was was effectively
