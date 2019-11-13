@@ -78,7 +78,10 @@ def morgue_link(g):
   source_file = os.path.basename(g['source_file'])
   server = R_SRC_SERVER.search(source_file).group(1)
 
-  source = config.SOURCES.source(server)
+  try:
+    source = config.SOURCES.source(server)
+  except KeyError:
+    return ''
 
   name = g['name']
   stime = morgue_timestring( g['end_time'] )
