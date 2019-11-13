@@ -3,7 +3,7 @@ import re
 import os
 import os.path
 import glob
-from crawl_utils import RAWDATA_PATH
+from config import RAWDATA_PATH
 
 import config
 from morgue.time import morgue_timestring
@@ -46,6 +46,8 @@ def morgue_binary_search(morgues, guess):
 
 @Memoizer
 def find_cao_morgue_link(name, end_time):
+  if config.RAWDATA_PATH is None:
+    return None
   fulltime = end_time
   if os.path.exists(morgue_filename(name, fulltime)):
     return cao_morgue_url(name, fulltime)

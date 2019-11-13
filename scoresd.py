@@ -90,10 +90,10 @@ if __name__ == '__main__':
   signal.signal(signal.SIGHUP, signal_handler) # TODO: restart on SIGHUP?
   # n.b. SIGKILL may result in dirty pages not being flushed
 
-  logformat = crawl_utils.LOGFORMAT
+  logformat = config.LOGFORMAT
   if daemon:
     logging.basicConfig(level=logging.INFO,
-                        filename = crawl_utils.LOGFILE,
+                        filename = config.LOGFILE,
                         format = logformat)
   else:
     logging.basicConfig(level=logging.INFO, format = logformat)

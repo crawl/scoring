@@ -7,7 +7,7 @@ import os.path
 import datetime
 import scload
 import query
-import crawl_utils
+import config
 import locale
 import html
 
@@ -38,7 +38,7 @@ def render(c, page, dest=None, pars=None):
 
   if not pars or not pars.has_key('quiet'):
     info("Rendering " + page)
-  target = "%s/%s.html" % (crawl_utils.SCORE_FILE_DIR, dest or page)
+  target = os.path.join(config.SCORE_FILE_DIR, "%s.html" % (dest or page))
   t = MAKO_LOOKUP.get_template(page + '.mako')
   try:
     f = open(target, 'w')
@@ -66,11 +66,11 @@ def render_player_pages(c):
 def player_page(c, player):
   info("Updating player page for %s" % player)
   render(c, 'player',
-         dest = ('%s/%s' % (crawl_utils.PLAYER_BASE, player.lower())),
+         dest = os.path.join(config.PLAYER_BASE, player.lower()),
          pars = { 'player' : player, 'quiet': True })
 
 def player_pages_exist():
-  player_dir = crawl_utils.PLAYER_FILE_DIR
+  player_dir = config.PLAYER_FILE_DIR
   if not os.path.exists(player_dir):
     return False
   try:
@@ -82,7 +82,7 @@ def player_pages_exist():
     return True
   # We have removed it as a side effect -- recreate. (Does this cause any
   # issues???)
-  os.makedirs(crawl_utils.PLAYER_FILE_DIR)
+  os.makedirs(config.PLAYER_FILE_DIR)
   return False
 
 PAGE_DEFS = [

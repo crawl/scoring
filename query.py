@@ -10,6 +10,7 @@ from scload import Query, query_do, query_first, query_row, query_rows
 from scload import query_first_col, query_first_def, game_is_win
 
 import crawl
+import config
 import crawl_utils
 from memoizer import DBMemoizer
 from crawl_utils import linked_text, human_number, player_link
@@ -45,10 +46,12 @@ def time_from_str(when):
   return datetime(*(time.strptime(when, '%Y%m%d%H%M%S')[0:6]))
 
 def canonical_where_name(name):
-  test = '%s/%s' % (crawl_utils.RAWDATA_PATH, name)
-  if os.path.exists(test) or not os.path.exists(crawl_utils.RAWDATA_PATH):
+  if config.RAWDATA_PATH is None:
+    return None
+  test = os.path.join(config.RAWDATA_PATH, name)
+  if os.path.exists(test) or not os.path.exists(config.RAWDATA_PATH):
     return name
-  names = os.listdir(crawl_utils.RAWDATA_PATH)
+  names = os.listdir(config.RAWDATA_PATH)
   names = [ x for x in names if x.lower() == name.lower() ]
   if names:
     return names[0]
@@ -56,11 +59,13 @@ def canonical_where_name(name):
     return None
 
 def whereis_player(name):
+  if config.RAWDATA_PATH is None:
+    return None
   name = canonical_where_name(name)
   if name is None:
     return name
 
-  where_path = '%s/%s/%s.where' % (crawl_utils.RAWDATA_PATH, name, name)
+  where_path = os.path.join(config.RAWDATA_PATH, name, '%s.where' % (name))
   if not os.path.exists(where_path):
     return None
 

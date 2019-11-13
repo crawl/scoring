@@ -1,11 +1,11 @@
-<% from crawl_utils import CAO_SCORING_BASE, CAO_BASE %>
+<% from config import SCORING_BASE_URL %>
 
 <div class="toplinks">
-  <a href="${CAO_SCORING_BASE}/overview.html">Overview</a>
+  <a href="${SCORING_BASE_URL}/overview.html">Overview</a>
   &nbsp;
-  <a href="${CAO_SCORING_BASE}/best-players-total-score.html">Players</a>
+  <a href="${SCORING_BASE_URL}/best-players-total-score.html">Players</a>
   &nbsp;
-  <a href="${CAO_SCORING_BASE}/index.html">ToC</a>
+  <a href="${SCORING_BASE_URL}/index.html">ToC</a>
   &nbsp;
   <a href="http://crawl.akrasiac.org">crawl.akrasiac.org</a>
 </div>

@@ -662,7 +662,7 @@ def create_image(filename, stats):
 
 def date_stats(stats, file_suffix=""):
   if MATPLOT:
-    create_image(os.path.join(crawl_utils.SCORE_FILE_DIR,
+    create_image(os.path.join(config.SCORE_FILE_DIR,
                   'date-stats%s.png' % file_suffix),
                   stats)
 

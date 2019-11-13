@@ -263,7 +263,7 @@ class MasterXlogReader:
         break
       if proc % COMMIT_INTERVAL == 0:
         cursor.db.commit()
-        info("Processed %d lines." % proc)
+        info("Processed %d lines, %d logfiles remaining." % (proc, len(lines)))
     if proc > 0:
       cursor.db.commit()
       info("Done processing %d lines." % proc)
@@ -955,7 +955,7 @@ def init_listeners(db):
 
 def scload():
   logging.basicConfig(level=logging.INFO,
-                      format=crawl_utils.LOGFORMAT)
+                      format=config.LOGFORMAT)
   if OPT.stop_daemon:
     print("Requesting daemon stop: this may take some time.")
     crawl_utils.write_scoresd_stop_request()
