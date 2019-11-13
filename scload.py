@@ -49,7 +49,9 @@ TIMERS = [ ]
 
 def init_blacklists(c):
   # this doesn't otherwise impact db structure, so it's fine to just reset it
-  # on every restart.
+  # on every restart. Do this here instead of in `config.py` because it requires
+  # db access; the point of loading these into the db is so that the exclusions
+  # can be done in SQL.
   c.execute("DELETE FROM botnames;")
   blacklists = config.CONFIG.get("blacklists")
   if blacklists is not None:

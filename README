@@ -12,7 +12,8 @@ Running the scoring scripts:
    discarding any existing data.
 
 3. `python scoresd.py` will start a daemon to update the db continuously
-   from the logfile and milestones.
+   from the logfile and milestones. This process logs to a file named
+   `scoresd.log`, by default in the same directory as the daemon.
 
 4. To stop the daemon, you can run `python scoresd.py --stop`, which will
    ensure that all currently updating pages finish. (This may take a bit of
@@ -23,16 +24,67 @@ Other scripts:
 For a one-off scoring update, you can run `python scbootstrap.py`. This is
 mostly identical to running the first update pass from `scoresd.py`.
 
-Configuration and script options
---------------------------------
-
-Add additional logfiles and milestones to sources.yml. For running somewhere
-besides CAO, you will probably need to change `BASEDIR` in crawl_utils.py.
+Script options
+--------------
 
 Neither scoresd.py and scbootstrap.py will do a complete player page rebuild
 unless they have to. To trigger this, pass either script `-p`. (A player page
 rebuild will also be triggered if the `players` directory is empty.) This may
 be necessary if scoresd.py does not shut down gracefully for some reason; it
-usually takes 3-4 hours for the full scoring database though.
+usually takes 3-4 hours for the full scoring database though. This may be
+necessary if the daemon isn't shut down properly.
 
-To run scoresd.py without daemonizing, pass it `-n`.
+To run scoresd.py without daemonizing, pass it `-n`. This will not log to a
+file, so is recommended only for testing. When run in this mode, the daemon
+will respond to ctrl-c, but *this may interrupt db queries*, so is very much
+not recommended for production.
+
+Configuration
+-------------
+
+Configuration is done via `sources.yml`. Main global options:
+
+* `scoring-local`: the location for generated html files. If relative, this will
+  be relative to the location where `scoresd.py` is run from.
+  Default: `scoring`
+* `scoring-base-url`: the base URL for where `scoring-local` is exposed on a
+  server.
+  Default: a `file://` URL reconstructed from `scoring-local`. This is useful
+  for testing, but you will need to set this appropriately for running a
+  server. This path should include the full path to wherever `scoring-local`
+  exists on the server (this is a change from previous versions).
+* `local-base`: the location for log, lock, and stop files.
+  Default: `.` (i.e. the directory that scoresd.py is run from.)
+* `rawdata-base`: a location for wherefiles.
+  Default: `None` (this disables the wherefile functionality)
+* `use-milestones`: whether to read in milestone files. For the full scoring
+  database this is no longer feasible, but it may be reasonable to do for
+  smaller installations.
+  Default: `False`
+* `daemon-name`: used for naming log, lock, and stop files. E.g.
+  `scoresd.log`.
+  Default: `scoresd`. (Change from previous versions: this was was effectively
+  `scoring`; but wasn't configurable without editing python.)
+* `blacklist`: currently, this accepts one sub-property, `botnames`, which is
+  a list of usernames to exclude from realtime leaderboards.
+  Default: `None`
+* `sources`: a list of sources. This must be set.
+
+Setting `sources`: This is a list of source descriptions. Each consists of the
+following properties:
+
+* `name`: the internal name of the source. Can be anything.
+* `canonical_name`: the "official" name of the source; used both for aggregating
+  multiple source entries, and indicating server names to the viewer. If unset,
+  will just use `name`.
+* `server_url`: the URL that the server is located at. Can be `None`.
+* `base`: for remote servers, a URL base to look for logfiles at.
+* `local`: for local servers, a path to look for logfiles at.
+* `dormant`: set to True for remote servers that are no longer accessible;
+  scoring will still use the cached logfiles if any, but no longer try to
+  download.
+* `logfiles`: a list of logfile paths using either `local` or `base` as a
+  starting point.
+* `milestones`: if the server is using milestones, a list of milestone paths.
+* `morgues`: a list of morgue base paths. These allow rather complex filtering;
+  see the official CAO sources.yml for examples.
