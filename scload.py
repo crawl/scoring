@@ -1,6 +1,6 @@
 import MySQLdb
 import re
-import os
+import os, datetime
 import os.path
 import crawl_utils
 
@@ -46,6 +46,18 @@ COMMIT_INTERVAL = 3000
 
 LISTENERS = [ ]
 TIMERS = [ ]
+
+def fmt_byte_size(b, precision=1):
+  if b < 1000:
+    return str(b) + 'B'
+  b = b / 1000.0
+  fmt = "%%.%df" % precision
+  for suffix in ['KB', 'MB', 'GB', 'TB']:
+    if int(b / 1000) == 0 or suffix == 'TB':
+      if (suffix == 'B'):
+        return str(b) + suffix
+      return (fmt % b) + suffix
+    b = b / 1000.0
 
 def init_blacklists(c):
   # this doesn't otherwise impact db structure, so it's fine to just reset it
@@ -156,8 +168,12 @@ class Xlogfile:
     self.xlog.prepare()
     if self.local:
       self.size = os.path.getsize(self.xlog.local_path)
-    elif not OPT.no_download:
-      self.fetch_remote()
+    else:
+      if not OPT.no_download:
+        self.fetch_remote()
+      # TODO: why does the local size check not just use self.filename?
+      # set this in _open?
+      self.size = os.path.getsize(self.filename)
 
   def fetch_remote(self):
     if self.xlog.dormant:
@@ -242,12 +258,26 @@ class MasterXlogReader:
     for x in self.xlogs:
       x.reinit()
 
+  def remaining_size(self):
+    offsets = 0
+    total = 0
+    for x in self.xlogs:
+      if x.offset > 0: # -1 is used for unread files
+        offsets += x.offset
+      total += x.size
+    return total - offsets
+
   def tail_all(self, cursor):
     self.reinit()
     lines = [ line for line in [ x.line(cursor) for x in self.xlogs ]
               if line ]
 
-    info("Got lines from %d logfiles." % len(lines))
+    tail_start_remaining = self.remaining_size()
+    tail_start_time = datetime.datetime.now()
+    # would be nice to show lines, but it's a lot easier to get bytes without
+    # going through the entire logfile in the first place.
+    info("Got lines from %d logfiles, %s to process."
+                    % (len(lines), fmt_byte_size(tail_start_remaining, 3)))
     proc = 0
     while lines:
       # Sort dates in descending order.
@@ -265,10 +295,29 @@ class MasterXlogReader:
         break
       if proc % COMMIT_INTERVAL == 0:
         cursor.db.commit()
-        info("Processed %d lines, %d logfiles remaining." % (proc, len(lines)))
+        seconds_passed = int(
+                  (datetime.datetime.now() - tail_start_time).total_seconds())
+        if seconds_passed == 0:
+          continue
+        interim_remaining = self.remaining_size()
+        # int here is for future py3 compatibility
+        rate = int((tail_start_remaining - interim_remaining) / seconds_passed)
+        line_rate = int(proc / seconds_passed)
+        remaining_time = (rate
+              and str(datetime.timedelta(seconds=int(interim_remaining / rate)))
+              or "inf")
+        info("Processed %d lines; %s from %d logfiles remaining. %d lines/s (%s/s), ETA %s"
+                        % (proc, fmt_byte_size(interim_remaining), len(lines),
+                           line_rate, fmt_byte_size(rate), remaining_time))
     if proc > 0:
       cursor.db.commit()
-      info("Done processing %d lines." % proc)
+      seconds_passed = int(
+                  (datetime.datetime.now() - tail_start_time).total_seconds())
+      td_total = datetime.timedelta(seconds=seconds_passed)
+      line_rate = seconds_passed and str(int(proc / seconds_passed)) or "inf"
+      info("Done processing %s from %d lines; %s lines/s in %s."
+                        % (fmt_byte_size(tail_start_remaining, 3),
+                           proc, line_rate, str(td_total)))
 
 def connect_db():
   connection = MySQLdb.connect(host='localhost',
@@ -618,7 +667,7 @@ def char(x):
   return x
 
 #remove the trailing 'D'/'S', fixup date
-def datetime(x):
+def crawl_datetime(x):
   return fix_crawl_date(x[0:-1])
 
 def bigint(x):
@@ -629,7 +678,7 @@ varchar = char
 
 dbfield_to_sqltype = {
 	'name':char,
-	'start_time':datetime,
+	'start_time':crawl_datetime,
 	'sc':bigint,
 	'race':char,
         'raceabbr':char,
@@ -663,8 +712,8 @@ dbfield_to_sqltype = {
 	'dam':sql_int,
 	'piety':sql_int,
         'pen':sql_int,
-	'end_time':datetime,
-        'milestone_time':datetime,
+	'end_time':crawl_datetime,
+        'milestone_time':crawl_datetime,
 	'tmsg':varchar,
 	'vmsg':varchar,
         'nrune':sql_int,
@@ -678,7 +727,7 @@ LOGF_SQLTYPE = dict([ (x, dbfield_to_sqltype[COMBINED_LOG_TO_DB[x]])
                       for x in COMBINED_LOG_TO_DB.keys()
                       if dbfield_to_sqltype.has_key(COMBINED_LOG_TO_DB[x])
                       and (dbfield_to_sqltype[COMBINED_LOG_TO_DB[x]]
-                           in [datetime, sql_int, bigint]) ])
+                           in [crawl_datetime, sql_int, bigint]) ])
 LOGF_SQLKEYS = LOGF_SQLTYPE.keys()
 
 def is_selected(game):
