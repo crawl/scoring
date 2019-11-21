@@ -39,13 +39,14 @@ OLDEST_VERSION = '0.1'
 # being the URL to wget -c from. Files can be in any order, loglines
 # will be read in strict chronological order.
 
-BLACKLIST_FILE = 'blacklist.txt'
-EXTENSION_FILE = 'modules.ext'
+EXTENSION_FILE = 'modules.ext' # ???
 SCORING_DB = 'scoring'
 COMMIT_INTERVAL = 3000
 
 LISTENERS = [ ]
 TIMERS = [ ]
+
+BUGGY_GAMES = set()
 
 def fmt_byte_size(b, precision=1):
   if b < 1000:
@@ -60,17 +61,28 @@ def fmt_byte_size(b, precision=1):
     b = b / 1000.0
 
 def init_blacklists(c):
+  global BUGGY_GAMES
+  BUGGY_GAMES = set()
   # this doesn't otherwise impact db structure, so it's fine to just reset it
   # on every restart. Do this here instead of in `config.py` because it requires
   # db access; the point of loading these into the db is so that the exclusions
   # can be done in SQL.
   c.execute("DELETE FROM botnames;")
+
   blacklists = config.CONFIG.get("blacklists")
   if blacklists is not None:
     bots = blacklists.get("botnames")
     if bots is not None and len(bots) > 0:
       c.executemany("INSERT IGNORE INTO botnames (name) VALUES (%s);",
                                                         [[b] for b in bots])
+
+    # TODO: should the buggy games list do something to the db? Right now you
+    # would have to go manually remove these games, and there's no way to
+    # populate the blank slot you'd get from removing them.
+    buggy = blacklists.get("buggy")
+    if buggy is not None:
+      BUGGY_GAMES = set(buggy)
+
   c.db.commit()
 
 class CrawlEventListener(object):

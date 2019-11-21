@@ -471,6 +471,9 @@ sources:
       - https://crawl.kelbi.org/crawl/morgue
 
 blacklists:
+  buggy:
+    - edsrzf:cpo:20160218190853S
+
   botnames: # Bots are excluded from realtime rankings. This list was manually
             # pulled from Sequell `!nick bot` on 11/10/19
     - autorobin

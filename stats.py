@@ -158,6 +158,9 @@ def topN_count(c):
 def lowest_highscore(c):
   return query_first(c, '''SELECT MIN(sc) FROM top_games''')
 
+NO_BUGGY_GAMES = {'streak_games', 'streak_breakers', 'wins', 'top_games', 'top_combo_scores',
+                  'top_species_scores', 'top_class_scores'}
+
 def insert_game(c, g, table, extras = []):
   cols = scload.LOG_DB_MAPPINGS
   colnames = scload.LOG_DB_SCOLUMNS
@@ -168,6 +171,9 @@ def insert_game(c, g, table, extras = []):
       cols.append([item, item])
     colnames = ",".join([x[1] for x in cols])
     places = ",".join(["%s" for x in cols])
+  if table in NO_BUGGY_GAMES and g.get('game_key') in scload.BUGGY_GAMES:
+    info('Ignoring buggy game %s for %s', g.get('game_key'), table)
+    return
   try:
     scload.query_do_raw(c,
            'INSERT INTO %s (%s) VALUES (%s)' %
