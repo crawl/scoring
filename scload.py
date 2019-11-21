@@ -60,7 +60,7 @@ def fmt_byte_size(b, precision=1):
       return (fmt % b) + suffix
     b = b / 1000.0
 
-def init_blacklists(c):
+def init_game_restrictions(c):
   global BUGGY_GAMES
   BUGGY_GAMES = set()
   # this doesn't otherwise impact db structure, so it's fine to just reset it
@@ -69,9 +69,9 @@ def init_blacklists(c):
   # can be done in SQL.
   c.execute("DELETE FROM botnames;")
 
-  blacklists = config.CONFIG.get("blacklists")
-  if blacklists is not None:
-    bots = blacklists.get("botnames")
+  restrictions = config.CONFIG.get("game-restrictions")
+  if restrictions is not None:
+    bots = restrictions.get("botnames")
     if bots is not None and len(bots) > 0:
       c.executemany("INSERT IGNORE INTO botnames (name) VALUES (%s);",
                                                         [[b] for b in bots])
@@ -79,7 +79,7 @@ def init_blacklists(c):
     # TODO: should the buggy games list do something to the db? Right now you
     # would have to go manually remove these games, and there's no way to
     # populate the blank slot you'd get from removing them.
-    buggy = blacklists.get("buggy")
+    buggy = restrictions.get("buggy")
     if buggy is not None:
       BUGGY_GAMES = set(buggy)
 
@@ -1066,7 +1066,7 @@ def scload():
   set_active_cursor(cursor, db)
   try:
     if not OPT.no_load:
-      init_blacklists(cursor)
+      init_game_restrictions(cursor)
       master = create_master_reader()
       full_load(cursor, master)
     if not OPT.load_only:

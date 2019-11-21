@@ -470,7 +470,7 @@ sources:
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
 
-blacklists:
+game-restrictions:
   buggy:
     - edsrzf:cpo:20160218190853S
 

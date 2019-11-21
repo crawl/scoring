@@ -43,4 +43,6 @@ for d in MKDIRS:
     os.makedirs(d)
 
 # other config setup:
-# * blacklists: see scload.init_blacklists. This step requires db access.
+# * games restricted in some way from parts of the leaderboards:
+#   see scload.init_game_restrictions. This step requires db access, so can't
+#   be done here.
