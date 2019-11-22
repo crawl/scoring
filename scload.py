@@ -173,7 +173,10 @@ class Xlogfile:
         self.fetch_remote()
       # TODO: why does the local size check not just use self.filename?
       # set this in _open?
-      self.size = os.path.getsize(self.filename)
+      try:
+        self.size = os.path.getsize(self.filename)
+      except:
+        self.size = 0
 
   def fetch_remote(self):
     if self.xlog.dormant:

@@ -84,6 +84,7 @@ class FunctionPredicate (object):
   def __call__(self, *args):
     return self.match(*args)
 
+# TODO: does this actually work??
 @GamePredicate.predicate('and')
 class AndPredicate (object):
   def __init__(self, *args):
@@ -94,6 +95,12 @@ class AndPredicate (object):
 
   def __call__(self, *args):
     return self.match(*args)
+
+# TODO: Sequell doesn't implement this
+@GamePredicate.predicate('time_lt')
+class TimeLessThanPredicate (FunctionPredicate):
+  def match(self, game):
+    return morgue.time.morgue_timestring(game[self.args[0]]) < self.args[1]
 
 @GamePredicate.predicate('time_gt')
 class TimeGreaterThanPredicate (FunctionPredicate):
