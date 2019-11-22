@@ -4,11 +4,20 @@ import os, os.path
 import locale
 
 CONFIG_FILE = 'sources.yml'
+BAN_LIST = 'banned_players.yml'
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 LOGFORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 
+# TODO:
+#  * add a way to ban player-server combinations
+try:
+    BANNED = set([x.lower() for x in
+                            yaml.safe_load(open(BAN_LIST).read())['banned']])
+except:
+    BANNED = set()
+
 # load the config file and set up useful variables in the `config` module
-CONFIG = yaml.load(open(CONFIG_FILE).read())
+CONFIG = yaml.safe_load(open(CONFIG_FILE).read())
 
 SOURCES = sources.Sources(CONFIG_FILE)
 USE_MILESTONES = CONFIG['use-milestones']

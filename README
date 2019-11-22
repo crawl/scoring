@@ -64,8 +64,7 @@ Configuration is done via `sources.yml`. Main global options:
   `scoresd.log`.
   Default: `scoresd`. (Change from previous versions: this was was effectively
   `scoring`; but wasn't configurable without editing python.)
-* `blacklist`: currently, this accepts one sub-property, `botnames`, which is
-  a list of usernames to exclude from realtime leaderboards.
+* `game-restrictions`: see below
   Default: `None`
 * `sources`: a list of sources. This must be set.
 
@@ -87,3 +86,31 @@ following properties:
 * `milestones`: if the server is using milestones, a list of milestone paths.
 * `morgues`: a list of morgue base paths. These allow rather complex filtering;
   see the official CAO sources.yml for examples.
+
+Game restrictions and bans
+--------------------------
+
+In the sources yml, you can provide two kinds of bans, as properties under
+`game-restrictions`:
+
+* `botnames`: accounts associated with bots. Games from these accounts are
+  tracked and stored in the database, but not shown in the realtime
+  leaderboards.
+* `buggy`: a list of game_keys that are buggy and should not be shown outside
+  of player pages.
+
+scoresd also has a facility for banning players. To use this, create a file
+called banned_players.yml. This file should have a property `banned`, which
+consists of a list of player names. This primarily affects reading now data:
+if a player name is on this list, logfile entries with that player name will be
+ignored entirely.
+
+If you need to ban a player after logfile lines involving that player have been
+read, add them to the list, and run `python ./scoresd.py --run-bans`. Be aware
+that this executes DELETE queries on the database, so it is not undoable
+without a full database rebuild. In addition, if the player appears in
+tables that are limited to a certain number of slots, the system will not fill
+in a new game into the blank spot created by the DELETE operations, and the
+empty slot may be filled in by subsequent logfiles even if it should in
+principle be filled be previous logfile lines. (This situation can also only
+be corrected by a full database rebuild.)

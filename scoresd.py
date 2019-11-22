@@ -53,8 +53,16 @@ def tail_logfiles(logs, milestones, interval=60):
   master = scload.create_master_reader()
   scload.bootstrap_known_raceclasses(cursor)
   scload.init_game_restrictions(cursor)
+
+  daemon_loop = True
+
+  if scload.OPT.run_bans:
+    scload.run_bans(cursor)
+    pagedefs.incremental_build(cursor)
+    daemon_loop = False # a one-off command, don't really start the daemon
+
   try:
-    while True:
+    while daemon_loop:
       try:
         interval_work(cursor, interval, master)
         pagedefs.incremental_build(cursor)

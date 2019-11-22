@@ -27,6 +27,7 @@ oparser.add_option('-D', '--no-download', action='store_true', dest='no_download
 oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players')
 oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon')
 oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait')
+oparser.add_option('--run-bans', action='store_true', dest='run_bans')
 OPT, ARGS = oparser.parse_args()
 TIME_QUERIES = False
 
@@ -84,6 +85,41 @@ def init_game_restrictions(c):
       BUGGY_GAMES = set(buggy)
 
   c.db.commit()
+
+BAN_TABLES = {'name': ['player_best_games', 'wins', 'all_recent_games',
+                'player_recent_games', 'top_games', 'top_combo_scores',
+                'top_species_scores', 'top_class_scores', 'player_last_games',
+                'player_first_games', 'streak_games', 'streak_breakers',
+                'players', 'player_char_stats'],
+              'player': ['streaks', 'low_xl_rune_finds', 'ziggurats',
+                'date_players'],
+              'ghost': ['ghost_victims'],
+              'victim': ['ghost_victims']}
+
+# careful with this -- if you make a mistake, there's no way to undo it besides
+# rereading everything.
+def run_bans(c):
+  global BAN_TABLES
+  ban_list = list(config.BANNED)
+  if len(ban_list) == 0:
+    error("No players on the ban list!")
+    return
+  info("Running full ban list; %d banned players..." % len(ban_list))
+  ban_list.sort()
+  del_list = list()
+  for key in BAN_TABLES.keys():
+    for table in BAN_TABLES[key]:
+      del_list.append("DELETE FROM %s WHERE %s=%%s;" % (table, key))
+  for query in del_list:
+    c.executemany(query, [(n,) for n in ban_list])
+  c.db.commit()
+
+  for n in ban_list:
+    try:
+      os.unlink(os.path.join(config.SCORE_FILE_DIR, config.PLAYER_BASE,
+                                                              n + ".html"))
+    except:
+      pass
 
 class CrawlEventListener(object):
   """The way this is intended to work is that on receipt of an event
@@ -760,7 +796,8 @@ LOGF_SQLKEYS = LOGF_SQLTYPE.keys()
 
 def is_selected(game):
   """Accept all games that match our version criterion."""
-  return 'v' in game and game['v'] >= OLDEST_VERSION
+  return ('v' in game and game['v'] >= OLDEST_VERSION
+                    and game['name'].lower() not in config.BANNED)
 
 _active_cursor = None
 
