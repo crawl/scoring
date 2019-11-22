@@ -143,9 +143,10 @@ sources:
       - meta/0.11/milestones
       - meta/0.10/milestones
     morgues:
-      - - time_lt: ['end_time', '20130902-0000']
-        - https://f000.backblazeb2.com/file/dcss-archives/www.dobrazupa.org/morgue/
-      - http://dobrazupa.org/morgue # TODO: dead link, something more useful?
+      - - time_gt: ['end_time', '20130902-0000']
+        - http://dobrazupa.org/morgue # TODO: dead link, something more useful?
+      - https://f000.backblazeb2.com/file/dcss-archives/www.dobrazupa.org/morgue
+
 
   - name: clan
     canonical_name: CUE
