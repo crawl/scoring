@@ -634,9 +634,15 @@ def create_image(filename, stats):
 
   point_positions = [x + 0.5 for x in intervals]
 
+  # handle completely empty graphs
+  def y_axis_max(l, factor=1.2):
+    return len(l) and max(l) * factor or 10.0
+  def x_axis_max(l):
+    return len(l) and len(l) or 0.0
+
   plt.subplot(311)
   plt.plot([x + 0.5 for x in range(len(wins))], games, 'b-')
-  plt.axis([0, len(games), 0, max(games) * 1.2])
+  plt.axis([0, x_axis_max(games), 0, y_axis_max(games)])
   labels = ['' for x in [days[i] for i in intervals]]
   plt.ylabel('Games')
   plt.xticks(point_positions, labels, size = 'xx-small', rotation = 'vertical')
@@ -644,7 +650,7 @@ def create_image(filename, stats):
 
   plt.subplot(312)
   plt.plot([x + 0.5 for x in range(len(wins))], players, 'r-')
-  plt.axis([0, len(players), 0, max(players) * 1.2])
+  plt.axis([0, x_axis_max(players), 0, y_axis_max(players)])
   labels = ['' for x in [days[i] for i in intervals]]
   plt.ylabel('Players')
   plt.xticks(point_positions, labels, size = 'xx-small', rotation = 'vertical')
@@ -652,7 +658,7 @@ def create_image(filename, stats):
 
   plt.subplot(313)
   plt.vlines([x + 0.5 for x in range(len(wins))], 0, wins, 'g')
-  plt.axis([0, len(wins), 0, max(wins) * 1.5])
+  plt.axis([0, x_axis_max(wins), 0, y_axis_max(wins, 1.5)])
   labels = [x['day'] for x in [days[i] for i in intervals]]
   plt.ylabel('Wins')
   plt.xticks(point_positions, labels, size = 'xx-small', rotation = 'vertical')

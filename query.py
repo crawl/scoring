@@ -18,7 +18,7 @@ from morgue.util import morgue_link
 import uniq
 import os.path
 import re
-from datetime import datetime
+import datetime
 import time
 
 # Number of unique uniques
@@ -39,11 +39,11 @@ def _filter_invalid_where(d):
     return d
 
 def time_from_str(when):
-  if isinstance(when, datetime):
+  if isinstance(when, datetime.datetime):
     return when
   if when.endswith('D') or when.endswith('S'):
     when = when[:-1]
-  return datetime(*(time.strptime(when, '%Y%m%d%H%M%S')[0:6]))
+  return datetime.datetime(*(time.strptime(when, '%Y%m%d%H%M%S')[0:6]))
 
 def canonical_where_name(name):
   if config.RAWDATA_PATH is None:
@@ -579,7 +579,7 @@ def per_day_stats(c, day, fullday, games_ended, games_won):
           'winners': winners}
 
 def string_date(d):
-  assert(isinstance(d, datetime))
+  assert(isinstance(d, datetime.datetime))
   return d.strftime('%Y%m%d')
 
 def counted_thing(thing, n):
@@ -619,7 +619,11 @@ def date_stats(c, restricted=False):
     dates = query_rows(c,
                      '''SELECT which_day, games_ended, games_won
                          FROM per_day_stats ORDER BY which_day DESC''')
-  result = []
+  result = list()
+  # TODO: if one of these queries (likely the monthly one) returns a completely
+  # empty list, fill in the dates?
+  if len(dates) == 0:
+    return result
 
   month = [None]
 
@@ -657,8 +661,20 @@ def date_stats(c, restricted=False):
     stats['winners'] = fixup_winners(stats['winners'])
     result.append(stats)
 
-  for d in dates:
-    record_date(d)
+  # complex footwork here to fill in empty days
+  # note that the order of the query is descending, so we iterate backwards
+  cur = dates[0][0].date()
+  end = dates[-1][0].date()
+  delta = datetime.timedelta(days=1)
+  i = 0
+  while cur > end:
+    if dates[i][0].date() == cur:
+      record_date(dates[i])
+      i += 1
+    else:
+      dt_cur = datetime.datetime.combine(cur, datetime.datetime.min.time())
+      record_date((dt_cur, 0, 0))
+    cur -= delta
 
   flush_month(month[0])
   return result
