@@ -113,6 +113,7 @@ CREATE INDEX player_best_game_pscores ON player_best_games (name, sc);
 CREATE TABLE wins AS SELECT * FROM player_best_games;
 ALTER TABLE wins ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE wins CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE wins ADD CONSTRAINT UNIQUE (game_key);
 CREATE INDEX wins_name ON wins (name);
 CREATE INDEX wins_dur ON wins (dur);
 CREATE INDEX wins_turn ON wins (turn);
@@ -121,12 +122,14 @@ CREATE INDEX wins_sc ON wins (sc);
 CREATE TABLE all_recent_games AS SELECT * FROM player_best_games;
 ALTER TABLE all_recent_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE all_recent_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE all_recent_games ADD CONSTRAINT UNIQUE (game_key);
 CREATE INDEX all_recent_games_end
 ON all_recent_games (end_time DESC);
 
 CREATE TABLE player_recent_games AS SELECT * FROM player_best_games;
 ALTER TABLE player_recent_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE player_recent_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE player_recent_games ADD CONSTRAINT UNIQUE (game_key);
 CREATE INDEX player_recent_games_name_end
 ON player_recent_games (name, end_time DESC);
 CREATE INDEX player_recent_games_name_id
@@ -139,8 +142,10 @@ ON player_recent_games (name, id);
 CREATE TABLE top_games AS SELECT * FROM player_best_games;
 ALTER TABLE top_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE top_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE top_games ADD CONSTRAINT UNIQUE (game_key);
 CREATE INDEX top_games_sc ON top_games (sc);
 
+-- n.b. the unique class/job values will prevent duplicate games in these tables
 -- Keep track of best score for each combo (unique charabbr).
 CREATE TABLE top_combo_scores AS SELECT * FROM player_best_games;
 ALTER TABLE top_combo_scores ADD CONSTRAINT PRIMARY KEY (id);
@@ -174,6 +179,7 @@ CREATE TABLE player_last_games AS SELECT * FROM player_best_games;
 ALTER TABLE player_last_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE player_last_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE player_last_games Add CONSTRAINT UNIQUE (name);
+ALTER TABLE player_last_games ADD CONSTRAINT UNIQUE (game_key);
 CREATE UNIQUE INDEX player_last_games_name
 ON player_last_games (name);
 
@@ -182,6 +188,7 @@ CREATE TABLE player_first_games AS SELECT * FROM player_best_games;
 ALTER TABLE player_first_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE player_first_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
 ALTER TABLE player_first_games Add CONSTRAINT UNIQUE (name);
+ALTER TABLE player_first_games ADD CONSTRAINT UNIQUE (game_key);
 CREATE UNIQUE INDEX player_first_games_name
 ON player_first_games (name);
 
@@ -189,11 +196,13 @@ ON player_first_games (name);
 CREATE TABLE streak_games AS SELECT * FROM player_best_games;
 ALTER TABLE streak_games ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE streak_games CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE streak_games ADD CONSTRAINT UNIQUE (game_key);
 CREATE INDEX streak_games_name_time ON streak_games (name, end_time);
 
 CREATE TABLE streak_breakers AS SELECT * FROM player_best_games;
 ALTER TABLE streak_breakers ADD CONSTRAINT PRIMARY KEY (id);
 ALTER TABLE streak_breakers CHANGE COLUMN id id BIGINT AUTO_INCREMENT;
+ALTER TABLE streak_breakers ADD CONSTRAINT UNIQUE (game_key);
 ALTER TABLE streak_breakers ADD COLUMN streak_id BIGINT UNIQUE NOT NULL;
 
 -- Track all streaks by all players.
