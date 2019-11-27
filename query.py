@@ -298,12 +298,13 @@ def select_fields(*fields):
   return lambda g: [g.get(x) for x in fields]
 
 def top_thing_scorers(c, table, thing):
+  # TODO can't this just be done with a count query?
   games = xdict_rows(query_rows(c, game_select_from(table)
                                 + " ORDER BY name, " + thing))
-  score_counts = { }
+  score_counts = dict()
 
   def inc_count(g):
-    name = g['name']
+    name = g['name'].lower()
     if not score_counts.has_key(name):
       score_counts[name] = [ ]
     l = score_counts[name]
@@ -314,7 +315,8 @@ def top_thing_scorers(c, table, thing):
 
   best_players = score_counts.items()
   best_players.sort(lambda a, b: len(b[1]) - len(a[1]))
-  return [[len(x[1]), x[0], ", ".join(x[1])] for x in best_players]
+  return [[len(x[1]), canonicalize_player_name(c, x[0]), ", ".join(x[1])]
+                                                        for x in best_players]
 
 def top_species_scorers(c):
   return top_thing_scorers(c, 'top_species_scores', 'crace')
