@@ -11,8 +11,9 @@
         <div class="content">
 
           <p style="max-width: 500px">
-            If you have suggestions or want to report problems with CAO scoring,
-            please contact server admin rax, or devteam members advil or gammafunk.
+            To report problems with CAO scoring, please
+            <a href="https://github.com/crawl/scoring/issues/new?assignees=&labels=&template=cao-scoring-pages-bug-report.md&title=">
+              submit an issue on github</a>.
           </p>
 
           <ul>
