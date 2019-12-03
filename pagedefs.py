@@ -190,6 +190,11 @@ def initialize_pages(c):
   first_run = False
   render(c, 'index')
   fully_dirty() # set all pages dirty, and any players that have been touched
+  if scload.OPT.rebuild_player:
+    # TODO: allow triggering this without all the extra stuff?
+    player_args = scload.OPT.rebuild_player.split(",")
+    for p in player_args:
+      dirty_player(p)
   if scload.OPT.rebuild_players or not player_pages_exist():
     rebuild_pages(c)
 

@@ -25,6 +25,7 @@ oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
 oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
 oparser.add_option('-D', '--no-download', action='store_true', dest='no_download')
 oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players')
+oparser.add_option('-P', '--rebuild-player', action='store', type='string', dest='rebuild_player')
 oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon')
 oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait')
 oparser.add_option('--run-bans', action='store_true', dest='run_bans')
@@ -964,9 +965,11 @@ def xlog_seek(filename, filehandle, offset):
 
   info("Seeking to offset %d in logfile %s" % (offset, filename))
   if offset == -1:
+    # this also covers the case where a logfile exists, but consists of a
+    # single incomplete line -- the offset does not get stored in the db at all
+    # if that happens.
     filehandle.seek(0)
   else:
-    filehandle.seek(offset > 0 and offset or (offset - 1))
     # Sanity-check: the byte immediately preceding this must be "\n".
     if offset > 0:
       filehandle.seek(offset - 1)
