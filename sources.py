@@ -90,7 +90,11 @@ class Source (object):
 
   def milestones(self):
     if not self._milestones:
-      self._milestones = self._resolve_files('milestones')
+      import config
+      if config.USE_MILESTONES:
+        self._milestones = self._resolve_files('milestones')
+      else:
+        self._milestones = list()
     return self._milestones
 
   def default_morgue_base(self):
