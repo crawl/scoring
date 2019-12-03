@@ -158,6 +158,8 @@ def topN_count(c):
 def lowest_highscore(c):
   return query_first(c, '''SELECT MIN(sc) FROM top_games''')
 
+# don't add player_recent_games to this list, or duplicate detection won't work
+# right
 NO_BUGGY_GAMES = {'streak_games', 'streak_breakers', 'wins', 'top_games', 'top_combo_scores',
                   'top_species_scores', 'top_class_scores'}
 
@@ -173,15 +175,17 @@ def insert_game(c, g, table, extras = []):
     places = ",".join(["%s" for x in cols])
   if table in NO_BUGGY_GAMES and g.get('game_key') in scload.BUGGY_GAMES:
     info('Ignoring buggy game %s for %s', g.get('game_key'), table)
-    return
+    return False
   try:
     scload.query_do_raw(c,
            'INSERT INTO %s (%s) VALUES (%s)' %
            (table, colnames, places),
            *[g.get(x[0]) for x in cols])
+    return True
   except MySQLdb.IntegrityError:
     error("Dropping duplicate game '%s' from logfile '%s'"
                                   % (g.get('game_key'), g.get('source_file')))
+    return False
   except:
     error("Failing query: " + c._last_executed)
     raise
@@ -321,7 +325,8 @@ def update_all_recent_games(c, g):
 
 def update_player_recent_games(c, g):
   player = g['name']
-  insert_game(c, g, 'player_recent_games')
+  if not (insert_game(c, g, 'player_recent_games')):
+    return False
   if player_recent_game_count.has_key(player):
     player_recent_game_count.set_key(player_recent_game_count(c, player) + 1,
                                      player)
@@ -332,6 +337,7 @@ def update_player_recent_games(c, g):
                           player, extra)
     scload.delete_table_rows_by_id(c, 'player_recent_games', ids)
     player_recent_game_count.flush_key(player)
+  return True
 
 def update_player_best_games(c, g):
   player = g['name']
@@ -380,6 +386,12 @@ def update_wins_table(c, g):
 def update_player_stats(c, g):
   winc = game_is_win(g) and 1 or 0
 
+  if not update_player_recent_games(c, g):
+    # game is a duplicate game - stop calculation here. This will only work if
+    # duplicate games are read within a reasonable timeframe of each other...
+    # but normally, they are adjacent in a logfile.
+    return
+
   if winc:
     dirty_page('best-players-total-score')
     dirty_page('all-players')
@@ -421,12 +433,11 @@ def update_player_stats(c, g):
            winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'],
            g['urune'], g['urune'], g['end_time'])
 
-  # Must be first!
+  # Must be before player_last_game!
   update_player_streak(c, g)
 
   update_player_best_games(c, g)
   update_player_char_stats(c, g)
-  update_player_recent_games(c, g)
   update_all_recent_games(c, g)
   update_player_first_game(c, g)
   update_player_last_game(c, g)
