@@ -249,32 +249,45 @@ class Xlogfile:
     self._open()
     return self.handle
 
+  def init_offset_from_db(self, cursor):
+    xlog_seek(self.filename, self.handle,
+              dbfile_offset(cursor, self.filename))
+    # self.offset is the position of the next line to read; note that the db
+    # actually stores the offset of the *last* fully read line (xlog_seek
+    # finds the next position to try to read from).
+    self.offset = self.handle.tell()
+
   def line(self, cursor):
     if not self.have_handle():
       return
 
     while True:
       if not self.offset:
-        xlog_seek(self.filename, self.handle,
-                  dbfile_offset(cursor, self.filename))
-        self.offset = self.handle.tell()
+        init_offset_from_db()
 
       # Don't read beyond the last snapshot size for local files.
       if self.local and self.offset >= self.size:
         return None
 
+      line_start = self.offset
       line = self.handle.readline()
       newoffset = self.handle.tell()
-      if not line or not line.endswith("\n") or \
-            (self.local and newoffset > self.size):
-        # Reset to last read
+      if (not line or not line.endswith("\n") or
+                                (self.local and newoffset > self.size)):
+        # Incomplete line, reset to last read point. This should only happen
+        # at the end of the file.
         self.handle.seek(self.offset)
         return None
 
+      # update the offset -- one way or another, we will have read this current
+      # line, and can try the next one.
       self.offset = newoffset
+
       # If this is a blank line or a broken xlogline, advance the offset
       # and keep reading.
       if not line.strip() or invalid_xlog_line(line.strip()):
+        if line.strip():
+          warn("Skipping invalid line in %s: %s" % (self.filename, line))
         continue
 
       try:
@@ -284,7 +297,13 @@ class Xlogfile:
         info("Bad line: " + line + " in " + self.filename)
         continue
 
-      xline = Xlogline( self, self.filename, self.offset,
+      # n.b. the db update of logfile_offsets is triggered by creating this
+      # object, and the stored offset there is the beginning of this line. That
+      # way, we always return to a known good line in the logfile. On a daemon
+      # restart, the first line is skipped.
+      # TODO: it is insane to update the offset on each logline, it really only
+      # needs to be updated before each db commit...
+      xline = Xlogline( self, self.filename, line_start,
                         xdict.get('end') or xdict.get('time'),
                         xdict, self.proc_op )
       return xline
@@ -312,13 +331,15 @@ class MasterXlogReader:
     offsets = 0
     total = 0
     for x in self.xlogs:
-      if x.offset > 0: # -1 is used for unread files
+      if x.offset and x.offset > 0: # -1 is used for unread files
         offsets += x.offset
       total += x.size
     return total - offsets
 
   def tail_all(self, cursor):
     self.reinit()
+
+    # the following line inits xlog offsets by side effect
     lines = [ line for line in [ x.line(cursor) for x in self.xlogs ]
               if line ]
 
