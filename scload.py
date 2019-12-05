@@ -57,8 +57,6 @@ def fmt_byte_size(b, precision=1):
   fmt = "%%.%df" % precision
   for suffix in ['KB', 'MB', 'GB', 'TB']:
     if int(b / 1000) == 0 or suffix == 'TB':
-      if (suffix == 'B'):
-        return str(b) + suffix
       return (fmt % b) + suffix
     b = b / 1000.0
 
@@ -206,7 +204,7 @@ class Xlogfile:
     self.size  = None
     self.blacklist = blacklist
 
-  def reinit(self):
+  def reinit(self, cursor):
     """Reinitialize for a further read from this file."""
     # If this is a local file, take a snapshot of the file size here.
     # We will not read past this point. This is important because local
@@ -226,6 +224,8 @@ class Xlogfile:
         self.size = os.path.getsize(self.filename)
       except:
         self.size = 0
+    if self.have_handle() and self.offset is None:
+      self.init_offset_from_db(cursor)
 
   def fetch_remote(self):
     if self.xlog.dormant:
@@ -324,9 +324,9 @@ class MasterXlogReader:
   def __init__(self, xlogs):
     self.xlogs = xlogs
 
-  def reinit(self):
+  def reinit(self, cursor):
     for x in self.xlogs:
-      x.reinit()
+      x.reinit(cursor)
 
   def remaining_size(self):
     offsets = 0
@@ -340,14 +340,14 @@ class MasterXlogReader:
   def tail_all(self, cursor):
     import stats
 
-    self.reinit()
+    self.reinit(cursor)
+    # do this before collecting lines, because that will change the offset.
+    tail_start_remaining = self.remaining_size()
+    tail_start_time = datetime.datetime.now()
 
-    # the following line inits xlog offsets by side effect
     lines = [ line for line in [ x.line(cursor) for x in self.xlogs ]
               if line ]
 
-    tail_start_remaining = self.remaining_size()
-    tail_start_time = datetime.datetime.now()
     # would be nice to show lines, but it's a lot easier to get bytes without
     # going through the entire logfile in the first place.
     info("Got lines from %d logfiles, %s to process."
