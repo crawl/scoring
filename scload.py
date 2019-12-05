@@ -338,6 +338,8 @@ class MasterXlogReader:
     return total - offsets
 
   def tail_all(self, cursor):
+    import stats
+
     self.reinit()
 
     # the following line inits xlog offsets by side effect
@@ -366,6 +368,12 @@ class MasterXlogReader:
       if LIMIT_ROWS > 0 and proc >= LIMIT_ROWS:
         break
       if proc % COMMIT_INTERVAL == 0:
+        # Do any periodict db work that has been saved up for batch commit.
+        # calling this directly breaks the abstraction, but let's be honest,
+        # the abstraction going on to get to act_on_logfile_line is out of
+        # control.
+        stats.periodic_flush(cursor)
+
         cursor.db.commit()
         seconds_passed = int(
                   (datetime.datetime.now() - tail_start_time).total_seconds())
@@ -382,6 +390,7 @@ class MasterXlogReader:
                         % (proc, fmt_byte_size(interim_remaining), len(lines),
                            line_rate, fmt_byte_size(rate), remaining_time))
     if proc > 0:
+      stats.periodic_flush(cursor)
       cursor.db.commit()
       seconds_passed = int(
                   (datetime.datetime.now() - tail_start_time).total_seconds())

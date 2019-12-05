@@ -390,7 +390,7 @@ def update_player_stats(c, g):
     # game is a duplicate game - stop calculation here. This will only work if
     # duplicate games are read within a reasonable timeframe of each other...
     # but normally, they are adjacent in a logfile.
-    return
+    return False
 
   if winc:
     dirty_page('best-players-total-score')
@@ -442,6 +442,7 @@ def update_player_stats(c, g):
   update_player_first_game(c, g)
   update_player_last_game(c, g)
   update_wins_table(c, g)
+  return True
 
 def top_score_for_cthing(c, col, table, thing):
   q = "SELECT sc FROM %s WHERE %s = %s" % (table, col, '%s')
@@ -522,35 +523,71 @@ def is_junk_game(g):
   sc = g['sc']
   return sc < 2500 and is_loser_ktyp(ktyp)
 
+# handles two tables: per_day_stats and date_players
+class PerDayStats(object):
+  def __init__(self):
+    self.clear()
 
-def update_per_day_stats(c, g):
-  if is_junk_game(g):
-    return
+  def clear(self):
+    self.per_day_stats = dict()
+    self.date_players = dict()
 
-  # Grab just the date portion.
-  edate = g['end_time'][:8]
-  winc = game_is_win(g) and 1 or 0
+  def update(self, g):
+    if is_junk_game(g):
+      return
 
-  count_players_per_day.flush_key(edate)
-  if winc:
-    winners_for_day.flush_key(edate)
+    # Grab just the date portion.
+    edate = g['end_time'][:8]
+    winc = game_is_win(g) and 1 or 0
+    player = g['name']
 
-  query_do(c, '''INSERT INTO per_day_stats (which_day, games_ended,
-                                            games_won)
-                                    VALUES (%s, %s, %s)
+    if not self.per_day_stats.has_key(edate):
+      self.per_day_stats[edate] = [1, winc]
+    else:
+      self.per_day_stats[edate][0] += 1
+      self.per_day_stats[edate][1] += winc
+
+    if not self.date_players.has_key((edate, player)):
+      self.date_players[(edate, player)] = [1, winc]
+    else:
+      self.date_players[(edate, player)][0] += 1
+      self.date_players[(edate, player)][1] += winc
+
+    # do the flush here because we are already working with the dates...
+    # don't query these values until insert() has been called.
+    # TODO: does it even make sense for these to be memoized?
+    count_players_per_day.flush_key(edate)
+    if winc:
+      winners_for_day.flush_key(edate)
+
+  def insert(self, c):
+    # TODO: is there a faster way to do this without ON DUPLICATE KEY UPDATE?
+    per_day_l = [[k,
+                  self.per_day_stats[k][0],
+                  self.per_day_stats[k][1]] for k in self.per_day_stats.keys()]
+
+    c.executemany('''INSERT INTO per_day_stats (which_day, games_ended,
+                                                games_won)
+                                 VALUES (%s, %s, %s)
                         ON DUPLICATE KEY UPDATE
-                                     games_ended = games_ended + 1,
-                                     games_won = games_won + %s''',
-           edate, 1, winc, winc)
+                              games_ended = games_ended + VALUES(games_ended),
+                              games_won = games_won + VALUES(games_won)''',
+                  per_day_l)
 
-  player = g['name']
-  query_do(c, '''INSERT INTO date_players (which_day, which_month, player,
-                                           games, wins)
-                                   VALUES (%s, %s, %s, %s, %s)
-                        ON DUPLICATE KEY UPDATE
-                                        games = games + 1,
-                                        wins = wins + %s''',
-           edate, edate[:6], player, 1, winc, winc)
+    date_players_l = [[k[0],
+                       k[0][:6],
+                       k[1],
+                       self.date_players[k][0],
+                       self.date_players[k][1]] for k in self.date_players.keys()]
+    c.executemany('''INSERT INTO date_players (which_day, which_month, player,
+                                               games, wins)
+                                 VALUES (%s, %s, %s, %s, %s)
+                            ON DUPLICATE KEY UPDATE
+                                         games = games + VALUES(games),
+                                         wins = wins + VALUES(wins)''',
+                date_players_l)
+    # commit needs to happen elsewhere
+    self.clear()
 
 def is_known_cthing(c, table, key, value):
   return query_first_def(c, False,
@@ -584,6 +621,8 @@ def update_known_races_classes(c, g):
     query.db_classes.flush()
     query.current_classes.flush()
 
+per_day_stats_cache = PerDayStats()
+
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
   coming through. All lines get written to the db; some will assign
@@ -594,13 +633,14 @@ def act_on_logfile_line(c, this_game):
   if 'start_time' not in this_game:
     return
 
-  # Update top-1000.
-  update_topN(c, this_game, TOP_N)
-
   # Update statistics for this player's game.
-  update_player_stats(c, this_game)
-  update_combo_scores(c, this_game)
-  update_killer_stats(c, this_game)
-  update_gkills(c, this_game)
-  update_per_day_stats(c, this_game)
-  update_known_races_classes(c, this_game)
+  if update_player_stats(c, this_game):
+    update_topN(c, this_game, TOP_N)
+    update_combo_scores(c, this_game)
+    update_killer_stats(c, this_game)
+    update_gkills(c, this_game)
+    per_day_stats_cache.update(this_game)
+    update_known_races_classes(c, this_game)
+
+def periodic_flush(c):
+  per_day_stats_cache.insert(c)
