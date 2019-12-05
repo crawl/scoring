@@ -354,19 +354,6 @@ def update_player_best_games(c, g):
     insert_game(c, g, 'player_best_games')
     player_best_game_count.flush_key(player)
 
-def update_player_char_stats(c, g):
-  winc = game_is_win(g) and 1 or 0
-  query_do(c, '''INSERT INTO player_char_stats
-                             (name, charabbr, games_played, best_xl, wins)
-                      VALUES (%s, %s, %s, %s, %s)
-                 ON DUPLICATE KEY UPDATE games_played = games_played + 1,
-                                         best_xl = CASE WHEN best_xl < %s
-                                                        THEN %s
-                                                        ELSE best_xl END,
-                                         wins = wins + %s''',
-           g['name'], g['charabbr'], 1, g['xl'], winc,
-           g['xl'], g['xl'], winc)
-
 def update_player_first_game(c, g):
   player = g['name']
   if not player_first_game_exists(c, player):
@@ -413,7 +400,6 @@ def update_player_stats(c, g):
   update_player_streak(c, g)
 
   update_player_best_games(c, g)
-  update_player_char_stats(c, g)
   update_all_recent_games(c, g)
   update_player_first_game(c, g)
   update_player_last_game(c, g)
@@ -499,17 +485,25 @@ def is_junk_game(g):
   sc = g['sc']
   return sc < 2500 and is_loser_ktyp(ktyp)
 
+# subclasses of this object are designed to handle caching of information on
+# the python side, for bulk INSERT into the database. The implementation of
+# each is relatively idiosyncratic to the table and data, but they all follow
+# the same schema: `update` caches the information, and `insert` performs an
+# `executemany` call on a cursor.
 class BulkDBCache(object):
   def __init__(self):
     pass
 
   def clear(self):
+    """Clear the python-side data cache."""
     pass
 
   def update(self, g):
+    """Update a python-side data cache with info from game g."""
     pass
 
-  def insert(self, g):
+  def insert(self, c):
+    """Insert everything in the current cache into the database using cursor c."""
     pass
 
 class PlayerStats(BulkDBCache):
@@ -517,11 +511,24 @@ class PlayerStats(BulkDBCache):
     self.clear()
 
   def clear(self):
+    # table players: dict key is lowercase name, value is a dict with the
+    # field names
     self.players = dict()
+    # table player_char_stats: dict key is lowercase name x charabbr, value
+    # is a list of game count, max xl, win count
+    self.pl_char = dict()
 
   def update(self, g):
     lname = g['name'].lower()
     winc = game_is_win(g) and 1 or 0
+    if not self.pl_char.has_key((lname, g['charabbr'])):
+      self.pl_char[(lname, g['charabbr'])] = [1, g['xl'], winc]
+    else:
+      d = self.pl_char[(lname, g['charabbr'])]
+      d[0] += 1
+      d[1] = max(d[1], g['xl'])
+      d[2] += winc
+
     if not self.players.has_key(lname):
       self.players[lname] = {'name': g['name'],
                              'games_played': 1,
@@ -570,6 +577,20 @@ class PlayerStats(BulkDBCache):
                              last_game_end = VALUES(last_game_end),
                              current_combo = NULL''',
                   players_l)
+
+    pl_char_l = [[k[0],
+                  k[1],
+                  self.pl_char[k][0],
+                  self.pl_char[k][1],
+                  self.pl_char[k][2]] for k in self.pl_char.keys()]
+    c.executemany('''INSERT INTO player_char_stats
+                             (name, charabbr, games_played, best_xl, wins)
+                      VALUES (%s, %s, %s, %s, %s)
+                      ON DUPLICATE KEY UPDATE
+                          games_played = games_played + VALUES(games_played),
+                          best_xl = GREATEST(best_xl, VALUES(best_xl)),
+                          wins = wins + VALUES(wins)''',
+                  pl_char_l)
     self.clear()
 
 # handles two tables: per_day_stats and date_players
