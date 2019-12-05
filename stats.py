@@ -384,12 +384,14 @@ def update_wins_table(c, g):
     insert_game(c, g, 'wins')
 
 def update_player_stats(c, g):
+  global player_stats_cache
   winc = game_is_win(g) and 1 or 0
 
   if not update_player_recent_games(c, g):
     # game is a duplicate game - stop calculation here. This will only work if
     # duplicate games are read within a reasonable timeframe of each other...
-    # but normally, they are adjacent in a logfile.
+    # but normally, they are adjacent in a logfile, or on a bulk read, loglines
+    # will be sorted near each other.
     return False
 
   if winc:
@@ -405,33 +407,7 @@ def update_player_stats(c, g):
     else:
       dirty_player(g['name'], 1)
 
-  query_do(c, '''INSERT INTO players
-                             (name, games_played, games_won,
-                              total_score, best_score, best_xl,
-                              first_game_start, last_game_end, max_runes)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                 ON DUPLICATE KEY UPDATE
-                             games_played = games_played + 1,
-                             games_won = games_won + %s,
-                             total_score = total_score + %s,
-                             best_score =
-                                   CASE WHEN best_score < %s
-                                        THEN %s
-                                        ELSE best_score
-                                        END,
-                             best_xl =
-                                   CASE WHEN best_xl < %s
-                                        THEN %s
-                                        ELSE best_xl
-                                        END,
-                             max_runes = CASE WHEN max_runes < %s
-                                              THEN %s ELSE max_runes END,
-                             last_game_end = %s,
-                             current_combo = NULL''',
-           g['name'], 1, winc, g['sc'], g['sc'], g['xl'], g['start_time'],
-           g['end_time'], g['urune'],
-           winc, g['sc'], g['sc'], g['sc'], g['xl'], g['xl'],
-           g['urune'], g['urune'], g['end_time'])
+  player_stats_cache.update(g)
 
   # Must be before player_last_game!
   update_player_streak(c, g)
@@ -523,8 +499,81 @@ def is_junk_game(g):
   sc = g['sc']
   return sc < 2500 and is_loser_ktyp(ktyp)
 
+class BulkDBCache(object):
+  def __init__(self):
+    pass
+
+  def clear(self):
+    pass
+
+  def update(self, g):
+    pass
+
+  def insert(self, g):
+    pass
+
+class PlayerStats(BulkDBCache):
+  def __init__(self):
+    self.clear()
+
+  def clear(self):
+    self.players = dict()
+
+  def update(self, g):
+    lname = g['name'].lower()
+    winc = game_is_win(g) and 1 or 0
+    if not self.players.has_key(lname):
+      self.players[lname] = {'name': g['name'],
+                             'games_played': 1,
+                             'games_won': winc,
+                             'total_score': g['sc'],
+                             'best_score': g['sc'],
+                             'best_xl': g['xl'],
+                             'first_game_start': g['start_time'],
+                             'last_game_end': g['end_time'],
+                             'max_runes': g['urune']}
+    else:
+      d = self.players[lname]
+      d['games_played'] += 1
+      d['games_won'] += winc
+      d['total_score'] += g['sc']
+      d['best_score'] = max(d['best_score'], g['sc'])
+      d['best_xl'] = max(d['best_xl'], g['xl'])
+      # WARNING: game start/end time assumes lines are read in order here...
+      # TODO: drop this assumption?
+      d['last_game_end'] = g['end_time']
+      d['max_runes'] = max(d['max_runes'], g['urune'])
+
+  def insert(self, c):
+    players_l = [[self.players[k]['name'], # use case from logfile, not key
+                  self.players[k]['games_played'],
+                  self.players[k]['games_won'],
+                  self.players[k]['total_score'],
+                  self.players[k]['best_score'],
+                  self.players[k]['best_xl'],
+                  self.players[k]['first_game_start'],
+                  self.players[k]['last_game_end'],
+                  self.players[k]['max_runes']] for k in self.players.keys()]
+
+    c.executemany('''INSERT INTO players
+                             (name, games_played, games_won,
+                              total_score, best_score, best_xl,
+                              first_game_start, last_game_end, max_runes)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                      ON DUPLICATE KEY UPDATE
+                             games_played = games_played + VALUES(games_played),
+                             games_won = games_won + VALUES(games_won),
+                             total_score = total_score + VALUES(total_score),
+                             best_score = GREATEST(best_score, VALUES(best_score)),
+                             best_xl = GREATEST(best_xl, VALUES(best_xl)),
+                             max_runes = GREATEST(max_runes, VALUES(max_runes)),
+                             last_game_end = VALUES(last_game_end),
+                             current_combo = NULL''',
+                  players_l)
+    self.clear()
+
 # handles two tables: per_day_stats and date_players
-class PerDayStats(object):
+class PerDayStats(BulkDBCache):
   def __init__(self):
     self.clear()
 
@@ -621,6 +670,7 @@ def update_known_races_classes(c, g):
     query.db_classes.flush()
     query.current_classes.flush()
 
+player_stats_cache = PlayerStats()
 per_day_stats_cache = PerDayStats()
 
 def act_on_logfile_line(c, this_game):
@@ -643,4 +693,5 @@ def act_on_logfile_line(c, this_game):
     update_known_races_classes(c, this_game)
 
 def periodic_flush(c):
+  player_stats_cache.insert(c)
   per_day_stats_cache.insert(c)

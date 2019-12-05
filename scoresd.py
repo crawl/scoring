@@ -85,7 +85,10 @@ def tail_logfiles(logs, milestones, interval=60):
     pass
   finally:
     info("Flushing player pages and shutting down db connection")
-    pagedefs.flush_pages(cursor) # flush any dirty player pages
+    try:
+      pagedefs.flush_pages(cursor) # flush any dirty player pages
+    except Exception as e:
+      error("Failed to flush pages: " + str(e))
     scload.set_active_cursor(None)
     cursor.close()
     db.close()

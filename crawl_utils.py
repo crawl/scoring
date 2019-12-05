@@ -9,6 +9,9 @@ import config
 
 LOCK = None
 
+class ScoringException(Exception):
+  pass
+
 def write_scoresd_stop_request():
   f = open(config.SCORESD_STOP_REQUEST_FILE, 'w')
   f.write("\n")
