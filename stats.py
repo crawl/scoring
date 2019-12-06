@@ -530,8 +530,8 @@ class AllRecentGames(BulkDBCache):
       extra = all_recent_game_count(c) + len(self.games) - MAX_ALL_RECENT_GAMES
       # old version first selected ids, then deleted by ids -- not sure if there
       # is any good reason for that?
-      c.execute("DELETE FROM all_recent_games ORDER BY id LIMIT %d" % extra)
       if extra > 0:
+        c.execute("DELETE FROM all_recent_games ORDER BY id LIMIT %d" % extra)
         all_recent_game_count.set_key(MAX_ALL_RECENT_GAMES)
       else:
         all_recent_game_count.flush_key() # why do we even bother with this case?
