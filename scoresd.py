@@ -82,7 +82,8 @@ def tail_logfiles(logs, milestones, interval=60):
       if check_daemon_stop():
         break
   except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
-    pass
+    warn("Rollback triggered by interrupt signal")
+    cursor.db.rollback()
   finally:
     info("Flushing player pages and shutting down db connection")
     try:

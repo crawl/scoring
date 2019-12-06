@@ -51,9 +51,7 @@ def render(c, page, dest=None, pars=None):
     finally:
       f.close()
   except Exception, e:
-    warn("Error generating page %s: %s" % (page, e))
-    raise
-    # Don't rethrow.
+    error("Error generating page %s: %s" % (page, e))
 
 def render_pages(c):
   for p in PAGE_DEFS:

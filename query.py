@@ -805,6 +805,6 @@ def overall_player_stats(c, player):
                           FROM players
                          WHERE name = %s''', player)
   if row is None:
-    raise crawl_utils.ScoringException("Non-existent player '%s': error during bulk import?" % player)
+    raise crawl_utils.ScoringException("Non-existent player '%s': interrupt during bulk import?" % player)
   else:
     return fixup_player_stats(c, list(row))
