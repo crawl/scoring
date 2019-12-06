@@ -190,6 +190,22 @@ def insert_game(c, g, table, extras = []):
     error("Failing query: " + c._last_executed)
     raise
 
+def insert_games(c, g_list, table):
+  cols = scload.LOG_DB_MAPPINGS
+  colnames = scload.LOG_DB_SCOLUMNS
+  places = scload.LOG_DB_SPLACEHOLDERS
+
+  # TODO: handle NO_BUGGY_GAMES?
+  try:
+    c.executemany(
+           'INSERT IGNORE INTO %s (%s) VALUES (%s)' % (table, colnames, places),
+           [[g.get(x[0]) for x in cols] for g in g_list])
+    return True
+    # TODO: is there a way to detect duplicate keys on bulk insert?
+  except:
+    error("Failing query: " + c._last_executed)
+    raise
+
 def update_topN(c, g, n):
   if topN_count(c) >= n:
     if g['sc'] > lowest_highscore(c):
@@ -304,25 +320,6 @@ def update_player_streak(c, g):
       dirty_pages('streaks', 'overview')
       player_streak_is_active.flush_key(player)
 
-def update_all_recent_games(c, g):
-  if is_junk_game(g):
-    return
-
-  dirty_page('recent', 1)
-  dirty_page('per-day', 1)
-  dirty_page('per-day-monthly', 1)
-  insert_game(c, g, 'all_recent_games')
-  if all_recent_game_count.has_key():
-    all_recent_game_count.set_key(all_recent_game_count(c) + 1)
-
-  if all_recent_game_count(c) > MAX_ALL_RECENT_GAMES + 50:
-    extra = all_recent_game_count(c) - MAX_ALL_RECENT_GAMES
-    ids = query_first_col(c, '''SELECT id FROM all_recent_games
-                                 ORDER BY id LIMIT %s''',
-                          extra)
-    scload.delete_table_rows_by_id(c, 'all_recent_games', ids)
-    all_recent_game_count.flush_key()
-
 def update_player_recent_games(c, g):
   player = g['name']
   if not (insert_game(c, g, 'player_recent_games')):
@@ -371,7 +368,7 @@ def update_wins_table(c, g):
     insert_game(c, g, 'wins')
 
 def update_player_stats(c, g):
-  global player_stats_cache
+  global player_stats_cache, all_recent_games_cache
   winc = game_is_win(g) and 1 or 0
 
   if not update_player_recent_games(c, g):
@@ -400,7 +397,7 @@ def update_player_stats(c, g):
   update_player_streak(c, g)
 
   update_player_best_games(c, g)
-  update_all_recent_games(c, g)
+  all_recent_games_cache.update(g)
   update_player_first_game(c, g)
   update_player_last_game(c, g)
   update_wins_table(c, g)
@@ -505,6 +502,45 @@ class BulkDBCache(object):
   def insert(self, c):
     """Insert everything in the current cache into the database using cursor c."""
     pass
+
+class AllRecentGames(BulkDBCache):
+  def __init__(self):
+    self.clear()
+
+  def clear(self):
+    self.games = list()
+
+  def update(self, g):
+    if is_junk_game(g):
+      return
+    if len(self.games) >= MAX_ALL_RECENT_GAMES:
+      self.games.pop(0)
+    self.games.append(g)
+
+  def insert(self, c):
+    # TODO: this goes once per commit, so that the db is in a
+    # consistent state at each commit. But it could be even faster to do it
+    # once per update cycle...
+    if len(self.games) >= MAX_ALL_RECENT_GAMES:
+      # on a bulk insert, we will be continually swapping these out -- no need
+      # for subtlety. Note that this will wipe out ids entirely.
+      c.execute("TRUNCATE TABLE all_recent_games")
+      all_recent_game_count.set_key(MAX_ALL_RECENT_GAMES)
+    else:
+      extra = all_recent_game_count(c) + len(self.games) - MAX_ALL_RECENT_GAMES
+      # old version first selected ids, then deleted by ids -- not sure if there
+      # is any good reason for that?
+      c.execute("DELETE FROM all_recent_games ORDER BY id LIMIT %d" % extra)
+      if extra > 0:
+        all_recent_game_count.set_key(MAX_ALL_RECENT_GAMES)
+      else:
+        all_recent_game_count.flush_key() # why do we even bother with this case?
+    insert_games(c, self.games,'all_recent_games')
+    dirty_page('recent', len(self.games))
+    # TODO: why are these here and not with the per-day stats?
+    dirty_page('per-day', len(self.games))
+    dirty_page('per-day-monthly', len(self.games))
+    self.clear()
 
 class PlayerStats(BulkDBCache):
   def __init__(self):
@@ -693,6 +729,7 @@ def update_known_races_classes(c, g):
 
 player_stats_cache = PlayerStats()
 per_day_stats_cache = PerDayStats()
+all_recent_games_cache = AllRecentGames()
 
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
@@ -716,3 +753,4 @@ def act_on_logfile_line(c, this_game):
 def periodic_flush(c):
   player_stats_cache.insert(c)
   per_day_stats_cache.insert(c)
+  all_recent_games_cache.insert(c)
