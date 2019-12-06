@@ -263,7 +263,7 @@ class Xlogfile:
       return
 
     while True:
-      if not self.offset:
+      if self.offset is None:
         self.init_offset_from_db(cursor)
 
       # Don't read beyond the last snapshot size for local files.
