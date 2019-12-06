@@ -11,7 +11,7 @@ from memoizer import DBMemoizer
 import crawl
 
 from scload import query_do, query_first, query_first_col, wrap_transaction
-from scload import query_first_def, game_is_win, query_row
+from scload import query_first_def, game_is_win, query_row, query_rows
 from query import count_players_per_day, winners_for_day
 from pagedefs import dirty_page, dirty_player, dirty_pages
 
@@ -268,57 +268,10 @@ def player_last_game_end_time(c, player):
                                           WHERE name = %s''',
                      player)
 
-def player_create_streak(c, player, g):
-  query_do(c, '''INSERT INTO streaks
-                             (player, start_game_time, end_game_time,
-                              active, ngames)
-                      VALUES (%s, %s, %s, %s, %s)''',
-           player, player_last_game_end_time(c, player), g['end_time'],
-           True, 2)
-
-  # Record the game that started the streak:
-  query_do(c,
-           "INSERT INTO streak_games (" + scload.LOG_DB_SCOLUMNS + ") " +
-           "SELECT " + scload.LOG_DB_SCOLUMNS +
-           ''' FROM player_last_games WHERE name = %s''', player)
-
-  # And the second game in the streak:
-  insert_game(c, g, 'streak_games')
-
 def player_active_streak_id(c, player):
   return query_first(c, '''SELECT id FROM streaks
                                     WHERE player = %s AND active = 1''',
                      player)
-
-def player_break_streak(c, player, g):
-  aid = player_active_streak_id(c, player)
-  query_do(c, '''UPDATE streaks SET active = 0 WHERE id = %s''', aid)
-  g['streak_id'] = aid
-  insert_game(c, g, 'streak_breakers', extras = ['streak_id'])
-
-def player_extend_streak(c, player, g):
-  query_do(c, '''UPDATE streaks SET end_game_time = %s, ngames = ngames + 1
-                              WHERE player = %s AND active = 1''',
-           g['end_time'], player)
-  insert_game(c, g, 'streak_games')
-
-def update_player_streak(c, g):
-  player = g['name']
-  win = game_is_win(g)
-  if not win:
-    if player_streak_is_active(c, player):
-      player_break_streak(c, player, g)
-      player_streak_is_active.flush_key(player)
-      dirty_pages('streaks', 'overview')
-      dirty_player(player)
-  else:
-    if player_streak_is_active(c, player):
-      player_extend_streak(c, player, g)
-      dirty_pages('streaks', 'overview')
-    elif player_won_last_game(c, player):
-      player_create_streak(c, player, g)
-      dirty_pages('streaks', 'overview')
-      player_streak_is_active.flush_key(player)
 
 def update_player_recent_games(c, g):
   player = g['name']
@@ -357,10 +310,6 @@ def update_player_first_game(c, g):
     player_first_game_exists.flush_key(player)
     insert_game(c, g, 'player_first_games')
 
-def update_player_last_game(c, g):
-  query_do(c, '''DELETE FROM player_last_games WHERE name = %s''', g['name'])
-  insert_game(c, g, 'player_last_games')
-
 def update_wins_table(c, g):
   if game_is_win(g):
     dirty_pages('winners', 'fastest-wins-turns', 'fastest-wins-time',
@@ -368,7 +317,7 @@ def update_wins_table(c, g):
     insert_game(c, g, 'wins')
 
 def update_player_stats(c, g):
-  global player_stats_cache, all_recent_games_cache
+  global player_stats_cache, all_recent_games_cache, streaks_cache
   winc = game_is_win(g) and 1 or 0
 
   if not update_player_recent_games(c, g):
@@ -393,13 +342,12 @@ def update_player_stats(c, g):
 
   player_stats_cache.update(g)
 
-  # Must be before player_last_game!
-  update_player_streak(c, g)
+  streaks_cache.init_from_db(c) # TODO: could do this somewhere else
+  streaks_cache.update(g)
 
   update_player_best_games(c, g)
   all_recent_games_cache.update(g)
   update_player_first_game(c, g)
-  update_player_last_game(c, g)
   update_wins_table(c, g)
   return True
 
@@ -502,6 +450,218 @@ class BulkDBCache(object):
   def insert(self, c):
     """Insert everything in the current cache into the database using cursor c."""
     pass
+
+class StreakMod(object):
+  def __init__(self, player, db_id, follows_known_loss):
+    self.active = True
+    self.player = player
+    self.db_id = db_id
+    self.games = list()
+    self.continues_db = db_id is not None
+    self.follows_known_loss = follows_known_loss
+
+  def add_game(self, g):
+    self.games.append(g)
+    if not game_is_win(g):
+      self.active = False
+    return self.active
+
+  def min_known_len(self):
+    known_db_games = self.continues_db and 1 or 0
+    last_game_loss = (not self.active) and 1 or 0
+    # note: follows_known_loss doesn't actually impact this, because it doesn't
+    # affect the *minimum* length
+    return len(self.games) + known_db_games - last_game_loss
+
+# handle all streak-related tables, as well as player_last_game.
+# unlike many other subclasses of BulkDBCache, this is designed to continually
+# have accurate tracking of active streaks. It needs to be initialized from
+# the db before doing any processing.
+# TODO: this might be a lot simpler if the db stored any loss following a win
+# as a potential streak-breaker, and then reconstructed the >1-streaks from
+# there, rather than trying to caclulate it all ahead of time on import...
+# or even just stored open 1-streaks, though this would make the table size
+# balloon.
+class Streaks(BulkDBCache):
+  def __init__(self):
+    self.clear()
+    self.db_streaks = None
+
+  def update_db_streaks(self, c):
+    # in the full cao db, this is usually around 100 streaks at any given time
+    self.db_streaks = dict()
+    s = query_rows(c, 'SELECT LOWER(player), id FROM streaks WHERE active = 1')
+    if s:
+      self.db_streaks.update(s)
+
+  def init_from_db(self, c):
+    if self.db_streaks is None:
+      self.update_db_streaks(c)
+
+  def ongoing_streak(self, name):
+    ln = name.lower()
+    if self.cached_streaks.has_key(ln):
+      return True
+    if ln in self.cached_closed_streak_players:
+      return False
+    return self.db_streaks.has_key(ln)
+
+  def streak_to_continue(self, lname):
+    if self.cached_streaks.has_key(lname):
+      streak_to_continue = self.cached_streaks[lname]
+    else:
+      # the case where the cached game in last_games is a win should already
+      # be taken care of by an existing StreakMod.
+      if lname in self.cached_closed_streak_players:
+        sid = None # if they have no cached streaks, and a closed cached streak,
+                   # then definitely do not connect do a db streak
+        last_lost = True
+      else:
+        # n.b. a db streak that is closed by a game we have seen recently will
+        # ensure that there is a cached closed streak
+        sid = self.db_streaks.get(lname) # may be None
+        last_lost = self.last_games.has_key(lname)
+      streak_to_continue = StreakMod(lname, sid, last_lost)
+    return streak_to_continue
+
+  def update(self, g):
+    # at this point we treat 1-game win sequences as potential streaks, and
+    # create a streak entry for them. When inserting into the db, we will
+    # actually check whether they follow a win. # TODO: this could be better
+    lname = g['name'].lower()
+    if game_is_win(g) or self.ongoing_streak(lname):
+      streak = self.streak_to_continue(lname)
+      if streak.add_game(g): # active streak
+        self.cached_streaks[lname] = streak
+        #info("    Adding %s to active streak %s, length %d", g['game_key'], repr(streak.db_id), len(streak.games))
+      else: # inactivate streak
+        if self.cached_streaks.has_key(lname):
+          del self.cached_streaks[lname]
+        if streak.min_known_len() > 1 or not streak.follows_known_loss:
+          #info("Closing streak for %s", g['name'])
+          self.cached_closed_streaks.append(streak)
+          self.cached_closed_streak_players.add(lname)
+        #else:
+        #  info("Dropping 1-streak for %s", g['name'])
+
+    self.last_games[lname] = g
+
+  # for when the last game was a win, and is not cached. We will need to first
+  # set up the streak, then add the uncached win to streak_games.
+  def _player_create_streak_from_last(self, c, player):
+    end_time = player_last_game_end_time(c, player)
+    query_do(c, '''INSERT INTO streaks
+                               (player, start_game_time, end_game_time,
+                                active, ngames)
+                        VALUES (%s, %s, %s, %s, %s)''',
+             player, end_time, end_time,
+             True, 1)
+
+    # Record the game that started the streak:
+    query_do(c,
+             "INSERT INTO streak_games (" + scload.LOG_DB_SCOLUMNS + ") " +
+             "SELECT " + scload.LOG_DB_SCOLUMNS +
+             ''' FROM player_last_games WHERE name = %s''', player)
+
+    sid = query_first(c, '''SELECT id FROM streaks
+                                      WHERE player = %s AND active = 1''',
+                         player)
+    if self.db_streaks.has_key(player):
+      error("Player %s already has an ongoing streak!" % player)
+    # return the newly-created streak id
+    self.db_streaks[player] = sid
+    return sid
+
+  # for when the last game was not a win, and g begins the streak
+  # *does not* insert g, just uses it for setting times
+  def _player_create_streak_from_first(self, c, player, g):
+    query_do(c, '''INSERT INTO streaks
+                               (player, start_game_time, end_game_time,
+                                active, ngames)
+                        VALUES (%s, %s, %s, %s, %s)''',
+             player, g['end_time'], g['end_time'],
+             True, 0)
+    sid = query_first(c, '''SELECT id FROM streaks
+                                      WHERE player = %s AND active = 1''',
+                       player)
+    if self.db_streaks.has_key(player):
+      error("Player %s already has an ongoing streak!" % player)
+    self.db_streaks[player] = sid
+    # return the newly-created streak id
+    return sid
+
+  def _player_break_streak(self, c, player, g, sid):
+    query_do(c, '''UPDATE streaks SET active = 0 WHERE id = %s''', sid)
+    g['streak_id'] = sid
+    insert_game(c, g, 'streak_breakers', extras = ['streak_id'])
+    if self.db_streaks.has_key(player):
+      del self.db_streaks[player]
+
+  def _player_extend_streak(self, c, player, g):
+    query_do(c, '''UPDATE streaks SET end_game_time = %s, ngames = ngames + 1
+                                WHERE player = %s AND active = 1''',
+             g['end_time'], player)
+    insert_game(c, g, 'streak_games')
+
+  def _db_continue_streak(self, c, player, g, sid):
+    if game_is_win(g):
+      self._player_extend_streak(c, player, g)
+    else:
+      self._player_break_streak(c, player, g, sid)
+
+  def insert(self, c):
+    # it's important to close out streaks first, in case a player begins new
+    # ones. Order of ongoing streaks is not preserved here, but that should
+    # be ok...
+    cached_streaks = [s for s in self.cached_closed_streaks]
+    cached_streaks.extend(self.cached_streaks.values())
+
+    # Deal with any 1-streaks that are waiting for a db check about whether
+    # they follow a loss or a win. First, we do the db checks so that False for
+    # follows_known_loss means it follows a db win.
+    for s in cached_streaks:
+      if not s.follows_known_loss:
+        s.follows_known_loss = not player_won_last_game(c, s.player) # possible db access
+    confirmed_streaks = [s for s in cached_streaks
+                           if s.min_known_len() > 1
+                              or not s.follows_known_loss]
+
+    # now everything is a >1-streak. However, we may need to connect up either
+    # with an existing streak in the db, or a preceding win that is not in the
+    # cache.
+
+    for s in confirmed_streaks:
+      # handle initial game
+      if s.db_id is not None:
+        sid = s.db_id
+        #info("db: adding to streak %d" % s.db_id)
+      elif s.follows_known_loss:
+        sid = self._player_create_streak_from_first(c, s.player, s.games[0])
+        #info("db: creating new streak %d from %s" % (sid, s.games[0]['game_key']))
+      else:
+        # this takes care of the game in the db
+        sid = self._player_create_streak_from_last(c, s.player)
+        #info("db: creating new streak %d from db game" % sid)
+
+      for g in s.games:
+        self._db_continue_streak(c, s.player, g, sid)
+        #info("    inserting game %s" % g['game_key'])
+
+    # finally, update player_last_games in the db
+    last_games_del = [[name] for name in self.last_games.keys()]
+    last_games_ins = [self.last_games[name] for name in self.last_games.keys()]
+
+    c.executemany('''DELETE FROM player_last_games WHERE name=%s''',
+                  last_games_del)
+    insert_games(c, last_games_ins, 'player_last_games')
+
+    self.clear()
+
+  def clear(self):
+    self.cached_streaks = dict() # player -> StreakMod
+    self.cached_closed_streaks = list() # list of StreakMods
+    self.cached_closed_streak_players = set() # set of names
+    self.last_games = dict() # player -> game
 
 class AllRecentGames(BulkDBCache):
   def __init__(self):
@@ -730,6 +890,7 @@ def update_known_races_classes(c, g):
 player_stats_cache = PlayerStats()
 per_day_stats_cache = PerDayStats()
 all_recent_games_cache = AllRecentGames()
+streaks_cache = Streaks()
 
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
@@ -751,6 +912,8 @@ def act_on_logfile_line(c, this_game):
     update_known_races_classes(c, this_game)
 
 def periodic_flush(c):
+  global streaks_cache, player_stats_cache, per_day_stats_cache, all_recent_games_cache
+  streaks_cache.insert(c)
   player_stats_cache.insert(c)
   per_day_stats_cache.insert(c)
   all_recent_games_cache.insert(c)
