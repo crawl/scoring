@@ -431,6 +431,17 @@ def xlog_set_killer_group(d):
     d['ckiller'] = 'player ghost'
     return
 
+  # TODO: more sequell-style canonicalization?
+  m = R_ILLUSION_NAME.search(killer)
+  if m:
+    d['ckiller'] = 'a player illusion'
+    return
+
+  m = R_PAN_LORD_NAME.search(killer)
+  if m:
+    d['ckiller'] = 'a pandemonium lord'
+    return
+
   m = R_HYDRA.search(killer)
   if m:
     d['ckiller'] = m.group(1)
@@ -639,6 +650,8 @@ DB_COPY_FIELDS = [x for x in COMBINED_LOG_TO_DB.keys()
 
 R_MONTH_FIX = re.compile(r'^(\d{4})(\d{2})(.*)')
 R_GHOST_NAME = re.compile(r"^(.*)'s? ghost")
+R_ILLUSION_NAME = re.compile(r"^(.*)'s? illusion")
+R_PAN_LORD_NAME = re.compile(r"^(.*) the pandemonium lord")
 R_MILESTONE_GHOST_NAME = re.compile(r"the ghost of (.*) the ")
 R_KILL_UNIQUE = re.compile(r'^killed (.*)\.$')
 R_MILE_UNIQ = re.compile(r'^(\w+) (.*)\.$')
