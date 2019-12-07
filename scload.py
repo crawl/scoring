@@ -705,8 +705,6 @@ class Query:
   def execute(self, cursor):
     """Executes query on the supplied cursor."""
     self.query = self.query.strip()
-    if not self.query.endswith(';'):
-      self.query += ';'
     try:
       start = time.time()
       cursor.execute(self.query, self.values)
@@ -715,6 +713,7 @@ class Query:
     except:
       print("Failing query: " + self.query
             + " args: " + self.values.__repr__())
+      cursor.fetchall() # still try to consume any results, to avoid errors
       raise
 
   def execute_untimed(self, cursor):
@@ -728,6 +727,7 @@ class Query:
     except:
       print("Failing query: " + self.query
             + " args: " + self.values.__repr__())
+      cursor.fetchall() # still try to consume any results, to avoid errors
       raise
 
   if not TIME_QUERIES:

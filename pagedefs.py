@@ -11,6 +11,7 @@ import config
 import locale
 import html
 
+from crawl_utils import ScoringException
 from logging import debug, info, warn, error
 
 # Handle input encoding of strings that are actually UTF-8.
@@ -50,7 +51,7 @@ def render(c, page, dest=None, pars=None):
       f.write( t.render( attributes = pars ) )
     finally:
       f.close()
-  except Exception, e:
+  except ScoringException, e:
     error("Error generating page %s: %s" % (page, e))
 
 def render_pages(c):
