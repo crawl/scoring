@@ -386,31 +386,6 @@ def update_combo_scores(c, g):
   update_topscore_table_for(c, g, top_score_for_class,
                             'top_class_scores', 'cls')
 
-@DBMemoizer
-def ckiller_record_exists(c, ckiller):
-  return query_first_def(c, False,
-                         '''SELECT id FROM killer_recent_kills
-                                     WHERE ckiller = %s''',
-                         ckiller)
-
-def update_killer_stats(c, g):
-  ckiller = g['ckiller']
-  if ckiller != 'winning':
-    dirty_page('killers', 1)
-
-  query_do(c, '''INSERT INTO top_killers
-                             (ckiller, kills, most_recent_victim)
-                      VALUES (%s, %s, %s)
-                 ON DUPLICATE KEY UPDATE kills = kills + 1,
-                                         most_recent_victim = %s''',
-           ckiller, 1, g['name'], g['name'])
-  if ckiller_record_exists(c, ckiller):
-    query_do(c, '''DELETE FROM killer_recent_kills WHERE ckiller = %s''',
-             ckiller)
-  else:
-    ckiller_record_exists.set_key(True, ckiller)
-  insert_game(c, g, 'killer_recent_kills')
-
 def update_gkills(c, g):
   if scload.is_ghost_kill(g):
     dirty_page('gkills', 1)
@@ -451,6 +426,43 @@ class BulkDBCache(object):
     """Insert everything in the current cache into the database using cursor c."""
     pass
 
+class KillerStats(BulkDBCache):
+  def __init__(self):
+    self.clear()
+
+  def clear(self):
+    self.killer_stats = dict() # ckiller -> count, recent game
+
+  def update(self, g):
+    ckiller = g['ckiller']
+    if self.killer_stats.has_key(ckiller):
+      self.killer_stats[ckiller] = (self.killer_stats[ckiller][0] + 1, g)
+    else:
+      self.killer_stats[ckiller] = (1, g)
+
+  def insert(self, c):
+    dirty_page('killers', len(self.killer_stats))
+    killcounts_l = [(k,
+                     self.killer_stats[k][0],
+                     self.killer_stats[k][1]['name'])
+                                        for k in self.killer_stats.keys()]
+    c.executemany('''INSERT INTO top_killers
+                             (ckiller, kills, most_recent_victim)
+                     VALUES (%s, %s, %s)
+                     ON DUPLICATE KEY UPDATE
+                          kills = kills + VALUES(kills),
+                          most_recent_victim = VALUES(most_recent_victim)''',
+                  killcounts_l)
+
+    killgames_del = [(ckiller,) for ckiller in self.killer_stats.keys()]
+    killgames_ins = [self.killer_stats[k][1] for k in self.killer_stats.keys()]
+    c.executemany('''DELETE FROM killer_recent_kills WHERE ckiller = %s''',
+                  killgames_del)
+    insert_games(c, killgames_ins, 'killer_recent_kills')
+    self.clear()
+
+# data structure for tracking individual streaks -- handles both streaks in the
+# db, and streaks that entirely consist of recently observed games.
 class StreakMod(object):
   def __init__(self, player, db_id, follows_known_loss):
     self.active = True
@@ -890,6 +902,7 @@ def update_known_races_classes(c, g):
 player_stats_cache = PlayerStats()
 per_day_stats_cache = PerDayStats()
 all_recent_games_cache = AllRecentGames()
+killer_stats_cache = KillerStats()
 streaks_cache = Streaks()
 
 def act_on_logfile_line(c, this_game):
@@ -899,6 +912,8 @@ def act_on_logfile_line(c, this_game):
   points (high scores, lowest dungeon level, fastest wins) should be
   calculated elsewhere."""
 
+  global killer_stats_cache, per_day_stats_cache
+
   if 'start_time' not in this_game:
     return
 
@@ -906,14 +921,16 @@ def act_on_logfile_line(c, this_game):
   if update_player_stats(c, this_game):
     update_topN(c, this_game, TOP_N)
     update_combo_scores(c, this_game)
-    update_killer_stats(c, this_game)
+    killer_stats_cache.update(this_game)
     update_gkills(c, this_game)
     per_day_stats_cache.update(this_game)
     update_known_races_classes(c, this_game)
 
 def periodic_flush(c):
-  global streaks_cache, player_stats_cache, per_day_stats_cache, all_recent_games_cache
+  global streaks_cache, player_stats_cache, per_day_stats_cache
+  global all_recent_games_cache, killer_stats_cache
   streaks_cache.insert(c)
   player_stats_cache.insert(c)
   per_day_stats_cache.insert(c)
   all_recent_games_cache.insert(c)
+  killer_stats_cache.insert(c)
