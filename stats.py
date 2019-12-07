@@ -183,7 +183,7 @@ def insert_game(c, g, table, extras = []):
            *[g.get(x[0]) for x in cols])
     return True
   except MySQLdb.IntegrityError:
-    error("Dropping duplicate game '%s' from logfile '%s'"
+    error("insert_game: ignoring duplicate game '%s' from logfile '%s'"
                                   % (g.get('game_key'), g.get('source_file')))
     return False
   except:
@@ -273,21 +273,21 @@ def player_active_streak_id(c, player):
                                     WHERE player = %s AND active = 1''',
                      player)
 
-def update_player_recent_games(c, g):
-  player = g['name']
-  if not (insert_game(c, g, 'player_recent_games')):
-    return False
-  if player_recent_game_count.has_key(player):
-    player_recent_game_count.set_key(player_recent_game_count(c, player) + 1,
-                                     player)
-  if player_recent_game_count(c, player) > MAX_PLAYER_RECENT_GAMES + 50:
-    extra = player_recent_game_count(c, player) - MAX_PLAYER_RECENT_GAMES
-    ids = query_first_col(c, '''SELECT id FROM player_recent_games
-                                 WHERE name = %s ORDER BY id LIMIT %s''',
-                          player, extra)
-    scload.delete_table_rows_by_id(c, 'player_recent_games', ids)
-    player_recent_game_count.flush_key(player)
-  return True
+# not much point in memoizing this one. See
+# `player_recent_cache.game_key_exists` for something that will be much more
+# efficient during bulk loads.
+def game_key_in_db(c, g):
+  # check just two tables: player_recent_games and wins. This could result
+  # in some duplicates being added, but I'm not sure if the trouble here is
+  # worth it -- because the db doesn't store all games, it relies on (to some
+  # degree) reading games in order no matter what.
+  n = query_first(c, '''SELECT count(game_key) FROM player_recent_games
+                                        WHERE game_key = %s''', g['game_key'])
+  if n > 0:
+    return True
+  n = query_first(c, '''SELECT count(game_key) FROM wins
+                                        WHERE game_key = %s''', g['game_key'])
+  return n > 0
 
 def update_player_best_games(c, g):
   player = g['name']
@@ -318,14 +318,15 @@ def update_wins_table(c, g):
 
 def update_player_stats(c, g):
   global player_stats_cache, all_recent_games_cache, streaks_cache
+  global player_recent_cache
   winc = game_is_win(g) and 1 or 0
 
-  if not update_player_recent_games(c, g):
-    # game is a duplicate game - stop calculation here. This will only work if
-    # duplicate games are read within a reasonable timeframe of each other...
-    # but normally, they are adjacent in a logfile, or on a bulk read, loglines
-    # will be sorted near each other.
+  if player_recent_cache.game_key_exists(c, g):
+    error("Ignoring duplicate game '%s' from logfile '%s'"
+                                  % (g.get('game_key'), g.get('source_file')))
     return False
+
+  player_recent_cache.update(g)
 
   if winc:
     dirty_page('best-players-total-score')
@@ -425,6 +426,80 @@ class BulkDBCache(object):
   def insert(self, c):
     """Insert everything in the current cache into the database using cursor c."""
     pass
+
+class PlayerRecentGames(BulkDBCache):
+  def __init__(self):
+    self.most_recent_start = None # string in morgue start_time format
+    self.clear()
+
+  def past_most_recent(self, g):
+    if self.most_recent_start is None:
+      return False
+
+    # morgue start_time is YMDHMS order, so simple lexicographic comparison
+    # works.
+    return g['start_time'] > self.most_recent_start
+
+  def init_most_recent_from_db(self, c):
+    import morgue.time
+    db_time = query_first(c,
+                          '''SELECT MAX(start_time) FROM all_recent_games''')
+    if db_time is None:
+      self.most_recent_start = None
+    else:
+      self.most_recent_start = morgue.time.morgue_timestring(db_time)
+
+  def game_key_exists(self, c, g):
+    """Check whether a game key exists in the db."""
+    if self.most_recent_start is None:
+      self.init_most_recent_from_db(c)
+    # since game_key includes start time, a game that is more recent than any
+    # we've seen can't be a duplicate.
+    if self.past_most_recent(g):
+      return False
+    if g['game_key'] in self.gids:
+      return True
+    return game_key_in_db(c, g) # fall back on SELECT queries
+
+  def update(self, g):
+    if self.past_most_recent(g):
+      self.most_recent_start = g['start_time']
+    lname = g['name'].lower()
+    if not self.games.has_key(lname):
+      self.games[lname] = list()
+    self.games[lname].append(g)
+    if len(self.games[lname]) > MAX_PLAYER_RECENT_GAMES:
+      self.games[lname].pop(0)
+    self.gids.add(g['game_key'])
+
+  def insert(self, c):
+    # TODO: not sure this call will work very well
+    player_recent_count = {n: player_recent_game_count(c, n)
+                      for n in self.games.keys()
+                      if len(self.games[n]) < MAX_PLAYER_RECENT_GAMES}
+    del_l = list() # how many recent games to cull for each player
+    games_l = list() # games to insert
+    for n in self.games.keys():
+      games_l.extend(self.games[n])
+      if len(self.games[n]) >= MAX_PLAYER_RECENT_GAMES:
+        # delete anything that's there, we will replace it all
+        del_l.append((n, MAX_PLAYER_RECENT_GAMES))
+        player_recent_game_count.set_key(n, MAX_PLAYER_RECENT_GAMES)
+      else:
+        del_l.append((n, max(0, player_recent_count[n] + len(self.games[n])
+                                                  - MAX_PLAYER_RECENT_GAMES)))
+        player_recent_game_count.set_key(n, min(player_recent_count[n]
+                                                  + len(self.games[n]),
+                                                  MAX_PLAYER_RECENT_GAMES))
+    c.executemany('''DELETE FROM player_recent_games WHERE name=%s
+                            ORDER BY id LIMIT %s''', del_l)
+    insert_games(c, games_l, 'player_recent_games')
+    self.clear()
+
+  def clear(self):
+    # don't clear most recent start -- it should be always up-to-date.
+    self.games = dict() # player -> game list
+    self.gids = set()
 
 class KillerStats(BulkDBCache):
   def __init__(self):
@@ -899,6 +974,7 @@ def update_known_races_classes(c, g):
     query.db_classes.flush()
     query.current_classes.flush()
 
+player_recent_cache = PlayerRecentGames()
 player_stats_cache = PlayerStats()
 per_day_stats_cache = PerDayStats()
 all_recent_games_cache = AllRecentGames()
@@ -928,8 +1004,9 @@ def act_on_logfile_line(c, this_game):
 
 def periodic_flush(c):
   global streaks_cache, player_stats_cache, per_day_stats_cache
-  global all_recent_games_cache, killer_stats_cache
+  global all_recent_games_cache, killer_stats_cache, player_recent_cache
   streaks_cache.insert(c)
+  player_recent_cache.insert(c)
   player_stats_cache.insert(c)
   per_day_stats_cache.insert(c)
   all_recent_games_cache.insert(c)
