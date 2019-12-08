@@ -354,7 +354,7 @@ def update_topscore_table_for(c, g, fn, table, thing):
   sc = g['sc']
   value = g[thing]
   if sc > fn(c, value):
-    fn.flush_key(value)
+    fn.set_key(sc, value)
     query_do(c, "DELETE FROM " + table + " WHERE " + thing + " = %s", value)
     insert_game(c, g, table)
     dirty_page('top-combo-scores', 25)
