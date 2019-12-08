@@ -2,6 +2,7 @@ import MySQLdb
 import re
 import os, datetime
 import os.path
+import bisect
 import crawl_utils
 
 import logging
@@ -361,20 +362,21 @@ class MasterXlogReader:
     lines = [ line for line in [ x.line(cursor) for x in self.xlogs ]
               if line ]
 
+    lines.sort()
     # would be nice to show lines, but it's a lot easier to get bytes without
     # going through the entire logfile in the first place.
     info("Got lines from %d logfiles, %s to process."
                     % (len(lines), fmt_byte_size(tail_start_remaining, 3)))
     proc = 0
     while lines:
-      # Sort dates in descending order.
-      lines.sort()
-      # And pick the oldest.
+      # `lines` is sorted in descending order - pick the oldest.
       oldest = lines.pop()
       # Grab a replacement for the one we're going to read from the same file:
       newline = oldest.owner.line(cursor)
       if newline:
-        lines.append(newline)
+        # insert this in the correct place in the sorted list
+        bisect.insort(lines, newline)
+
       # And process the line
       oldest.process(cursor)
       proc += 1

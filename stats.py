@@ -516,13 +516,15 @@ class PlayerBestGames(BulkDBCache):
 #     the same end_time as well as start_time.
 # (ii) duplicate game_keys generated because a game crashed after a logline
 #      was written, but before the save was deleted. This should only be
-#      possible in old versions of dcss, and all of the cases I know of are
-#      handled by the heuristic cache size I have selected here.
+#      possible in old versions of dcss, and most of the cases I know of are
+#      handled by the heuristic cache size I have selected here. 
 #      HOWEVER, if the player then takes a very long time to complete the
 #      game in a case like this, the optimized version of the game_key check
-#      will not catch it. (Side note: it's sort of unclear what to even do
-#      with these game records. Sequell allows duplicate game keys for this
-#      case...)
+#      will not catch it. If the heuristic misses a case, the game will still
+#      run up against the unique constraint on the two key tables (which is
+#      handled via INSERT IGNORE).
+#      (Side note: it's sort of unclear what to even do with these game
+#      records. Sequell allows duplicate game keys for this case...)
 #
 # The reason for this perhaps excessive-seeming optimization is that duplicate
 # checking is the heaviest remaining db access in the logline processing loop
@@ -532,7 +534,7 @@ class PlayerRecentGames(BulkDBCache):
     self.most_recent_start = None # string in morgue start_time format
     self.empty_db_gid_cache = set()
     self.empty_db_gid_cache_l = list()
-    self.EMPTY_DB_CACHE_SIZE = 500
+    self.EMPTY_DB_CACHE_SIZE = 1000
     self.empty_db_start = False
     self.clear()
 

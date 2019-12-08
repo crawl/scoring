@@ -36,8 +36,10 @@ necessary if the daemon isn't shut down properly.
 
 To run scoresd.py without daemonizing, pass it `-n`. This will not log to a
 file, so is recommended only for testing. When run in this mode, the daemon
-will respond to ctrl-c, but *this may interrupt db queries*, so is very much
-not recommended for production.
+will respond to ctrl-c; the db state should be rolled back to the last commit
+if this happens, and page generation may or may not succeed.
+
+For more command line options, see `python scoresd.py --help`.
 
 Configuration
 -------------
