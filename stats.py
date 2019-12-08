@@ -499,14 +499,40 @@ class PlayerBestGames(BulkDBCache):
                             ORDER BY sc LIMIT %s''', del_l)
     self.clear()
 
+# This class tracks most recent games, and also handles duplicate checking. It
+# has somewhat complicated differential behavior depending on whether the db
+# started empty: if it did start empty, the assumption is that games will
+# be read enough in order that duplicate checking can rely entirely on a
+# python-side caching of the most recent n gids. To complicate things, games
+# are read by their end_time, not start_time. There are two cases to worry
+# about:
+# (i) identical game records. These are handled just fine, because they have
+#     the same end_time as well as start_time.
+# (ii) duplicate game_keys generated because a game crashed after a logline
+#      was written, but before the save was deleted. This should only be
+#      possible in old versions of dcss, and all of the cases I know of are
+#      handled by the heuristic cache size I have selected here.
+#      HOWEVER, if the player then takes a very long time to complete the
+#      game in a case like this, the optimized version of the game_key check
+#      will not catch it. (Side note: it's sort of unclear what to even do
+#      with these game records. Sequell allows duplicate game keys for this
+#      case...)
+#
+# The reason for this perhaps excessive-seeming optimization is that duplicate
+# checking is the heaviest remaining db access in the logline processing loop
+# without it.
 class PlayerRecentGames(BulkDBCache):
   def __init__(self):
     self.most_recent_start = None # string in morgue start_time format
+    self.empty_db_gid_cache = set()
+    self.empty_db_gid_cache_l = list()
+    self.EMPTY_DB_CACHE_SIZE = 500
+    self.empty_db_start = False
     self.clear()
 
   def past_most_recent(self, g):
     if self.most_recent_start is None:
-      return False
+      return True # requires that initialization from db precede any calls to this
 
     # morgue start_time is YMDHMS order, so simple lexicographic comparison
     # works.
@@ -518,8 +544,15 @@ class PlayerRecentGames(BulkDBCache):
                           '''SELECT MAX(start_time) FROM all_recent_games''')
     if db_time is None:
       self.most_recent_start = None
+      self.empty_db_start = True
     else:
       self.most_recent_start = morgue.time.morgue_timestring(db_time)
+
+  def _game_key_in_db_or_cache(self, c, g):
+    if self.empty_db_start:
+      return g['game_key'] in self.empty_db_gid_cache
+    else:
+      return game_key_in_db(c, g) # fall back to a SELECT query
 
   def game_key_exists(self, c, g):
     """Check whether a game key exists in the db."""
@@ -531,11 +564,16 @@ class PlayerRecentGames(BulkDBCache):
       return False
     if g['game_key'] in self.gids:
       return True
-    return game_key_in_db(c, g) # fall back on SELECT queries
+    return self._game_key_in_db_or_cache(c, g)
 
   def update(self, g):
     if self.past_most_recent(g):
       self.most_recent_start = g['start_time']
+    if self.empty_db_start:
+      if len(self.empty_db_gid_cache_l) > self.EMPTY_DB_CACHE_SIZE:
+        self.empty_db_gid_cache.remove(self.empty_db_gid_cache_l.pop(0))
+      self.empty_db_gid_cache_l.append(g['game_key'])
+      self.empty_db_gid_cache.add(g['game_key'])
     lname = g['name'].lower()
     if not self.games.has_key(lname):
       self.games[lname] = list()
