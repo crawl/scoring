@@ -209,9 +209,15 @@ def insert_games(c, g_list, table):
     error("Failing query: " + c._last_executed)
     raise
 
+# TODO: does TOP_N really need to be 1000? does anyone ever even look at that
+# leaderboard?
+# However, this is really only heavy towards the beginning of loading data
+# during a bulk import, so there may not be a need to optimize it further.
 def update_topN(c, g, n):
   if topN_count(c) >= n:
     if g['sc'] > lowest_highscore(c):
+      # note: for some reason this particular query is faster than just a simple
+      # DELETE FROM ... ORDER BY query.
       query_do(c,'''DELETE FROM top_games
                           WHERE id = %s''',
                query_first(c, '''SELECT id FROM top_games
