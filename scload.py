@@ -373,6 +373,7 @@ class MasterXlogReader:
         # the abstraction going on to get to act_on_logfile_line is out of
         # control.
         stats.periodic_flush(cursor)
+        logfile_offset_cache.insert(cursor)
 
         cursor.db.commit()
         seconds_passed = int(
@@ -391,6 +392,7 @@ class MasterXlogReader:
                            line_rate, fmt_byte_size(rate), remaining_time))
     if proc > 0:
       stats.periodic_flush(cursor)
+      logfile_offset_cache.insert(cursor)
       cursor.db.commit()
       seconds_passed = int(
                   (datetime.datetime.now() - tail_start_time).total_seconds())
@@ -1062,6 +1064,24 @@ def update_xlog_offset(c, filename, offset):
       raise Exception, "Could not save logfile offset"
     logfile_id.flush_key(filename)
 
+# should be stats.BulkDBCache, but circular import issues...
+class LogfileOffsets(object):
+  def __init__(self):
+    self.clear()
+
+  def clear(self):
+    self.offsets = dict()
+
+  def update(self, logfile, offset):
+    self.offsets[logfile] = offset
+
+  def insert(self, c):
+    for l in self.offsets:
+      update_xlog_offset(c, l, self.offsets[l])
+    self.clear()
+
+logfile_offset_cache = LogfileOffsets()
+
 def process_xlog(c, filename, offset, d, flambda):
   """Processes an xlog record for scoring purposes."""
   if not is_selected(d):
@@ -1071,7 +1091,8 @@ def process_xlog(c, filename, offset, d, flambda):
     for listener in LISTENERS:
       flambda(listener)(cursor, d)
     # Update the offsets table.
-    update_xlog_offset(c, filename, offset)
+    #update_xlog_offset(c, filename, offset)
+    logfile_offset_cache.update(filename, offset)
   do_xlogline(c)
 
 def process_log(c, filename, offset, d):
