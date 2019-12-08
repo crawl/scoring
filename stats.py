@@ -163,6 +163,9 @@ def lowest_highscore(c):
 NO_BUGGY_GAMES = {'streak_games', 'streak_breakers', 'wins', 'top_games', 'top_combo_scores',
                   'top_species_scores', 'top_class_scores'}
 
+def game_is_buggy(g):
+  return g.get('game_key') in scload.BUGGY_GAMES
+
 def insert_game(c, g, table, extras = []):
   cols = scload.LOG_DB_MAPPINGS
   colnames = scload.LOG_DB_SCOLUMNS
@@ -173,7 +176,7 @@ def insert_game(c, g, table, extras = []):
       cols.append([item, item])
     colnames = ",".join([x[1] for x in cols])
     places = ",".join(["%s" for x in cols])
-  if table in NO_BUGGY_GAMES and g.get('game_key') in scload.BUGGY_GAMES:
+  if table in NO_BUGGY_GAMES and game_is_buggy(g):
     info('Ignoring buggy game %s for %s', g.get('game_key'), table)
     return False
   try:
@@ -295,15 +298,9 @@ def update_player_first_game(c, g):
     player_first_game_exists.flush_key(player)
     insert_game(c, g, 'player_first_games')
 
-def update_wins_table(c, g):
-  if game_is_win(g):
-    dirty_pages('winners', 'fastest-wins-turns', 'fastest-wins-time',
-                'overview')
-    insert_game(c, g, 'wins')
-
 def update_player_stats(c, g):
   global player_stats_cache, all_recent_games_cache, streaks_cache
-  global player_recent_cache, player_best_cache
+  global player_recent_cache, player_best_cache, wins_cache
   winc = game_is_win(g) and 1 or 0
 
   if player_recent_cache.game_key_exists(c, g):
@@ -332,10 +329,9 @@ def update_player_stats(c, g):
   streaks_cache.update(g)
 
   player_best_cache.update(g)
-  #update_player_best_games(c, g)
   all_recent_games_cache.update(g)
+  wins_cache.update(g)
   update_player_first_game(c, g)
-  update_wins_table(c, g)
   return True
 
 def top_score_for_cthing(c, col, table, thing):
@@ -412,6 +408,24 @@ class BulkDBCache(object):
   def insert(self, c):
     """Insert everything in the current cache into the database using cursor c."""
     pass
+
+class Wins(BulkDBCache):
+  def __init__(self):
+    self.clear()
+
+  def clear(self):
+    self.games = list()
+
+  def update(self, g):
+    if not game_is_win(g) or game_is_buggy(g):
+      return
+    dirty_pages('winners', 'fastest-wins-turns', 'fastest-wins-time',
+            'overview')
+    self.games.append(g)
+
+  def insert(self, c):
+    insert_games(c, self.games, 'wins')
+    self.clear()
 
 class PlayerBestGames(BulkDBCache):
   def __init__(self):
@@ -672,6 +686,8 @@ class Streaks(BulkDBCache):
     return streak_to_continue
 
   def update(self, g):
+    if game_is_buggy(g):
+      return
     # at this point we treat 1-game win sequences as potential streaks, and
     # create a streak entry for them. When inserting into the db, we will
     # actually check whether they follow a win. # TODO: this could be better
@@ -818,7 +834,7 @@ class AllRecentGames(BulkDBCache):
     self.games = list()
 
   def update(self, g):
-    if is_junk_game(g):
+    if is_junk_game(g) or game_is_buggy(g):
       return
     if len(self.games) >= MAX_ALL_RECENT_GAMES:
       self.games.pop(0)
@@ -1041,6 +1057,7 @@ per_day_stats_cache = PerDayStats()
 all_recent_games_cache = AllRecentGames()
 killer_stats_cache = KillerStats()
 streaks_cache = Streaks()
+wins_cache = Wins()
 
 def act_on_logfile_line(c, this_game):
   """Actually assign things and write to the db based on a logfile line
@@ -1066,7 +1083,7 @@ def act_on_logfile_line(c, this_game):
 def periodic_flush(c):
   global streaks_cache, player_stats_cache, per_day_stats_cache
   global all_recent_games_cache, killer_stats_cache, player_recent_cache
-  global player_best_cache
+  global player_best_cache, wins_cache
   streaks_cache.insert(c)
   player_recent_cache.insert(c)
   player_best_cache.insert(c)
@@ -1074,3 +1091,4 @@ def periodic_flush(c):
   per_day_stats_cache.insert(c)
   all_recent_games_cache.insert(c)
   killer_stats_cache.insert(c)
+  wins_cache.insert(c)
