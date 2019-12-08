@@ -289,21 +289,6 @@ def game_key_in_db(c, g):
                                         WHERE game_key = %s''', g['game_key'])
   return n > 0
 
-def update_player_best_games(c, g):
-  player = g['name']
-  if player_best_game_count(c, player) >= MAX_PLAYER_BEST_GAMES:
-    if g['sc'] > player_lowest_highscore(c, player):
-      query_do(c, '''DELETE FROM player_best_games WHERE id = %s''',
-               query_first(c, '''SELECT id FROM player_best_games
-                                       WHERE name = %s
-                                    ORDER BY sc LIMIT 1''',
-                           player))
-      insert_game(c, g, 'player_best_games')
-      player_lowest_highscore.flush_key(player)
-  else:
-    insert_game(c, g, 'player_best_games')
-    player_best_game_count.flush_key(player)
-
 def update_player_first_game(c, g):
   player = g['name']
   if not player_first_game_exists(c, player):
@@ -318,7 +303,7 @@ def update_wins_table(c, g):
 
 def update_player_stats(c, g):
   global player_stats_cache, all_recent_games_cache, streaks_cache
-  global player_recent_cache
+  global player_recent_cache, player_best_cache
   winc = game_is_win(g) and 1 or 0
 
   if player_recent_cache.game_key_exists(c, g):
@@ -346,7 +331,8 @@ def update_player_stats(c, g):
   streaks_cache.init_from_db(c) # TODO: could do this somewhere else
   streaks_cache.update(g)
 
-  update_player_best_games(c, g)
+  player_best_cache.update(g)
+  #update_player_best_games(c, g)
   all_recent_games_cache.update(g)
   update_player_first_game(c, g)
   update_wins_table(c, g)
@@ -427,6 +413,78 @@ class BulkDBCache(object):
     """Insert everything in the current cache into the database using cursor c."""
     pass
 
+class PlayerBestGames(BulkDBCache):
+  def __init__(self):
+    self.clear()
+
+  def clear(self):
+    self.games = dict() # player -> game list
+
+  def update(self, g):
+    # TODO: is it better to do the real score check here or in insert?
+    lname = g['name'].lower()
+    score = g['sc']
+    if not self.games.has_key(lname):
+      self.games[lname] = [g]
+    elif score > self.games[lname][0]['sc']:
+      i = 1
+      while (i < len(self.games[lname])):
+        if score > self.games[lname][i]['sc']:
+          break
+        i += 1
+      self.games[lname].insert(i, g)
+      if len(self.games[lname]) > MAX_PLAYER_BEST_GAMES:
+        self.games[lname].pop(0)
+
+  def insert(self, c):
+    del_l = list()
+    ins_l = list()
+    for n in self.games.keys():
+      pgames = self.games[n]
+      gamecount = player_best_game_count(c, n)
+
+      # first fill up the list to the max with the highest scoring games we
+      # have
+      while len(pgames) and gamecount < MAX_PLAYER_BEST_GAMES:
+        g = pgames.pop()
+        ins_l.append(g)
+        if g['sc'] < player_lowest_highscore(c, n):
+          player_lowest_highscore.set_key(g['sc'], n)
+        gamecount += 1
+
+      # now we do any high scores that are actually high enough.
+      flush_lowest = False
+      while len(pgames):
+        g = pgames.pop()
+        # heuristic: just see if they meet a minimum threshold, and then delete
+        # later. Otherwise, we need to do a db call each time.
+        if g['sc'] > player_lowest_highscore(c, n):
+          ins_l.append(g)
+          # TODO: handle max insertion case? can just check the lowest of the
+          # inserted games
+          flush_lowest = True
+          gamecount += 1
+        else:
+          break # pgames is sorted
+
+      extras = 0
+      if gamecount > MAX_PLAYER_BEST_GAMES:
+        # delete any excess
+        extras = gamecount - MAX_PLAYER_BEST_GAMES
+        del_l.append((n, gamecount - MAX_PLAYER_BEST_GAMES))
+        gamecount = MAX_PLAYER_BEST_GAMES
+
+      player_best_game_count.set_key(gamecount, n)
+      if flush_lowest:
+        player_lowest_highscore.flush_key(n)
+
+    # do the insertion first, because the imprecise way that high-scoring games
+    # are handled may involve some of the inserted games being deleted
+    insert_games(c, ins_l, 'player_best_games')
+    c.executemany('''DELETE FROM player_best_games WHERE name=%s
+                            ORDER BY sc LIMIT %s''', del_l)
+    self.clear()
+
 class PlayerRecentGames(BulkDBCache):
   def __init__(self):
     self.most_recent_start = None # string in morgue start_time format
@@ -484,13 +542,15 @@ class PlayerRecentGames(BulkDBCache):
       if len(self.games[n]) >= MAX_PLAYER_RECENT_GAMES:
         # delete anything that's there, we will replace it all
         del_l.append((n, MAX_PLAYER_RECENT_GAMES))
-        player_recent_game_count.set_key(n, MAX_PLAYER_RECENT_GAMES)
+        player_recent_game_count.set_key(MAX_PLAYER_RECENT_GAMES, n)
       else:
-        del_l.append((n, max(0, player_recent_count[n] + len(self.games[n])
-                                                  - MAX_PLAYER_RECENT_GAMES)))
-        player_recent_game_count.set_key(n, min(player_recent_count[n]
+        extras = max(0, player_recent_count[n] + len(self.games[n])
+                                                  - MAX_PLAYER_RECENT_GAMES)
+        if extras > 0:
+          del_l.append((n, extras))
+        player_recent_game_count.set_key(min(player_recent_count[n]
                                                   + len(self.games[n]),
-                                                  MAX_PLAYER_RECENT_GAMES))
+                                                  MAX_PLAYER_RECENT_GAMES), n)
     c.executemany('''DELETE FROM player_recent_games WHERE name=%s
                             ORDER BY id LIMIT %s''', del_l)
     insert_games(c, games_l, 'player_recent_games')
@@ -976,6 +1036,7 @@ def update_known_races_classes(c, g):
 
 player_recent_cache = PlayerRecentGames()
 player_stats_cache = PlayerStats()
+player_best_cache = PlayerBestGames()
 per_day_stats_cache = PerDayStats()
 all_recent_games_cache = AllRecentGames()
 killer_stats_cache = KillerStats()
@@ -1005,8 +1066,10 @@ def act_on_logfile_line(c, this_game):
 def periodic_flush(c):
   global streaks_cache, player_stats_cache, per_day_stats_cache
   global all_recent_games_cache, killer_stats_cache, player_recent_cache
+  global player_best_cache
   streaks_cache.insert(c)
   player_recent_cache.insert(c)
+  player_best_cache.insert(c)
   player_stats_cache.insert(c)
   per_day_stats_cache.insert(c)
   all_recent_games_cache.insert(c)
