@@ -311,8 +311,6 @@ class Xlogfile:
       # object, and the stored offset there is the beginning of this line. That
       # way, we always return to a known good line in the logfile. On a daemon
       # restart, the first line is skipped.
-      # TODO: it is insane to update the offset on each logline, it really only
-      # needs to be updated before each db commit...
       xline = Xlogline( self, self.filename, line_start,
                         xdict.get('end') or xdict.get('time'),
                         xdict, self.proc_op )
