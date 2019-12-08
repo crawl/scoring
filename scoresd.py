@@ -74,6 +74,9 @@ def tail_logfiles(logs, milestones, interval=60):
       if check_daemon_stop():
         break
 
+      if not scload.OPT.force_loop and scload.OPT.run_once:
+        break
+
       time.sleep(interval)
       elapsed_time += interval
 
@@ -85,11 +88,12 @@ def tail_logfiles(logs, milestones, interval=60):
     warn("Rollback triggered by interrupt signal")
     cursor.db.rollback()
   finally:
-    info("Flushing player pages and shutting down db connection")
-    try:
-      pagedefs.flush_pages(cursor) # flush any dirty player pages
-    except Exception as e:
-      error("Failed to flush pages: " + str(e))
+    if not scload.OPT.load_only:
+      info("Flushing player pages and shutting down db connection")
+      try:
+        pagedefs.flush_pages(cursor) # flush any dirty player pages
+      except Exception as e:
+        error("Failed to flush pages: " + str(e))
     scload.set_active_cursor(None)
     cursor.close()
     db.close()
@@ -97,7 +101,7 @@ def tail_logfiles(logs, milestones, interval=60):
     info("Daemon exit")
 
 if __name__ == '__main__':
-  daemon = "-n" not in sys.argv # TODO: interacts with scload's optparser...
+  daemon = not scload.OPT.no_daemonize
   signal.signal(signal.SIGTERM, signal_handler)
   signal.signal(signal.SIGHUP, signal_handler) # TODO: restart on SIGHUP?
   # n.b. SIGKILL may result in dirty pages not being flushed

@@ -18,18 +18,26 @@ import config
 from config import SOURCES
 
 # this is a bit of a mess -- really should clean up how the optparse is set up.
-# right now most of these aren't used when called from scoresd.py, and -n has
-# a different meaning. (Also, optparse is deprecated...)
+# right now most of these aren't used when called from scoresd.py.
+# (Also, optparse is deprecated...)
 oparser = optparse.OptionParser()
-oparser.add_option('-n', '--no-load', action='store_true', dest='no_load')
-oparser.add_option('-o', '--load-only', action='store_true', dest='load_only')
-oparser.add_option('-D', '--no-download', action='store_true', dest='no_download')
-oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players')
-oparser.add_option('-P', '--rebuild-player', action='store', type='string', dest='rebuild_player')
-oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon')
-oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait')
-oparser.add_option('--run-bans', action='store_true', dest='run_bans')
+oparser.add_option('-D', '--dormant', action='store_true', dest='no_download', help="Don't download; act as if every downloadable source is dormant. Will still read unread loglines.")
+oparser.add_option('-n', '--no-daemonize', action='store_true', dest='no_daemonize', help='Do not daemonize when running from scoresd.py.')
+oparser.add_option('-N', '--no-load', action='store_true', dest='no_load', help='Do not load anything from logfiles.')
+oparser.add_option('-o', '--load-only', action='store_true', dest='load_only', help='Only load from logfiles; do not generate pages.')
+oparser.add_option('-O', '--run-once', action='store_true', dest='run_once', help="Terminate after one update cycle; don't loop indefinitely.")
+oparser.add_option('-l', '--force-loop', action='store_true', dest='force_loop', help="Loop the update cycle indefinitely (the default). Overrides --run-once, including implied --run-once.")
+oparser.set_defaults(run_once=False, force_loop=False)
+oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players', help="Force a rebuild of all player pages. Implies --run-once.")
+oparser.set_defaults(rebuild_players=False)
+oparser.add_option('-P', '--rebuild-player', action='store', type='string', dest='rebuild_player', metavar='PLAYERS', help="Rebuild particular player pages; accepts a comma-delimited list. Implies --run-once.")
+oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon', help='Request daemon stop.')
+oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait', help='Only with --stop; wait for the daemon to stop as well.')
+oparser.add_option('--run-bans', action='store_true', dest='run_bans', help='Run the ban list, removing any old records from the db and deleting player pages.')
 OPT, ARGS = oparser.parse_args()
+if OPT.rebuild_players or OPT.rebuild_player is not None:
+  OPT.run_once = True
+
 TIME_QUERIES = False
 
 # Limit rows read to so many for testing.
@@ -339,6 +347,11 @@ class MasterXlogReader:
 
   def tail_all(self, cursor):
     import stats
+
+    global OPT
+    if OPT.no_load:
+      info("Skipping logfile loading because of command line options.")
+      return
 
     self.reinit(cursor)
     # do this before collecting lines, because that will change the offset.
@@ -1173,9 +1186,9 @@ def scload():
       init_game_restrictions(cursor)
       master = create_master_reader()
       full_load(cursor, master)
-    if not OPT.load_only:
-      import pagedefs
-      pagedefs.incremental_build(cursor) # trigger first_run processing
+    import pagedefs
+    # OPT.no_load is checked in this call
+    pagedefs.incremental_build(cursor) # trigger first_run processing
   finally:
     set_active_cursor(None)
     cursor.close()
