@@ -427,6 +427,10 @@ sources:
       - data/cjr-logfile-0.21
       - data/cjr-logfile-0.22
       - data/cjr-logfile-git
+      # the following two are short logfiles containing games that were, I'm
+      # told, lost in a crash and then manually recovered from sequell.
+      - data/_crawl-master_crawl-0.19_saves_logfile
+      - data/_crawl-master_crawl-0.20_saves_logfile
     milestones:
       - data/cjr-milestone-0.19
       - data/cjr-milestone-0.20
