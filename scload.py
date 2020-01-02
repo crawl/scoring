@@ -1,4 +1,7 @@
-import MySQLdb
+try:
+  import MySQLdb
+except ImportError:
+  import pymysql as MySQLdb
 import re
 import os, datetime
 import os.path

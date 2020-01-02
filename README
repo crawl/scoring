@@ -10,6 +10,9 @@ Running the scoring scripts:
    You'll need to activate the virtual environment every time before you run
    scoresd.py.
 
+   If you have trouble installing MySQL-python, you can install pymysql
+   instead.
+
 1. Make sure MySQL is up and running, with a db 'scoring' with access
    to the user 'scoring' with no password (and make sure MySQL is
    listening only on localhost or has TCP connections disabled).

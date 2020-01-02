@@ -1,5 +1,8 @@
 #!/usr/bin/python
-import MySQLdb
+try:
+  import MySQLdb
+except ImportError:
+  import pymysql as MySQLdb
 
 import scload
 import query
@@ -517,7 +520,7 @@ class PlayerBestGames(BulkDBCache):
 # (ii) duplicate game_keys generated because a game crashed after a logline
 #      was written, but before the save was deleted. This should only be
 #      possible in old versions of dcss, and most of the cases I know of are
-#      handled by the heuristic cache size I have selected here. 
+#      handled by the heuristic cache size I have selected here.
 #      HOWEVER, if the player then takes a very long time to complete the
 #      game in a case like this, the optimized version of the game_key check
 #      will not catch it. If the heuristic misses a case, the game will still
