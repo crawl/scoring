@@ -35,6 +35,7 @@ oparser.add_option('-P', '--rebuild-player', action='store', type='string', dest
 oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon', help='Request daemon stop.')
 oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait', help='Only with --stop; wait for the daemon to stop as well.')
 oparser.add_option('--run-bans', action='store_true', dest='run_bans', help='Run the ban list, removing any old records from the db and deleting player pages.')
+oparser.add_option('--mysql-pass', help='Specify a password for MySQL connection. By default no password is used.')
 OPT, ARGS = oparser.parse_args()
 if OPT.rebuild_players or OPT.rebuild_player is not None:
   OPT.run_once = True
@@ -415,10 +416,15 @@ class MasterXlogReader:
                         % (fmt_byte_size(tail_start_remaining, 3),
                            proc, line_rate, str(td_total)))
 
-def connect_db():
-  connection = MySQLdb.connect(host='localhost',
-                               user='scoring',
-                               db=SCORING_DB)
+def connect_db(password):
+  opts = {
+    host: 'localhost',
+    user: 'scoring',
+    db: SCORING_DB,
+  }
+  if password is not None:
+    opts['password'] = password
+  connection = MySQLdb.connect(**opts)
   return connection
 
 def parse_logline(logline):
@@ -1165,7 +1171,7 @@ def scload():
   print "Populating db (one-off) with logfiles and milestones. " + \
       "Running the scoresd.py daemon is preferred."
 
-  db = connect_db()
+  db = connect_db(password=OPT.mysql_pass)
   init_listeners(db)
 
   def proc_file(fn, filename):
