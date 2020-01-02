@@ -1,5 +1,15 @@
 Running the scoring scripts:
 
+0. Install Python requirements: `pip install -r requirements.txt`. You may
+   want to run everything in a virtual environment:
+
+    python -m virtualenv venv
+    . ./venv/bin/activate
+    pip install -r requirements.txt
+
+   You'll need to activate the virtual environment every time before you run
+   scoresd.py.
+
 1. Make sure MySQL is up and running, with a db 'scoring' with access
    to the user 'scoring' with no password (and make sure MySQL is
    listening only on localhost or has TCP connections disabled).
