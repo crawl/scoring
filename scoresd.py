@@ -1,4 +1,7 @@
-import MySQLdb
+try:
+  import MySQLdb
+except ImportError:
+  import pymysql as MySQLdb
 import scload
 import time
 import crawl_utils
