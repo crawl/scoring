@@ -55,6 +55,7 @@ def render(c, page, dest=None, pars=None):
     error("Error generating page %s: %s" % (page, e))
 
 def render_pages(c):
+  maybe_copy_css()
   for p in PAGE_DEFS:
     render(c, p[0])
 
@@ -224,3 +225,12 @@ def incremental_build(c):
     initialize_pages(c)
   apply_to_dirty(c, DIRTY_PAGES, render)
   apply_to_dirty(c, DIRTY_PLAYERS, player_page, wipe=True)
+
+def maybe_copy_css():
+  """Copy score.css to the destination directory if required."""
+  dest = os.path.join(config.SCORE_FILE_DIR, "score.css")
+  if os.path.isfile(dest):
+    return
+  info("Rendering score.css")
+  source = os.path.join(TEMPLATE_DIR, 'score.css')
+  shutil.copyfile(source, dest)
