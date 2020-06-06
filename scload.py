@@ -347,6 +347,12 @@ class MasterXlogReader:
   def tail_all(self, cursor):
     import stats
 
+    # Note on profiling of this function: when running on the full logfile
+    # set from scratch, this function spends about 1/3 on `line()`, 1/3 on
+    # `process()`, and 1/3 on `periodic_flush()`. There is probably further
+    # small-scale optimizing that could be done, but I've hopefully hit all
+    # the big hotspots involving db queries.
+
     global OPT
     if OPT.no_load:
       info("Skipping logfile loading because of command line options.")
