@@ -158,6 +158,7 @@ sources:
     base: https://underhound.eu/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.25/logfile
       - meta/0.24/logfile
       - meta/0.23/logfile
       - meta/0.22/logfile
@@ -175,6 +176,7 @@ sources:
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.25/milestones
       - meta/0.24/milestones
       - meta/0.23/milestones
       - meta/0.22/milestones
