@@ -210,6 +210,21 @@ sources:
     morgues:
       - http://rl.heh.fi/morgue/
 
+  - name: cbr2
+    canonical_name: CBR2
+    server_url: https://cbro.berotato.org/
+    base: https://cbro.berotato.org/
+    logfiles:
+      - meta/git/logfile
+      - meta/0.24/logfile
+      - meta/0.25/logfile
+    milestones:
+      - meta/git/milestones
+      - meta/0.24/milestones
+      - meta/0.25/milestones
+    morgues:
+      - https://cbro.berotato.org/morgue/
+
   - name: cbro
     canonical_name: CBRO
     server_url: http://crawl.berotato.org:8080/
