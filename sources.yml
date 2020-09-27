@@ -223,7 +223,7 @@ sources:
       - meta/0.24/milestones
       - meta/0.25/milestones
     morgues:
-      - https://cbro.berotato.org/morgue/
+      - https://cbro.berotato.org/morgue
 
   - name: cbro
     canonical_name: CBRO
@@ -260,7 +260,7 @@ sources:
       - meta/0.24/milestones
       - meta/0.25/milestones
     morgues:
-      - http://crawl.berotato.org/crawl/morgue/
+      - http://crawl.berotato.org/crawl/morgue
 
   - name: ckr2
     canonical_name: CWZ
