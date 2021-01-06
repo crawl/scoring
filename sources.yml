@@ -1,7 +1,7 @@
 scoring-base-url: 'http://crawl.akrasiac.org/scoring' # base URL for scoring pages: use 'file://...' for local testing
 scoring-local: 'scoring' # location for generated files; if relative, is relative to the location of scoresd.py
 local-base: '/home/rax' # where logs and lockfiles go
-rawdata-base: '/var/www/crawl/rawdata' # location for any whereis datause-milestones: False
+rawdata-base: '/var/www/crawl/rawdata' # location for any whereis data
 use-milestones: False
 sources:
   - name: cao
@@ -37,6 +37,7 @@ sources:
       - logfile23
       - logfile24
       - logfile25
+      - logfile26
       - logfile-git
     milestones:
       - milestones02
@@ -63,6 +64,7 @@ sources:
       - milestones23
       - milestones24
       - milestones25
+      - milestones26
       - milestones-git
 
     # Regex -> location; player name is automatically appended.
@@ -160,6 +162,7 @@ sources:
     base: https://underhound.eu/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.26/logfile
       - meta/0.25/logfile
       - meta/0.24/logfile
       - meta/0.23/logfile
@@ -178,6 +181,7 @@ sources:
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.26/milestones
       - meta/0.25/milestones
       - meta/0.24/milestones
       - meta/0.23/milestones
@@ -218,10 +222,12 @@ sources:
       - meta/git/logfile
       - meta/0.24/logfile
       - meta/0.25/logfile
+      - meta/0.26/logfile
     milestones:
       - meta/git/milestones
       - meta/0.24/milestones
       - meta/0.25/milestones
+      - meta/0.26/milestones
     morgues:
       - https://cbro.berotato.org/morgue
 
@@ -340,6 +346,7 @@ sources:
     base: http://lazy-life.ddo.jp:8080
     logfiles:
       - meta/trunk/logfile
+      - meta/0.26/logfile
       - meta/0.25/logfile
       - meta/0.24/logfile
       - meta/0.23/logfile
@@ -354,6 +361,7 @@ sources:
       - meta/0.14/logfile
     milestones:
       - meta/trunk/milestones
+      - meta/0.26/milestones
       - meta/0.25/milestones
       - meta/0.24/milestones
       - meta/0.23/milestones
@@ -387,6 +395,7 @@ sources:
       - meta/0.23/logfile
       - meta/0.24/logfile
       - meta/0.25/logfile
+      - meta/0.26/logfile
     milestones:
       - meta/git/milestones
       - meta/0.14/milestones
@@ -401,6 +410,7 @@ sources:
       - meta/0.23/milestones
       - meta/0.24/milestones
       - meta/0.25/milestones
+      - meta/0.26/milestones
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
 
@@ -410,6 +420,7 @@ sources:
     base: https://crawl.project357.org/
     logfiles:
       - dcss-logfiles-trunk
+      - dcss-logfiles-0.26
       - dcss-logfiles-0.25
       - dcss-logfiles-0.24
       - dcss-logfiles-0.23
@@ -423,6 +434,7 @@ sources:
       - dcss-logfiles-0.15
     milestones:
       - dcss-milestones-trunk
+      - dcss-milestones-0.26
       - dcss-milestones-0.25
       - dcss-milestones-0.24
       - dcss-milestones-0.23
@@ -492,6 +504,7 @@ sources:
     base: https://crawl.kelbi.org/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.26/logfile
       - meta/0.25/logfile
       - meta/0.24/logfile
       - meta/0.23/logfile
@@ -500,6 +513,7 @@ sources:
       - meta/0.18/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.26/milestones
       - meta/0.25/milestones
       - meta/0.24/milestones
       - meta/0.23/milestones
