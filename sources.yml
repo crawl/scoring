@@ -528,7 +528,7 @@ game-restrictions:
     - edsrzf:cpo:20160218190853S
 
   botnames: # Bots are excluded from realtime rankings. This list was manually
-            # pulled from Sequell `!nick bot`, updated last on 8/26/20
+            # pulled from Sequell `!nick bot`, updated last on 6/21/21
     - autorobin
     - xw
     - auto7hm
@@ -578,3 +578,4 @@ game-restrictions:
     - fastman
     - idfk
     - a3bot
+    - gbos
