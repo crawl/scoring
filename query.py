@@ -682,10 +682,10 @@ def date_stats(c, restricted=False):
   return result
 
 def obsolete_classes():
-  return {"Cr", "DK", "He", "Jr", "Pa", "Pr", "Re", "St", "Th"}
+  return {"Br", "Cr", "DK", "He", "Jr", "Pa", "Pr", "Re", "St", "Th"}
 
 def obsolete_races():
-  return {"Bu", "Dj", "El", "GE", "Gm", "HD", "HE", "Ke", "LO", "MD", "OM", "SE"}
+  return {"Bu", "Ce", "Dj", "El", "GE", "Gm", "HD", "HE", "Ke", "LO", "MD", "OM", "SE"}
 
 # TODO: fix capitalization when early db entries are wrong ("Am", "OP")
 # TODO: handle gnome properly, rename to `Gm`
