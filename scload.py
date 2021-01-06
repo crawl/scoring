@@ -430,9 +430,9 @@ def connect_db(password=None, host=None):
   if host is None:
     host = 'localhost'
   opts = {
-    host: host,
-    user: 'scoring',
-    db: SCORING_DB,
+    "host": host,
+    "user": 'scoring',
+    "db": SCORING_DB,
   }
   if password is not None:
     opts['password'] = password
