@@ -426,7 +426,9 @@ class MasterXlogReader:
                         % (fmt_byte_size(tail_start_remaining, 3),
                            proc, line_rate, str(td_total)))
 
-def connect_db(password, host):
+def connect_db(password=None, host=None):
+  if host is None:
+    host = 'localhost'
   opts = {
     host: host,
     user: 'scoring',
