@@ -97,6 +97,7 @@ sources:
       - allgames-0.23.txt
       - allgames-0.24.txt
       - allgames-0.25.txt
+      - allgames-0.26.txt
       - allgames-svn.txt
     milestones:
       - milestones-0.6.txt
@@ -118,6 +119,7 @@ sources:
       - milestones-0.23.txt
       - milestones-0.24.txt
       - milestones-0.25.txt
+      - milestones-0.26.txt
       - milestones-svn.txt
     morgues:
       - - time_gt: ['end_time', '20110819-1740']
@@ -287,6 +289,7 @@ sources:
       - 0.23/logfile
       - 0.24/logfile
       - 0.25/logfile
+      - 0.26/logfile
     milestones:
       - trunk/milestones
       - 0.13/milestones
@@ -302,6 +305,7 @@ sources:
       - 0.23/milestones
       - 0.24/milestones
       - 0.25/milestones
+      - 0.26/milestones
     morgues:
       - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
