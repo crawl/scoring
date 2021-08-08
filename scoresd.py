@@ -124,4 +124,5 @@ if __name__ == '__main__':
 
   if daemon:
     crawl_utils.daemonize()
-  tail_logfiles( config.SOURCES.logfiles(), config.SOURCES.milestones(), 60 )
+  interval = config.CONFIG.get("update-interval", 60)
+  tail_logfiles( config.SOURCES.logfiles(), config.SOURCES.milestones(), interval )
