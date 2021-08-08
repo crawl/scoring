@@ -80,13 +80,26 @@ def tail_logfiles(logs, milestones, interval=60):
       if not scload.OPT.force_loop and scload.OPT.run_once:
         break
 
-      time.sleep(interval)
-      elapsed_time += interval
+      if (interval > 60)
+        info("Sleeping for %d seconds" % interval)
+      total_to_sleep = interval
+      slept = 0
+      while (total_to_sleep > 60):
+        sleep(60)
+        elapsed_time += 60
+        total_to_sleep = total_to_sleep - 60
+        if check_daemon_stop():
+          total_to_sleep = 0
+          break
+      if total_to_sleep > 0:
+        sleep(total_to_sleep)
+        elapsed_time += total_to_sleep
 
       pagedefs.tick_dirty()
 
       if check_daemon_stop():
         break
+
   except KeyboardInterrupt: # signal or ctrl-c in non-daemon mode
     warn("Rollback triggered by interrupt signal")
     cursor.db.rollback()
