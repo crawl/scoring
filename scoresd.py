@@ -80,7 +80,7 @@ def tail_logfiles(logs, milestones, interval=60):
       if not scload.OPT.force_loop and scload.OPT.run_once:
         break
 
-      if (interval > 60)
+      if interval > 60:
         info("Sleeping for %d seconds" % interval)
       total_to_sleep = interval
       slept = 0
