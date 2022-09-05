@@ -583,6 +583,7 @@ sources:
 game-restrictions:
   buggy:
     - edsrzf:cpo:20160218190853S
+    - houki:lld:20200924170840S
 
   botnames: # Bots are excluded from realtime rankings. This list was manually
             # pulled from Sequell `!nick bot`, updated last on 9/4/22
