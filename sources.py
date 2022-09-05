@@ -15,7 +15,10 @@ class Sources (object):
 
   def cfg(self, key=None):
     if not self._cfg:
-      self._cfg = yaml.full_load(open(self.definition_file).read())
+      try:
+        self._cfg = yaml.full_load(open(self.definition_file).read())
+      except:
+        self._cfg = yaml.load(open(self.definition_file).read()) #py2 compat
     if key:
       return self._cfg[key]
     return self._cfg
