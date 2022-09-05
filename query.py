@@ -105,7 +105,7 @@ def find_games(c, table, sort_min=None, sort_max=None,
   # make the table explicit in column names for the sake of the possible
   # join below
   if vtriage:
-    cols = ",".join(["%s.%s" % (table, c) for c in scload.LOG_DB_COLUMNS])
+    cols = ",".join(["%s.%s" % (table, col) for col in scload.LOG_DB_COLUMNS])
   else:
     cols = scload.LOG_DB_SCOLUMNS
 
@@ -122,7 +122,6 @@ def find_games(c, table, sort_min=None, sort_max=None,
   if vtriage:
     # make the version_triage columns available for WHERE clauses
     query.append(' INNER JOIN version_triage ON %s.v=version_triage.v' % table)
-    # append_where(where, "vclean='%s'" % vclean)
 
   for key, value in dictionary.items():
     if key == 'before':
