@@ -314,7 +314,7 @@ def top_thing_scorers(c, table, thing):
     inc_count(g)
 
   best_players = list(score_counts.items())
-  best_players.sort(key=lambda a: len(a[1]))
+  best_players.sort(key=lambda a: -len(a[1]))
   return [[len(x[1]), canonicalize_player_name(c, x[0]), ", ".join(x[1])]
                                                         for x in best_players]
 
