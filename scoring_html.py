@@ -158,7 +158,7 @@ def pretty_dur(dur):
   dur /= 60
   hours = dur % 24
   dur /= 24
-  days = dur
+  days = int(dur)
   stime = "%02d:%02d:%02d" % (hours, mins, secs)
   if days > 0:
     stime = str(days) + ", " + stime
