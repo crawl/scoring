@@ -3,6 +3,7 @@
    c = attributes['cursor']
 
    top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=5)
+   ts_wins = all([g.get('ktyp') == 'winning' for g in top_scores])
 
    streaks = query.all_streaks(c)
    active_streaks = query.all_streaks(c, active_streaks=True)
@@ -38,7 +39,7 @@
           <div class="row">
             <div>
               <h3>Top Scores</h3>
-              ${scoring_html.ext_games_table(top_scores, count=True)}
+              ${scoring_html.ext_games_table(top_scores, win=ts_wins, count=True)}
             </div>
             <div>
               <h3>Fastest Wins (Turn Count)</h3>
