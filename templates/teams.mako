@@ -1,5 +1,5 @@
 <%
-   import crawl_utils, scload, query, html
+   import crawl_utils, scload, query, scoring_html
    c = attributes['cursor']
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
@@ -25,11 +25,11 @@
 
            for team in teams:
              captain = team.pop()
-             team[1] = html.linked_text(captain, crawl_utils.clan_link,
+             team[1] = scoring_html.linked_text(captain, crawl_utils.clan_link,
                                         team[1])
-             team.append( html.clan_affiliation(c, captain, False) )
+             team.append( scoring_html.clan_affiliation(c, captain, False) )
 
-           table = html.table_text( [ 'Score', 'Clan', 'Players' ],
+           table = scoring_html.table_text( [ 'Score', 'Clan', 'Players' ],
                                     teams, cls='bordered', place_column=0 )
         %>
 
@@ -40,6 +40,6 @@
         </div>
       </div>
     </div>
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

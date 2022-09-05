@@ -71,7 +71,7 @@ def tail_logfiles(logs, milestones, interval=60):
         pagedefs.incremental_build(cursor)
         if not interval:
           break
-      except IOError, e:
+      except IOError as e:
         error("IOError: %s" % e)
       info("Finished batch.");
       if check_daemon_stop():

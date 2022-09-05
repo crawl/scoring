@@ -447,7 +447,7 @@ class PlayerBestGames(BulkDBCache):
     # TODO: is it better to do the real score check here or in insert?
     lname = g['name'].lower()
     score = g['sc']
-    if not self.games.has_key(lname):
+    if lname not in self.games:
       self.games[lname] = [g]
     elif score > self.games[lname][0]['sc']:
       i = 1
@@ -468,10 +468,11 @@ class PlayerBestGames(BulkDBCache):
 
       # first fill up the list to the max with the highest scoring games we
       # have
+      cur_lowest = player_lowest_highscore(c, n)
       while len(pgames) and gamecount < MAX_PLAYER_BEST_GAMES:
         g = pgames.pop()
         ins_l.append(g)
-        if g['sc'] < player_lowest_highscore(c, n):
+        if cur_lowest is None or g['sc'] < cur_lowest:
           player_lowest_highscore.set_key(g['sc'], n)
         gamecount += 1
 
@@ -481,7 +482,7 @@ class PlayerBestGames(BulkDBCache):
         g = pgames.pop()
         # heuristic: just see if they meet a minimum threshold, and then delete
         # later. Otherwise, we need to do a db call each time.
-        if g['sc'] > player_lowest_highscore(c, n):
+        if cur_lowest is None or g['sc'] > player_lowest_highscore(c, n):
           ins_l.append(g)
           # TODO: handle max insertion case? can just check the lowest of the
           # inserted games
@@ -586,7 +587,7 @@ class PlayerRecentGames(BulkDBCache):
       self.empty_db_gid_cache_l.append(g['game_key'])
       self.empty_db_gid_cache.add(g['game_key'])
     lname = g['name'].lower()
-    if not self.games.has_key(lname):
+    if lname not in self.games:
       self.games[lname] = list()
     self.games[lname].append(g)
     if len(self.games[lname]) > MAX_PLAYER_RECENT_GAMES:
@@ -633,7 +634,7 @@ class KillerStats(BulkDBCache):
 
   def update(self, g):
     ckiller = g['ckiller']
-    if self.killer_stats.has_key(ckiller):
+    if ckiller in self.killer_stats:
       self.killer_stats[ckiller] = (self.killer_stats[ckiller][0] + 1, g)
     else:
       self.killer_stats[ckiller] = (1, g)
@@ -710,14 +711,14 @@ class Streaks(BulkDBCache):
 
   def ongoing_streak(self, name):
     ln = name.lower()
-    if self.cached_streaks.has_key(ln):
+    if ln in self.cached_streaks:
       return True
     if ln in self.cached_closed_streak_players:
       return False
-    return self.db_streaks.has_key(ln)
+    return ln in self.db_streaks
 
   def streak_to_continue(self, lname):
-    if self.cached_streaks.has_key(lname):
+    if lname in self.cached_streaks:
       streak_to_continue = self.cached_streaks[lname]
     else:
       # the case where the cached game in last_games is a win should already
@@ -730,7 +731,7 @@ class Streaks(BulkDBCache):
         # n.b. a db streak that is closed by a game we have seen recently will
         # ensure that there is a cached closed streak
         sid = self.db_streaks.get(lname) # may be None
-        last_lost = self.last_games.has_key(lname)
+        last_lost = lname in self.last_games
       streak_to_continue = StreakMod(lname, sid, last_lost)
     return streak_to_continue
 
@@ -747,7 +748,7 @@ class Streaks(BulkDBCache):
         self.cached_streaks[lname] = streak
         #info("    Adding %s to active streak %s, length %d", g['game_key'], repr(streak.db_id), len(streak.games))
       else: # inactivate streak
-        if self.cached_streaks.has_key(lname):
+        if lname in self.cached_streaks:
           del self.cached_streaks[lname]
         if streak.min_known_len() > 1 or not streak.follows_known_loss:
           #info("Closing streak for %s", g['name'])
@@ -778,7 +779,7 @@ class Streaks(BulkDBCache):
     sid = query_first(c, '''SELECT id FROM streaks
                                       WHERE player = %s AND active = 1''',
                          player)
-    if self.db_streaks.has_key(player):
+    if player in self.db_streaks:
       error("Player %s already has an ongoing streak!" % player)
     # return the newly-created streak id
     self.db_streaks[player] = sid
@@ -796,7 +797,7 @@ class Streaks(BulkDBCache):
     sid = query_first(c, '''SELECT id FROM streaks
                                       WHERE player = %s AND active = 1''',
                        player)
-    if self.db_streaks.has_key(player):
+    if player in self.db_streaks:
       error("Player %s already has an ongoing streak!" % player)
     self.db_streaks[player] = sid
     # return the newly-created streak id
@@ -806,7 +807,7 @@ class Streaks(BulkDBCache):
     query_do(c, '''UPDATE streaks SET active = 0 WHERE id = %s''', sid)
     g['streak_id'] = sid
     insert_game(c, g, 'streak_breakers', extras = ['streak_id'])
-    if self.db_streaks.has_key(player):
+    if player in self.db_streaks:
       del self.db_streaks[player]
 
   def _player_extend_streak(self, c, player, g):
@@ -929,7 +930,7 @@ class PlayerStats(BulkDBCache):
   def update(self, g):
     lname = g['name'].lower()
     winc = game_is_win(g) and 1 or 0
-    if not self.pl_char.has_key((lname, g['charabbr'])):
+    if (lname, g['charabbr']) not in self.pl_char:
       self.pl_char[(lname, g['charabbr'])] = [1, g['xl'], winc]
     else:
       d = self.pl_char[(lname, g['charabbr'])]
@@ -937,7 +938,7 @@ class PlayerStats(BulkDBCache):
       d[1] = max(d[1], g['xl'])
       d[2] += winc
 
-    if not self.players.has_key(lname):
+    if lname not in self.players:
       self.players[lname] = {'name': g['name'],
                              'games_played': 1,
                              'games_won': winc,
@@ -1019,13 +1020,13 @@ class PerDayStats(BulkDBCache):
     winc = game_is_win(g) and 1 or 0
     player = g['name']
 
-    if not self.per_day_stats.has_key(edate):
+    if edate not in self.per_day_stats:
       self.per_day_stats[edate] = [1, winc]
     else:
       self.per_day_stats[edate][0] += 1
       self.per_day_stats[edate][1] += winc
 
-    if not self.date_players.has_key((edate, player)):
+    if (edate, player) not in self.date_players:
       self.date_players[(edate, player)] = [1, winc]
     else:
       self.date_players[(edate, player)][0] += 1

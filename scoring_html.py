@@ -126,6 +126,11 @@ def pretty_server(game):
     return '<a href="%s">%s</a>' % (url, name)
   return name
 
+try:
+  long
+except:
+  long = int # stupid compatibility hack
+
 def fixup_column(col, data, game):
   if col.find('time') != -1:
     return pretty_date(data)
@@ -146,7 +151,7 @@ def pretty_dur(dur):
   try:
     secs = dur % 60
   except:
-    print "FAIL on %s" % dur
+    print("FAIL on %s" % dur)
     raise
   dur /= 60
   mins = dur % 60
@@ -158,6 +163,11 @@ def pretty_dur(dur):
   if days > 0:
     stime = str(days) + ", " + stime
   return stime
+
+try:
+  unicode
+except:
+  unicode = str # stupid compat hack
 
 def pretty_date(date):
   if not date:
@@ -374,7 +384,7 @@ def games_table(games, first=None, excluding=None, columns=None,
 
 def full_games_table(games, **pars):
   if not pars.get('columns'):
-    if pars.has_key('win'):
+    if 'win' in pars:
       win = pars['win']
     else:
       win = True
@@ -384,7 +394,7 @@ def full_games_table(games, **pars):
 def ext_games_table(games, win=False, **pars):
   cols = win and EXT_WIN_COLUMNS or EXT_COLUMNS
   pars.setdefault('including', []).append((1, ('name', 'Player')))
-  if not pars.has_key('count'):
+  if 'count' not in pars:
     pars['count'] = False
   return games_table(games, columns=cols, **pars)
 
@@ -595,7 +605,7 @@ def create_image(filename, stats):
   rstats = list(stats)
   rstats.reverse()
 
-  days = [dict(x) for x in rstats if x.has_key('day')]
+  days = [dict(x) for x in rstats if 'day' in x]
   if (len(days) == 0):
     return
 
@@ -673,7 +683,7 @@ def date_stats(stats, file_suffix=""):
                   stats)
 
   def daterowcls(r):
-    return r.has_key('month') and 'date-month' or 'date-day'
+    return 'month' in r and 'date-month' or 'date-day'
   def daterowdata(r):
     return [r.get('day') or r.get('month'),
             r['games'], r['players'], r['wins'], r['winners']]

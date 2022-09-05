@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html, re
+   import scload, query, crawl_utils, scoring_html, re
    c = attributes['cursor']
 
    n = 100
@@ -21,10 +21,10 @@
 
       <div class="page_content">
         <h2>The ${n} Fastest Wins (turncount)</h2>
-        ${html.ext_games_table(fastest_wins, first='turn', count=True)}
+        ${scoring_html.ext_games_table(fastest_wins, first='turn', count=True)}
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

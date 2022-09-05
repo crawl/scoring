@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
    top_scores = query.find_games(c, 'top_games', sort_max='sc')
@@ -24,12 +24,12 @@
           <div>
             <h2>Top Scores</h2>
 
-            ${html.ext_games_table(top_scores, count=True)}
+            ${scoring_html.ext_games_table(top_scores, count=True)}
           </div>
         </div>
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

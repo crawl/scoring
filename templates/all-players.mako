@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
 
    c = attributes['cursor']
  %>
@@ -28,10 +28,10 @@
         <hr>
 
         <div class="content">
-          ${html.all_player_stats(query.all_player_stats(c))}
+          ${scoring_html.all_player_stats(query.all_player_stats(c))}
         </div>
       </div>
     </div>
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

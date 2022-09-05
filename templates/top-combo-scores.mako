@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
    top_combo_scores = query.top_combo_scores(c)
@@ -27,11 +27,11 @@
             The best scoring games for each character combo.
           </div>
 
-          ${html.top_combo_scores(top_combo_scores)}
+          ${scoring_html.top_combo_scores(top_combo_scores)}
         </div>
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

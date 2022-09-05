@@ -1,14 +1,14 @@
 <%
-   import scload, query, crawl_utils, html, re
+   import scload, query, crawl_utils, scoring_html, re
    c = attributes['cursor']
 
    gkills = query.gkills(c)
    gvictims = query.gvictims(c)
 
-   table = html.table_text([ 'Ghost', 'Kills', 'Victims' ],
+   table = scoring_html.table_text([ 'Ghost', 'Kills', 'Victims' ],
                            gkills)
 
-   vtable = html.table_text([ 'Victim', 'Deaths', 'Vengeful Spirits' ],
+   vtable = scoring_html.table_text([ 'Victim', 'Deaths', 'Vengeful Spirits' ],
                            gvictims)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
@@ -34,6 +34,6 @@
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

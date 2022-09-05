@@ -26,7 +26,7 @@ class MorgueBase (object):
   def resolve_morgue_base(self, url_base, game_dict, match=None):
     def replace_group(submatch):
       if not match:
-        raise Exception, (("%s includes regexp group match '%s', " +
+        raise Exception(("%s includes regexp group match '%s', " +
                            "but the pattern %s had no capture for '%s'") %
                           (url_base, submatch.group(),
                            self.pattern, submatch.group()))

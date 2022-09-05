@@ -15,3 +15,5 @@ data/
 *.diff
 points.out
 scoring-alpha
+scoresd.lock
+scoresd.log

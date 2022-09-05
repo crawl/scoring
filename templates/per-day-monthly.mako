@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
    stats = query.date_stats(c, True)
@@ -26,19 +26,19 @@
 
             <p>For all-time stats, see <a href="per-day.html">here</a>.</p>
 
-            % if html.MATPLOT:
+            % if scoring_html.MATPLOT:
             <p><img src="date-stats-monthly.png" title="Activity Graph"
                  alt="Server Activity Graph"></p>
             % endif
                  
             <div style="margin-top: 20px">            
-               ${html.date_stats(stats, "-monthly")}
+               ${scoring_html.date_stats(stats, "-monthly")}
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

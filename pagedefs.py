@@ -9,26 +9,33 @@ import scload
 import query
 import config
 import locale
-import html
+from scoring_html import force_locale
 
 from crawl_utils import ScoringException
 from logging import debug, info, warn, error
 
 # Handle input encoding of strings that are actually UTF-8.
 # Based on http://stackoverflow.com/a/25235213
-def handle_unicode(value):
+def handle_unicode_compat(value):
   if isinstance(value, basestring):
     return unicode(value.decode('utf-8', errors='replace'))
   return unicode(value)
 
 TEMPLATE_DIR = os.path.abspath('templates')
-MAKO_LOOKUP = mako.lookup.TemplateLookup(
-  directories = [ TEMPLATE_DIR ],
-  output_encoding = 'utf-8', encoding_errors = 'replace',
-  imports = [ "import pagedefs" ],
-  default_filters = [ "pagedefs.handle_unicode" ])
 
-force_locale = html.force_locale
+mako_params = {'directories': [ TEMPLATE_DIR ],
+  'encoding_errors': 'replace',
+  'imports': [ "import pagedefs" ],
+  }
+
+try:
+  unicode
+  mako_params['output_encoding'] = 'utf-8' # leave unset on py3, so that render produces a str
+  mako_params['default_filters'] = [ "pagedefs.handle_unicode_compat" ]
+except:
+  pass
+
+MAKO_LOOKUP = mako.lookup.TemplateLookup(**mako_params)
 
 def render(c, page, dest=None, pars=None):
   """Given a db context and a .mako template (without the .mako extension)
@@ -37,7 +44,7 @@ def render(c, page, dest=None, pars=None):
 
   force_locale()
 
-  if not pars or not pars.has_key('quiet'):
+  if not pars or 'quiet' not in pars:
     info("Rendering " + page)
   target = os.path.join(config.SCORE_FILE_DIR, "%s.html" % (dest or page))
   t = MAKO_LOOKUP.get_template(page + '.mako')
@@ -51,7 +58,7 @@ def render(c, page, dest=None, pars=None):
       f.write( t.render( attributes = pars ) )
     finally:
       f.close()
-  except ScoringException, e:
+  except ScoringException as e:
     error("Error generating page %s: %s" % (page, e))
 
 def render_pages(c):
@@ -155,7 +162,7 @@ def init_dirty():
     DIRTY_PAGES[p[0]] = { 'dirtiness': 0, 'threshold': threshold }
 
 def dirty_player(p, increment = PLAYER_DIRTY_THRESHOLD + 1):
-  if not DIRTY_PLAYERS.has_key(p):
+  if p not in DIRTY_PLAYERS:
     DIRTY_PLAYERS[p] = { 'dirtiness': 0, 'threshold': PLAYER_DIRTY_THRESHOLD }
   DIRTY_PLAYERS[p]['dirtiness'] += increment
   debug("player_DIRTY: %s (+%d) => %d" % (p, increment, DIRTY_PLAYERS[p]['dirtiness']))

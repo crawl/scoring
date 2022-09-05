@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html, re
+   import scload, query, crawl_utils, scoring_html, re
    c = attributes['cursor']
 
    killers = query.top_killers(c)
@@ -9,7 +9,7 @@
      if c[0].startswith('player ghost'):
        c[0] = r_ghost.sub('<a href="gkills.html">player ghost</a>', c[0])
 
-   table = html.table_text([ 'Killer', '%', 'Kills', 'Last Victim' ],
+   table = scoring_html.table_text([ 'Killer', '%', 'Kills', 'Last Victim' ],
                            killers, width='100')
 
 %>
@@ -35,6 +35,6 @@
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

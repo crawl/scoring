@@ -1,12 +1,12 @@
 <%
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
 
    c = attributes['cursor']
    player = attributes['player']
 
-   ostats = html.overall_player_stats(c, player)
+   ostats = scoring_html.overall_player_stats(c, player)
    
-   whereis = html.whereis(False, player)
+   whereis = scoring_html.whereis(False, player)
    wins = query.player_wins(c, player)
    streaks = query.player_streaks(c, player, 10)
    recent_games = query.player_recent_games(c, player)
@@ -53,51 +53,51 @@
           % if wins:
           <div class="game_table">
             <h3>Wins</h3>
-            ${html.player_wins(wins, count=True)}
+            ${scoring_html.player_wins(wins, count=True)}
           </div>
           % endif
 
           % if streaks:
           <div class="game_table">
             <h3>Streaks of Wins</h3>
-            ${html.player_streaks_table(streaks)}
+            ${scoring_html.player_streaks_table(streaks)}
           </div>
           % endif
 
           <div class="game_table">
             <h3>Recent Games</h3>
-            ${html.full_games_table(recent_games, count=False, win=False)}
+            ${scoring_html.full_games_table(recent_games, count=False, win=False)}
           </div>
 
           <hr>
 
           % if combo_highscores or species_highscores or class_highscores:
             <div>
-              ${html.player_scores_block(c, combo_highscores,
+              ${scoring_html.player_scores_block(c, combo_highscores,
                                          'Combo Highscores')}
-              ${html.player_scores_block(c, species_highscores,
+              ${scoring_html.player_scores_block(c, species_highscores,
                                          'Species Highscores')}
-              ${html.player_scores_block(c, class_highscores,
+              ${scoring_html.player_scores_block(c, class_highscores,
                                          'Class Highscores')}
             </div>
             <hr>
           % endif
 
           <h3>Winning Characters</h3>
-          ${html.player_stats_matrix(stats, 'wins')}
+          ${scoring_html.player_stats_matrix(stats, 'wins')}
           <hr>
 
           <h3>Games Played</h3>
-          ${html.player_stats_matrix(stats, 'games')}
+          ${scoring_html.player_stats_matrix(stats, 'games')}
           <hr>
 
           <h3>Best Character Levels</h3>
-          ${html.player_stats_matrix(stats, 'xl')}
+          ${scoring_html.player_stats_matrix(stats, 'xl')}
           <hr>
         </div>
       </div> <!-- content -->
     </div> <!-- page -->
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

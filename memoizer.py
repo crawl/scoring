@@ -12,7 +12,7 @@ class Memoizer (object):
     if len(self.cache) > Memoizer.FLUSH_THRESHOLD:
       self.flush()
     key = self.extractor(args)
-    if not self.cache.has_key(key):
+    if not key in self.cache:
       value = self.fn(*args)
       self.cache[key] = value
       return value
@@ -27,8 +27,8 @@ class Memoizer (object):
     except KeyError:
       pass
 
-  def has_key(self, *args):
-    return self.cache.has_key(args)
+  def __contains__(self, *args):
+    return args in self.cache
 
   def set_key(self, value, *args):
     self.cache[args] = value

@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
    top_scores = query.best_players_by_total_score(c)
@@ -27,12 +27,12 @@
             <p>This page may not show accounts that have been inactive for
             more than a year.</p>
 
-            ${html.best_players_by_total_score(top_scores)}
+            ${scoring_html.best_players_by_total_score(top_scores)}
           </div>
         </div>
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

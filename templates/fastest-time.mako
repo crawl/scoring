@@ -1,9 +1,9 @@
 <%
-   import scload, query, html
+   import scload, query, scoring_html
    c = attributes['cursor']
 
    game_text = \
-      html.ext_games_table( query.get_fastest_time_player_games(c),
+      scoring_html.ext_games_table( query.get_fastest_time_player_games(c),
                             first = 'dur', count=True, win=True )
 %>
 

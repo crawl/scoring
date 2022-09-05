@@ -15,7 +15,7 @@ class Sources (object):
 
   def cfg(self, key=None):
     if not self._cfg:
-      self._cfg = yaml.load(open(self.definition_file).read())
+      self._cfg = yaml.full_load(open(self.definition_file).read())
     if key:
       return self._cfg[key]
     return self._cfg
@@ -72,7 +72,7 @@ class Source (object):
     return self._cfg[key]
 
   def has_cfg(self, key):
-    return self._cfg.has_key(key)
+    return key in self._cfg
 
   def get_cfg(self, key):
     return self._cfg.get(key)

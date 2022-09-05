@@ -67,7 +67,7 @@ class GamePredicate (object):
 
   def __init__(self, config):
     self.matchers = []
-    for function, arguments in config.iteritems():
+    for function, arguments in config.items():
       self.matchers.append(
         GamePredicate.function_named(function)(*arguments))
 

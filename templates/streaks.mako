@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html, re
+   import scload, query, crawl_utils, scoring_html, re
    c = attributes['cursor']
 
    streaks = query.all_streaks(c)
@@ -20,10 +20,10 @@
 
       <div class="page_content">
         <h2>Longest Winning Streaks</h2>
-        ${html.all_streaks_table(streaks)}
+        ${scoring_html.all_streaks_table(streaks)}
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

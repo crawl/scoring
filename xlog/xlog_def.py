@@ -53,7 +53,7 @@ class XlogDef (object):
     command = "wget --no-check-certificate --timeout=60 -q -c %s -O %s" % (self.source_path, self.local_path)
     res = os.system(command)
     if res != 0:
-      raise IOError, "Failed to fetch %s with %s" % (self.source_path, command)
+      raise IOError("Failed to fetch %s with %s" % (self.source_path, command))
 
   def _resolve_path(self, path, local_base, base_url):
     return xlog_resolve_source_path(path, local_base, base_url)

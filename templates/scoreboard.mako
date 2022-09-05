@@ -1,6 +1,6 @@
 <%
 
-   import scload, query, crawl_utils, html
+   import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
    fastest_turns = query.find_games(c, killertype='winning',
@@ -54,7 +54,7 @@
         
         <div>
           <h2>Fastest Wins (real time)</h2>
-          ${html.ext_games_table(fastest_time)}
+          ${scoring_html.ext_games_table(fastest_time)}
         </div>
 
         <hr>
@@ -62,13 +62,13 @@
         <div>
           <h2>Top Scores</h1>
 
-          ${html.ext_games_table(top_scores)}
+          ${scoring_html.ext_games_table(top_scores)}
         </div>
 
         </div>
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

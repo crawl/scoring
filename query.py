@@ -305,7 +305,7 @@ def top_thing_scorers(c, table, thing):
 
   def inc_count(g):
     name = g['name'].lower()
-    if not score_counts.has_key(name):
+    if name not in score_counts:
       score_counts[name] = [ ]
     l = score_counts[name]
     l.append(linked_text(g, morgue_link, g[thing]))
@@ -313,8 +313,8 @@ def top_thing_scorers(c, table, thing):
   for g in games:
     inc_count(g)
 
-  best_players = score_counts.items()
-  best_players.sort(lambda a, b: len(b[1]) - len(a[1]))
+  best_players = list(score_counts.items())
+  best_players.sort(key=lambda a: len(a[1]))
   return [[len(x[1]), canonicalize_player_name(c, x[0]), ", ".join(x[1])]
                                                         for x in best_players]
 
@@ -346,7 +346,7 @@ def extract_streaks(c, query, streak_filter=None, max_streaks=None):
     if streak_filter and not streak_filter(g):
       return
     sid = g[0]
-    if not streak_id_map.has_key(sid):
+    if sid not in streak_id_map:
       breaker = ''
       # If the streak is not active, grab the breaker:
       if not g[5]:
@@ -367,7 +367,7 @@ def extract_streaks(c, query, streak_filter=None, max_streaks=None):
   for g in sgames:
     register_game(g)
 
-  streaks = streak_id_map.values()
+  streaks = list(streak_id_map.values())
 
   def streak_comparator(a, b):
     bn = b['ngames']
@@ -381,7 +381,11 @@ def extract_streaks(c, query, streak_filter=None, max_streaks=None):
     else:
       return int(bn - an)
 
-  streaks.sort(streak_comparator)
+  try:
+    from functools import cmp_to_key
+    streaks.sort(key=cmp_to_key(streak_comparator)) # py3, would this be ok in py2?
+  except:
+    streaks.sort(streak_comparator)
   return max_streaks and streaks[:max_streaks] or streaks
 
 def all_streaks(c, max_per_player=10, max_streaks=None, active_streaks=False):
@@ -401,7 +405,7 @@ def all_streaks(c, max_per_player=10, max_streaks=None, active_streaks=False):
   pscounts = { }
   def player_streak_filter(g):
     player = g[1]
-    if not pscounts.has_key(player):
+    if player not in pscounts:
       pscounts[player] = set()
     s = pscounts[player]
     s.add(g[0])
@@ -469,10 +473,10 @@ def kill_list(rows):
   ghost_map = { }
 
   def record_kill(ghost, victim):
-    if not ghost_map.has_key(ghost):
+    if ghost not in ghost_map:
       ghost_map[ghost] = { }
     vmap = ghost_map[ghost]
-    if not vmap.has_key(victim):
+    if victim not in vmap:
       vmap[victim] = 1
     else:
       vmap[victim] += 1
@@ -488,12 +492,12 @@ def kill_list(rows):
     return "%s (%d)" % (who, count)
 
   for g in ghost_items:
-    g[1] = g[1].items()
-    g[1].sort(lambda a, b: b[1] - a[1])
+    g[1] = list(g[1].items())
+    g[1].sort(key=lambda a: a[1])
     g.insert(1, sum([x[1] for x in g[1]]))
     g[2] = ", ".join([ntimes(x[1], x[0]) for x in g[2]])
 
-  ghost_items.sort(lambda a, b: b[1] - a[1])
+  ghost_items.sort(key=lambda a: a[1])
   return ghost_items
 
 def gkills(c):
@@ -596,7 +600,7 @@ def fixup_winners(winners):
   return ", ".join([counted_thing(plink(x[0]), x[1]) for x in winners])
 
 def fixup_month(c, month):
-  mwin = month['winners'].items()
+  mwin = list(month['winners'].items())
   month['players'] = query_first(c, '''SELECT COUNT(DISTINCT player)
                                         FROM date_players
                                        WHERE which_month = %s''',
@@ -606,7 +610,12 @@ def fixup_month(c, month):
       return int(b[1] - a[1])
     else:
       return (a[1] < b[1] and -1) or (a[1] > b[1] and 1) or 0
-  mwin.sort(sort_winners)
+
+  try:
+    from functools import cmp_to_key
+    mwin.sort(key=cmp_to_key(sort_winners)) # py3, would this be ok in py2?
+  except:
+    mwin.sort(sort_winners)
   month['winners'] = fixup_winners(mwin)
   return month
 
@@ -651,7 +660,7 @@ def date_stats(c, restricted=False):
     m['wins'] += stats['wins']
     mwinners = m['winners']
     for wstat in stats['winners']:
-      if not mwinners.has_key(wstat[0]):
+      if wstat[0] not in mwinners:
         mwinners[wstat[0]] = 0
       mwinners[wstat[0]] += wstat[1]
 

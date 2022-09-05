@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html, re
+   import scload, query, crawl_utils, scoring_html, re
    c = attributes['cursor']
 
    winners = query.winner_stats(c)
@@ -20,10 +20,10 @@
 
       <div class="page_content">
         <h2>Winner Statistics</h2>
-        ${html.winner_stats(winners)}
+        ${scoring_html.winner_stats(winners)}
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>

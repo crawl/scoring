@@ -1,5 +1,5 @@
 <%
-   import scload, query, crawl_utils, html, re
+   import scload, query, crawl_utils, scoring_html, re
    c = attributes['cursor']
 
    recent_wins = query.find_games(c, 'wins', sort_max='id', limit=15)
@@ -22,13 +22,13 @@
 
       <div class="page_content">
         <h2>Recent Wins</h2>
-        ${html.ext_games_table(recent_wins, win=True)}
+        ${scoring_html.ext_games_table(recent_wins, win=True)}
 
         <h2>Recent Games</h2>
-        ${html.ext_games_table(recent_games)}
+        ${scoring_html.ext_games_table(recent_games)}
       </div>
     </div>
 
-    ${html.update_time()}
+    ${scoring_html.update_time()}
   </body>
 </html>
