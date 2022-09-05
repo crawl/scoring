@@ -1,7 +1,8 @@
+# comment out these first three params to run locally in-repo
 scoring-base-url: 'http://crawl.akrasiac.org/scoring' # base URL for scoring pages: use 'file://...' for local testing
-scoring-local: 'scoring' # location for generated files; if relative, is relative to the location of scoresd.py
 local-base: '/home/rax' # where logs and lockfiles go
 rawdata-base: '/var/www/crawl/rawdata' # location for any whereis data
+scoring-local: 'scoring' # location for generated files; if relative, is relative to the location of scoresd.py
 use-milestones: False
 sources:
   - name: cao
@@ -374,7 +375,7 @@ sources:
   - name: lld
     canonical_name: LLD
     server_url: http://lazy-life.ddo.jp:8080/
-    base: http://lazy-life.ddo.jp:8080
+    base: http://lazy-life.ddo.jp/mirror
     logfiles:
       - meta/trunk/logfile
       - meta/0.29/logfile
@@ -500,6 +501,7 @@ sources:
 
   - name: csn
     canonical_name: CSN
+    dormant: True
     base: http://crawlus.somatika.net
     local: /home/rax/scoring/
     logfiles:
