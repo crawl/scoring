@@ -95,21 +95,34 @@ def canonicalize_player_name(c, player):
   return None
 
 def find_games(c, table, sort_min=None, sort_max=None,
-               limit=None, **dictionary):
+               limit=None, vtriage=False, **dictionary):
   """Finds all games matching the supplied criteria, all criteria ANDed
   together."""
 
   if sort_min is None and sort_max is None:
     sort_min = 'end_time'
 
-  query = Query('SELECT ' + scload.LOG_DB_SCOLUMNS + (' FROM %s' % table))
+  # make the table explicit in column names for the sake of the possible
+  # join below
+  if vtriage:
+    cols = ",".join(["%s.%s" % (table, c) for c in scload.LOG_DB_COLUMNS])
+  else:
+    cols = scload.LOG_DB_SCOLUMNS
+
+  query = Query('SELECT ' + cols + (' FROM %s' % table))
   where = []
   values = []
+
 
   def append_where(where, clause, *newvalues):
     where.append(clause)
     for v in newvalues:
       values.append(v)
+
+  if vtriage:
+    # make the version_triage columns available for WHERE clauses
+    query.append(' INNER JOIN version_triage ON %s.v=version_triage.v' % table)
+    # append_where(where, "vclean='%s'" % vclean)
 
   for key, value in dictionary.items():
     if key == 'before':
@@ -528,11 +541,17 @@ def winner_stats(c):
                     human_number(calc_avg_int(r[5], r[2]))])
   return results
 
-def get_fastest_time_player_games(c, limit=5):
-  return find_games(c, 'wins', sort_min='dur', limit=limit, exclude_name='botnames')
+def get_fastest_time_player_games(c, limit=5, current=False):
+  if current:
+    return find_games(c, 'wins', sort_min='dur', limit=limit, exclude_name='botnames', vtriage=True, vclean='current')
+  else:
+    return find_games(c, 'wins', sort_min='dur', limit=limit, exclude_name='botnames')
 
-def get_fastest_turn_player_games(c, limit=5):
-  return find_games(c, 'wins', sort_min='turn', limit=limit)
+def get_fastest_turn_player_games(c, limit=5, current=False):
+  if current:
+    return find_games(c, 'wins', sort_min='turn', limit=limit, vtriage=True, vclean='current')
+  else:
+    return find_games(c, 'wins', sort_min='turn', limit=limit)
 
 def recent_wins(c, limit=5):
   return find_games(c, 'wins', sort_max='end_time', limit=limit)

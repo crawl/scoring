@@ -437,7 +437,7 @@ def connect_db(password=None, host=None):
     "host": host,
     "user": 'scoring',
     "db": SCORING_DB,
-    # "unix_socket": "/opt/local/var/run/mysql8/mysqld.sock", # macports mysql
+    "unix_socket": "/opt/local/var/run/mysql8/mysqld.sock", # macports mysql
   }
   if password is not None:
     opts['password'] = password
@@ -1168,9 +1168,55 @@ def bootstrap_known_raceclasses(c):
                  SELECT DISTINCT SUBSTR(charabbr, 1, 2)
                  FROM player_char_stats""")
 
+def update_version_info(c):
+  # table to do quick/easy version selection. This effectively caches a bunch
+  # of coarse version information and how it maps to the `v` field, for
+  # easy joins.
+
+  # in principle, this truncate can lead to lost version info from missing
+  # non-wins in player_recent games. However, this shouldn't matter, as such
+  # games won't show up anywhere.
+  query_do(c, "TRUNCATE TABLE version_triage")
+
+  # first, update the `major` version column. The substring work here is a bit
+  # heuristic, but works for every version tag used through 2022.
+  query_do(c, """
+    INSERT IGNORE INTO version_triage
+        SELECT v,
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(SUBSTRING(v, 3), '.', 1), '-', 1) AS unsigned) as major,
+            (INSTR(v, '-a0') = 0) AS stable,
+            NULL AS vclean,
+            1 AS recent
+        FROM (SELECT v FROM player_recent_games UNION SELECT v FROM wins) AS allvers
+    """)
+  # not currently playable versions, data may be a bit scattered
+  query_do(c, "UPDATE version_triage SET vclean='ancient' WHERE major<11;")
+  # find the current stable version. Somewhat involved because the updated
+  # table can't be used directly in the WHERE clause. (??)
+  query_do(c, """
+    UPDATE IGNORE version_triage SET vclean='current'
+    WHERE major=(
+        SELECT major from (
+            SELECT max(major) AS major
+            FROM version_triage
+            WHERE stable=1) AS max_major)
+        AND stable=1
+    """)
+  # recent is within 2 versions (including trunk); matches sequell usage
+  query_do(c, """
+    UPDATE version_triage SET recent=(major >= (
+        SELECT major from (SELECT DISTINCT major from version_triage where vclean='current') AS m) - 2)
+    """)
+  # finally, mark off trunk (where we don't break down by version) and stable by version
+  # TODO: would it better to also have `trunk-current` separately?
+  query_do(c, "UPDATE IGNORE version_triage SET vclean='trunk' WHERE VCLEAN IS NULL AND stable=0")
+  query_do(c, "UPDATE IGNORE version_triage SET vclean=major WHERE VCLEAN IS NULL AND stable=1")
+  c.db.commit()
+
 def full_load(c, master):
   bootstrap_known_raceclasses(c)
   master.tail_all(c)
+  update_version_info(c)
 
 def init_listeners(db):
   import stats

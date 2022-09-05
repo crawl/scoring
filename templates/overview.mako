@@ -2,8 +2,16 @@
    import query, scload, scoring_html, config
    c = attributes['cursor']
 
-   top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=5)
+   top_scores = query.find_games(c, 'top_games', sort_max='sc', limit=10)
    ts_wins = all([g.get('ktyp') == 'winning' for g in top_scores])
+
+   cur_top_scores = query.find_games(c, 'top_games', sort_max='sc', vtriage=True, vclean='current', limit=10)
+   cur_ts_wins = all([g.get('ktyp') == 'winning' for g in cur_top_scores])
+
+   cur_time_wins = query.get_fastest_time_player_games(c, current=True)
+   cur_tc_wins = query.get_fastest_turn_player_games(c, current=True)
+   time_wins = query.get_fastest_time_player_games(c)
+   tc_wins = query.get_fastest_turn_player_games(c)
 
    streaks = query.all_streaks(c)
    active_streaks = query.all_streaks(c, active_streaks=True)
@@ -35,19 +43,36 @@
           </div>
 
           <hr>
+
+          <div class="row">
+            <div>
+              <h3>Top Scores (current stable version)</h3>
+              ${scoring_html.ext_games_table(cur_top_scores, win=cur_ts_wins, count=True)}
+            </div>
+            <div>
+              <h3>Fastest Wins by Turn Count (current stable version)</h3>
+              ${scoring_html.ext_games_table(cur_tc_wins, first='turn', win=True, count=True)}
+            </div>
+            <div>
+              <h3>Fastest Wins by Time (current stable version)</h3>
+              ${scoring_html.ext_games_table(cur_time_wins, first='dur', win=True, count=True)}
+            </div>
+          </div>
+
+          <hr>
           
           <div class="row">
             <div>
-              <h3>Top Scores</h3>
+              <h3>Top Scores (all time)</h3>
               ${scoring_html.ext_games_table(top_scores, win=ts_wins, count=True)}
             </div>
             <div>
-              <h3>Fastest Wins (Turn Count)</h3>
-              <%include file="fastest-turn.mako"/>
+              <h3>Fastest Wins by Turn Count (all time)</h3>
+              ${scoring_html.ext_games_table(tc_wins, first='turn', win=True, count=True)}
             </div>
             <div>
-              <h3>Fastest Wins (Real Time)</h3>
-              <%include file="fastest-time.mako"/>
+              <h3>Fastest Wins by Time (all time)</h3>
+              ${scoring_html.ext_games_table(time_wins, first='dur', win=True, count=True)}
             </div>
           </div>
 

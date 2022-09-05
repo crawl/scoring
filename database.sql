@@ -27,6 +27,7 @@ DROP TABLE IF EXISTS date_players;
 DROP TABLE IF EXISTS known_races;
 DROP TABLE IF EXISTS known_classes;
 DROP TABLE IF EXISTS botnames;
+DROP TABLE IF EXISTS version_triage;
 
 -- Keep track of how far we've processed the various logfiles/milestones.
 CREATE TABLE logfile_offsets (
@@ -310,3 +311,7 @@ CREATE TABLE known_races (
 CREATE TABLE known_classes (
   cls CHAR(2) UNIQUE PRIMARY KEY
 );
+
+CREATE TABLE version_triage(v VARCHAR(10) UNIQUE NOT NULL, major INT, stable BOOLEAN DEFAULT 0, vclean VARCHAR(10), recent BOOLEAN DEFAULT 0);
+CREATE INDEX prg_v ON player_recent_games (v);
+CREATE INDEX wins_v ON wins (v);

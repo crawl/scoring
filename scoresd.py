@@ -23,6 +23,7 @@ def signal_handler(signum, frame):
 # update the db.
 def interval_work(cursor, interval, master):
   master.tail_all(cursor)
+  scload.update_version_info(cursor)
 
 def check_daemon_stop():
   if crawl_utils.scoresd_stop_requested():
