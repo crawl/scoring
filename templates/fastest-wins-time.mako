@@ -17,7 +17,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <title>The ${n} Fastest Wins (clock time)</title>
+    <title>Fastest wins by version (clock time)</title>
     <link rel="stylesheet" type="text/css" href="score.css">
   </head>
   <script src="scoring.js"></script>

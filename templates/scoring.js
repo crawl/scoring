@@ -50,5 +50,7 @@ function init_version_tabs(default_tab)
     // for the buttons.
 
     load_from_hash(default_tab);
+    // hacky: chrome workaround
+    setTimeout(function() { window.scrollTo(0,0); }, 1);
     addEventListener('hashchange', e => { load_from_hash(default_tab); });
 }
