@@ -97,8 +97,17 @@ _short_vnames = {"all": "All versions",
               "trunk": "Trunk",
               "ancient": "Ancient"}
 
+def isnumeric(s): #sigh
+  try:
+    return s.isnumeric()
+  except:
+    for c in s:
+      if not c.isdigit():
+        return False
+    return True
+
 def pretty_vclean(v, verbose=True):
-  if v.isnumeric():
+  if isnumeric(v):
     return verbose and ("Stable 0." + v) or "0." + v
 
   cleanup = verbose and _long_vnames or _short_vnames
@@ -118,7 +127,7 @@ def get_clean_versions(c):
   fixed = ['current', 'trunk']
 
   full = [v for v in fixed if v in raw]
-  numeric = [int(v) for v in raw if v.isnumeric()]
+  numeric = [int(v) for v in raw if isnumeric(v)]
   numeric.sort(reverse=True)
   numeric = [str(v) for v in numeric] # back to strings...
   full.extend(numeric)
