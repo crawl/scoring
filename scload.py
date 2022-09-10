@@ -33,6 +33,7 @@ oparser.add_option('-l', '--force-loop', action='store_true', dest='force_loop',
 oparser.set_defaults(run_once=False, force_loop=False)
 oparser.add_option('-p', '--rebuild-players', action='store_true', dest='rebuild_players', help="Force a rebuild of all player pages. Implies --run-once.")
 oparser.set_defaults(rebuild_players=False)
+oparser.add_option('-R', '--page', action='store', type='string', dest='rebuild_page', help="Force a rebuild of a specific template")
 oparser.add_option('-P', '--rebuild-player', action='store', type='string', dest='rebuild_player', metavar='PLAYERS', help="Rebuild particular player pages; accepts a comma-delimited list. Implies --run-once.")
 oparser.add_option('-s', '--stop', action='store_true', dest='stop_daemon', help='Request daemon stop.')
 oparser.add_option('--wait', action='store_true', dest='stop_daemon_wait', help='Only with --stop; wait for the daemon to stop as well.')
@@ -40,7 +41,7 @@ oparser.add_option('--run-bans', action='store_true', dest='run_bans', help='Run
 oparser.add_option('--mysql-pass', help='Specify a password for MySQL connection. By default no password is used.')
 oparser.add_option('--mysql-host', help='Specify a hostname for MySQL connection. Default: localhost.')
 OPT, ARGS = oparser.parse_args()
-if OPT.rebuild_players or OPT.rebuild_player is not None:
+if OPT.rebuild_players or OPT.rebuild_player is not None or OPT.rebuild_page is not None:
   OPT.run_once = True
 
 TIME_QUERIES = False
@@ -1212,6 +1213,10 @@ def update_version_info(c):
   query_do(c, "UPDATE IGNORE version_triage SET vclean='trunk' WHERE VCLEAN IS NULL AND stable=0")
   query_do(c, "UPDATE IGNORE version_triage SET vclean=major WHERE VCLEAN IS NULL AND stable=1")
   c.db.commit()
+
+  # must be done after the update
+  import query
+  query.flush_version_info(c)
 
 def full_load(c, master):
   bootstrap_known_raceclasses(c)

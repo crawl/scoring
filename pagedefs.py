@@ -9,6 +9,7 @@ import scload
 import query
 import config
 import locale
+import shutil
 from scoring_html import force_locale
 
 from crawl_utils import ScoringException
@@ -195,11 +196,26 @@ def initialize_pages(c):
   global first_run
   init_dirty()
   first_run = False
+  do_full_run = True
+  maybe_copy_css(True)
   if scload.OPT.rebuild_player:
     player_args = scload.OPT.rebuild_player.split(",")
     for p in player_args:
       dirty_player(p)
-  else:
+    do_full_run = False
+
+  if scload.OPT.rebuild_page:
+    page_args = scload.OPT.rebuild_page.split(",")
+    for p in page_args:
+      if p.endswith(".mako"):
+        p = p[0:-5]
+      if p == 'index':
+        render(c, 'index')
+      else:
+        dirty_page(p)
+    do_full_run = False
+
+  if do_full_run:
     render(c, 'index')
     fully_dirty() # set all pages dirty, and any players that have been touched
   if scload.OPT.rebuild_players or not player_pages_exist():
@@ -233,11 +249,12 @@ def incremental_build(c):
   apply_to_dirty(c, DIRTY_PAGES, render)
   apply_to_dirty(c, DIRTY_PLAYERS, player_page, wipe=True)
 
-def maybe_copy_css():
-  """Copy score.css to the destination directory if required."""
-  dest = os.path.join(config.SCORE_FILE_DIR, "score.css")
-  if os.path.isfile(dest):
-    return
-  info("Rendering score.css")
-  source = os.path.join(TEMPLATE_DIR, 'score.css')
-  shutil.copyfile(source, dest)
+def maybe_copy_css(force=False):
+  """Copy score.css, scoring.js to the destination directory if required."""
+  # TODO: could check mtime? or force on initialize?
+  for f in ["score.css", "scoring.js"]:
+    dest = os.path.join(config.SCORE_FILE_DIR, f)
+    if force or not os.path.isfile(dest):
+      info("Installing '%s'", f )
+      source = os.path.join(TEMPLATE_DIR, f)
+      shutil.copyfile(source, dest)

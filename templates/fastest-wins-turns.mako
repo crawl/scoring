@@ -1,9 +1,14 @@
 <%
-   import scload, query, crawl_utils, scoring_html, re
-   c = attributes['cursor']
+  import scload, query, crawl_utils, scoring_html, re
+  c = attributes['cursor']
 
-   n = 100
-   fastest_wins = query.find_games(c, 'wins', sort_min='turn', limit=n)
+  n = 100
+  all_fastest_wins = query.find_games(c, 'wins', sort_min='turn', limit=n)
+  by_version = query.find_games_by_vclean(c, 'wins', sort_min='turn', limit=n)
+  tab_order = query.get_clean_versions(c)
+  tab_order.insert(2, "all") # should be after trunk
+  # TODO: would showing recent here be interesting?
+  by_version["all"] = all_fastest_wins
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -11,17 +16,29 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <title>The ${n} Fastest Wins (turncount)</title>
+    <title>Fastest wins by turn count</title>
     <link rel="stylesheet" type="text/css" href="score.css">
   </head>
+  <script src="scoring.js"></script>
 
-  <body class="page_back">
+  <body class="page_back" onload="init_version_tabs('current')">
     <div class="page">
       <%include file="toplink.mako"/>
 
+      <div class="tab" id="version_buttons">
+      % for v in tab_order:
+        <a class="tablinks" id='button_${v}' href="#${v}" onclick="click_handler(event, '${v}')">${query.pretty_vclean(v, False)}</a>
+      % endfor
+      </div>
+
       <div class="page_content">
-        <h2>The ${n} Fastest Wins (turncount)</h2>
-        ${scoring_html.ext_games_table(fastest_wins, first='turn', count=True)}
+        <h2>Fastest wins by version (turn count)</h2>
+      % for v in tab_order:
+        <div class="game_table" id="${v}">
+          <h3>${query.pretty_vclean(v)}</h3>
+          ${scoring_html.ext_games_table(by_version[v], first='turn', count=True)}
+        </div>
+      % endfor
       </div>
     </div>
 

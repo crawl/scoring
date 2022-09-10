@@ -441,3 +441,40 @@ table.stat-table div.xl {
   font-size: 10px;
   color: #aaa;
 }
+
+/* Style tabs for multi-version displays */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  margin-top: 10px;
+}
+
+.tab a {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 10px 8px;
+  transition: 0.3s;
+  text-decoration: none;
+  color: #300;
+}
+
+.tab a:hover {
+  background-color: #ddd;
+}
+
+.tab a.active {
+  background-color: #ccc;
+}
+
+.tab a:visited{
+  color: #300;
+}
+
+.game_table {
+  border-top: none;
+  overflow-x: auto;
+}

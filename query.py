@@ -5,6 +5,8 @@
 import logging
 from logging import debug, info, warn, error
 
+import itertools
+
 import scload
 from scload import Query, query_do, query_first, query_row, query_rows
 from scload import query_first_col, query_first_def, game_is_win
@@ -86,6 +88,62 @@ def row_to_xdict(row):
 def xdict_rows(rows):
   return [row_to_xdict(x) for x in rows]
 
+_long_vnames = {"all": "All versions (all time)", # here for convenience, not actually used in db...
+              "current": "Current stable",
+              "trunk": "Trunk (all time)",
+              "ancient": "Ancient"}
+_short_vnames = {"all": "All versions",
+              "current": "Current",
+              "trunk": "Trunk",
+              "ancient": "Ancient"}
+
+def pretty_vclean(v, verbose=True):
+  if v.isnumeric():
+    return verbose and ("Stable 0." + v) or "0." + v
+
+  cleanup = verbose and _long_vnames or _short_vnames
+
+  if v in cleanup:
+    return cleanup[v]
+  return v
+
+@DBMemoizer
+def get_clean_versions(c):
+  """Return canonical clean version names as used by the version_triage table"""
+  # n.b. major versions are returned by this query as strings
+  raw = query_first_col(c, 'select distinct vclean from version_triage')
+
+  # impose a canonical ordering
+  full = []
+  fixed = ['current', 'trunk']
+
+  full = [v for v in fixed if v in raw]
+  numeric = [int(v) for v in raw if v.isnumeric()]
+  numeric.sort(reverse=True)
+  numeric = [str(v) for v in numeric] # back to strings...
+  full.extend(numeric)
+  if 'ancient' in raw:
+    full.append('ancient')
+  return full
+
+@DBMemoizer
+def get_major_versions(c):
+  # n.b. these are numbers, not strings
+  return query_first_col(c, 'select distinct major from version_triage')
+
+@DBMemoizer
+def get_current_version(c):
+  """Return a numeric representation of the current stable version"""
+  return query_first(c, "select major from version_triage where vclean='current'")
+
+def flush_version_info(c):
+  get_clean_versions.flush()
+  get_major_versions.flush()
+  get_current_version.flush()
+  cv = get_current_version(c)
+  _long_vnames["current"] = "Current stable (0.%d)" % cv
+  _short_vnames["current"] = "Current (0.%d)" % cv
+
 @DBMemoizer
 def canonicalize_player_name(c, player):
   row = query_row(c, '''SELECT name FROM players WHERE name = %s''',
@@ -95,19 +153,25 @@ def canonicalize_player_name(c, player):
   return None
 
 def find_games(c, table, sort_min=None, sort_max=None,
-               limit=None, vtriage=False, **dictionary):
+               limit=None, vtriage=False, dict_by=None, **dictionary):
   """Finds all games matching the supplied criteria, all criteria ANDed
   together."""
 
   if sort_min is None and sort_max is None:
     sort_min = 'end_time'
 
+  cols = []
+  # warning: dict_by queries can be kind of slow unless there's a relevant
+  # index, because they add in an ORDER_BY clause.
+  if dict_by:
+    cols.append(dict_by) # ensure this is first, if it is used
+
   # make the table explicit in column names for the sake of the possible
   # join below
-  if vtriage:
-    cols = ",".join(["%s.%s" % (table, col) for col in scload.LOG_DB_COLUMNS])
-  else:
-    cols = scload.LOG_DB_SCOLUMNS
+  cols.extend(["%s.%s" % (table, col) for col in scload.LOG_DB_COLUMNS])
+  # XX if vtriage, maybe include some of the version columns as well?
+
+  cols = ",".join(cols)
 
   query = Query('SELECT ' + cols + (' FROM %s' % table))
   where = []
@@ -131,22 +195,43 @@ def find_games(c, table, sort_min=None, sort_max=None,
     else:
       append_where(where, key + " = %s", value)
 
-  order_by = ''
+  order_by = []
+  if dict_by:
+    order_by.append(dict_by)
+
   if sort_min:
-    order_by += ' ORDER BY ' + sort_min
+    order_by.append(sort_min)
   elif sort_max:
-    order_by += ' ORDER BY ' + sort_max + ' DESC'
+    order_by.append(sort_max + ' DESC')
 
   if where:
     query.append(' WHERE ' + ' AND '.join(where), *values)
 
-  if order_by:
-    query.append(order_by)
+  if len(order_by):
+    query.append(' ORDER BY ' + ",".join(order_by))
 
   if limit:
     query.append(' LIMIT %d' % limit)
 
-  return [ row_to_xdict(x) for x in query.rows(c) ]
+  #print(query.query)
+
+  if dict_by:
+    converted = [(x[0], row_to_xdict(x)) for x in query.rows(c)]
+    return {k:list(v) for k,v in itertools.groupby(converted, lambda x: x[0])}
+  else:
+    return [ row_to_xdict(x) for x in  query.rows(c) ]
+
+def find_games_by_vclean(c, table, vcleans=None, sort_min=None, sort_max=None,
+               limit=None, **dictionary):
+  if vcleans is None:
+    vcleans = get_clean_versions(c)
+  result = {}
+  # in absence of an index, it's not really slower to do this with multiple
+  # queries, and this way, the `limit` param applies per version
+  for v in vcleans:
+    result[v] = find_games(c, table, sort_min=sort_min, sort_max=sort_max,
+                            limit=limit, vtriage=True, vclean=v, **dictionary)
+  return result
 
 def calc_perc(num, den):
   if den <= 0:
