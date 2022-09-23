@@ -6,7 +6,8 @@
   all_fastest_wins = query.find_games(c, 'wins', sort_min='turn', limit=n)
   by_version = query.find_games_by_vclean(c, 'wins', sort_min='turn', limit=n)
   tab_order = query.get_clean_versions(c)
-  tab_order.insert(2, "all") # should be after trunk
+  # insert after trunk
+  tab_order = tab_order[:2] + ["all"] + tab_order[2:]
   # TODO: would showing recent here be interesting?
   by_version["all"] = all_fastest_wins
 %>

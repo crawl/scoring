@@ -8,7 +8,8 @@
     by_version = query.find_games_by_vclean(c, 'wins', sort_min='dur', limit=n,
                                                     exclude_name='botnames')
     tab_order = query.get_clean_versions(c)
-    tab_order.insert(2, "all") # should be after trunk
+    # insert after trunk
+    tab_order = tab_order[:2] + ["all"] + tab_order[2:]
     by_version["all"] = all_fastest_wins
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
