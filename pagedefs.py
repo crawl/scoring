@@ -39,12 +39,19 @@ except:
 
 MAKO_LOOKUP = mako.lookup.TemplateLookup(**mako_params)
 
+def timepoint():
+  # sigh: remove this once fully on py3
+  try:
+    return time.monotonic()
+  except:
+    return time.time()
+
 def render(c, page, dest=None, pars=None):
   """Given a db context and a .mako template (without the .mako extension)
   renders the template and writes it back to <page>.html in the tourney
   scoring directory. Setting dest overrides the destination filename."""
 
-  t0 = time.monotonic()
+  t0 = timepoint()
   force_locale()
 
   if not pars or 'quiet' not in pars:
@@ -61,7 +68,7 @@ def render(c, page, dest=None, pars=None):
       f.write( t.render( attributes = pars ) )
     finally:
       f.close()
-      t1 = time.monotonic()
+      t1 = timepoint()
       if t1 - t0 > 1:
         warn("Slow render for %s: %gs" % (page, (t1 - t0)))
   except ScoringException as e:
