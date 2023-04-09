@@ -436,6 +436,7 @@ class Wins(BulkDBCache):
     insert_games(c, self.games, 'wins')
     self.clear()
 
+# this is kind of insane, can it be simplified?
 class PlayerBestGames(BulkDBCache):
   def __init__(self):
     self.clear()
@@ -452,7 +453,7 @@ class PlayerBestGames(BulkDBCache):
     elif score > self.games[lname][0]['sc']:
       i = 1
       while (i < len(self.games[lname])):
-        if score > self.games[lname][i]['sc']:
+        if score < self.games[lname][i]['sc']:
           break
         i += 1
       self.games[lname].insert(i, g)
