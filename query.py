@@ -328,29 +328,51 @@ def player_best_first_last(c, player):
   q = " UNION ALL ".join(["(" + x + ")" for x in q])
   return xdict_rows(query_rows(c, q, player, player, player))
 
+
 def best_players_by_total_score(c):
-  rows = query_rows(c, '''SELECT name, games_played, games_won,
-                                 total_score, best_score,
-                                 first_game_start, last_game_end
-                            FROM players
-                            WHERE total_score > 500 and
-                                  (last_game_end >= curdate() - interval 1 week
-                                   or games_played > 40
-                                   or games_won > 0
-                                   or total_score > 100000)
-                          ORDER BY total_score DESC''')
+  return all_player_table(c, "total_score > 500", "total_score DESC")
+
+def simplified_score_ordering(c):
+  return all_player_table(c,
+      "last_game_end >= curdate() - interval 6 month AND total_score > 500",
+      "total_score DESC")
+
+def all_player_stats(c):
+  return all_player_table(c, "games_played > 0", "A.name")
+
+def all_player_table(c, conditions, order_by):
+  rows = query_rows(c, '''SELECT A.name, A.games_played, A.games_won, A.total_score, A.best_score, A.first_game_start, A.last_game_end,
+                                  B.name, B.source_file, B.end_time, B.v,
+                                  C.name, C.source_file, C.end_time, C.v,
+                                  D.name, D.source_file, D.end_time, D.v
+                          FROM players AS A
+                          INNER JOIN player_best_games AS B ON A.name=B.name AND A.best_score=B.sc
+                          INNER JOIN player_first_games AS C ON A.name=C.name
+                          INNER JOIN player_last_games AS D ON A.name=D.name
+                          WHERE %s
+                          ORDER BY %s''' % (conditions, order_by))
+
   res = []
   for r in rows:
     rl = list(r)
-    games = player_best_first_last(c, rl[0])
-    rl[4] = linked_text(games[0], morgue_link, human_number(rl[4]))
-    rl[5] = linked_text(games[1], morgue_link, rl[5])
-    rl[6] = linked_text(games[2], morgue_link, rl[6])
+    # the morgue url generating code in principle supports all sorts of crazy
+    # pattern matching on game dicts, but in practice, only these four fields
+    # are needed...
+    # note that we need to get `name` from each of these tables separately,
+    # because it might have different capitalization on each server, which will
+    # matter for the morgue links (e.g. P0WERM0DE vs p0werm0de)
+    rl[4] = linked_text(dict(name=rl[7], source_file=rl[8], end_time=rl[9], v=rl[10]),
+                              morgue_link, human_number(rl[4]))
+    rl[5] = linked_text(dict(name=rl[11], source_file=rl[12], end_time=rl[13], v=rl[14]),
+                              morgue_link, rl[5])
+    rl[6] = linked_text(dict(name=rl[15], source_file=rl[16], end_time=rl[17], v=rl[18]),
+                              morgue_link, rl[6])
     win_perc = calc_perc_pretty(rl[2], rl[1]) + "%"
     avg_score = calc_avg_int(rl[3], rl[1])
     res.append([rl[3]] + list(rl[0:3]) + [win_perc] + [rl[4]]
                + [avg_score] + list(rl[5:]))
   return res
+
 
 def fixup_player_stats(c, rl):
   games = player_best_first_last(c, rl[0])
@@ -370,27 +392,6 @@ def fixup_player_stats(c, rl):
            'first_game': rl[6],
            'last_game': rl[7] }
 
-def all_player_stats(c):
-  rows = query_rows(c, '''SELECT name, games_played, games_won,
-                                 total_score, best_xl, best_score,
-                                 first_game_start, last_game_end
-                            FROM players
-                            WHERE last_game_end >= curdate() - interval 1 year
-                                  or games_played > 40
-                                  or games_won > 0
-                                  or total_score > 100000
-                           ORDER BY name''')
-
-  def flatten_row(r):
-    return [r[s] for s in
-            ("total_score name games_played games_won win_perc " +
-             "best_xl best_score avg_score first_game last_game").split()]
-
-  res = []
-  for r in rows:
-    rl = list(r)
-    res.append(flatten_row(fixup_player_stats(c, rl)))
-  return res
 
 def top_combo_scores(c):
   """Returns all the top-scoring games for each unique character combo, ordered

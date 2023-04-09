@@ -2,7 +2,7 @@
    import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
-   top_scores = query.simplified_score_ordering(c)
+   top_scores = query.best_players_by_total_score(c)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -22,9 +22,12 @@
         <div class="content">
 
           <div>
-            <h2>Active players Ranked by Total Score</h2>
+            <h2>Players Ranked by Total Score</h2>
 
-            <p>This page shows only accounts that have been active in the six months. See <a href="best-players-all-total-score.html">here</a> for the all-time listing.</p>
+            <p>This page is an all-time ranking and is updated only about once per
+            day; see
+            <a href="best-players-total-score.html">here</a> for a more
+            frequently updated current ranking.</p>
 
             ${scoring_html.best_players_by_total_score(top_scores)}
           </div>

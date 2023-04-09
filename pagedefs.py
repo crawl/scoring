@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import time
 import mako.template
 import mako.lookup
 import os
@@ -43,6 +44,7 @@ def render(c, page, dest=None, pars=None):
   renders the template and writes it back to <page>.html in the tourney
   scoring directory. Setting dest overrides the destination filename."""
 
+  t0 = time.monotonic()
   force_locale()
 
   if not pars or 'quiet' not in pars:
@@ -59,6 +61,9 @@ def render(c, page, dest=None, pars=None):
       f.write( t.render( attributes = pars ) )
     finally:
       f.close()
+      t1 = time.monotonic()
+      if t1 - t0 > 1:
+        warn("Slow render for %s: %gs" % (page, (t1 - t0)))
   except ScoringException as e:
     error("Error generating page %s: %s" % (page, e))
 
@@ -96,10 +101,12 @@ def player_pages_exist():
 PAGE_DEFS = [
   [ 'overview' ], #
   [ 'top-N' ], #
-  [ 'best-players-total-score', 200 ], #
+  [ 'best-players-total-score', 1440 ], #
+  [ 'best-players-all-total-score', 1440 ], #
+  [ 'best-players-total-score', 180 ], #
   [ 'top-combo-scores' ], #
   [ 'combo-scoreboard' ], #
-  [ 'all-players', 200 ], #
+  [ 'all-players', 1440 ], #
   [ 'killers' ], #
   [ 'gkills' ], #
   [ 'winners' ], #
@@ -107,7 +114,7 @@ PAGE_DEFS = [
   [ 'fastest-wins-time' ], #
   [ 'streaks' ], #
   [ 'recent' ], #
-  [ 'per-day', 500 ], #
+  [ 'per-day', 1440 ], #
   [ 'per-day-monthly' ], #
 ]
 
@@ -171,6 +178,8 @@ def dirty_player(p, increment = PLAYER_DIRTY_THRESHOLD + 1):
 def dirty_page(p, increment = DEFAULT_DIRTY_THRESHOLD + 1):
   if first_run: # TODO: get rid of this
     return
+  if increment < 0:
+    increment = DIRTY_PAGES[p]['threshold'] + 1
   DIRTY_PAGES[p]['dirtiness'] += increment
   debug("page_DIRTY: %s (+%d) => %d" % (p, increment, DIRTY_PAGES[p]['dirtiness']))
 
@@ -212,7 +221,7 @@ def initialize_pages(c):
       if p == 'index':
         render(c, 'index')
       else:
-        dirty_page(p)
+        dirty_page(p, -1)
     do_full_run = False
 
   if do_full_run:

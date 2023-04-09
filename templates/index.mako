@@ -18,7 +18,7 @@
 
           <ul>
             <li><a href="overview.html">Scoring Overview</a></li>
-            <li><a href="best-players-total-score.html">Top Players</a></li>
+            <li><a href="best-players-total-score.html">Current Top Players</a> (<a href="best-players-all-total-score.html">All time</a>)</li>
             <li><a href="top-N.html">Top Scores</a></li>
             <li>
               <a href="fastest-wins-time.html">Fastest Wins (real time)</a>

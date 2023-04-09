@@ -2,6 +2,8 @@ import re
 from morgue.time import morgue_timestring
 from morgue.game_matcher import GameMatcher
 
+# note: this first syntax seems to be unused, and would probably not work
+# if it were
 R_FIELD = re.compile(r'\$(\w+)\$')
 R_GROUP = re.compile(r'\$(\d)')
 
