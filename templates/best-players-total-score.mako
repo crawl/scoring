@@ -24,7 +24,7 @@
           <div>
             <h2>Active players Ranked by Total Score</h2>
 
-            <p>This page shows only accounts that have been active in the six months. See <a href="best-players-all-total-score.html">here</a> for the all-time listing.</p>
+            <p>This page shows only accounts that have been active in the last six months. See <a href="best-players-all-total-score.html">here</a> for the all-time listing.</p>
 
             ${scoring_html.best_players_by_total_score(top_scores)}
           </div>
