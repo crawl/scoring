@@ -1,5 +1,5 @@
 # comment out these first three params to run locally in-repo
-scoring-base-url: 'http://crawl.akrasiac.org/scoring' # base URL for scoring pages: use 'file://...' for local testing
+scoring-base-url: 'http://crawl.akrasiac.org/scoring/descent' # base URL for scoring pages: use 'file://...' for local testing
 local-base: '/home/rax' # where logs and lockfiles go
 rawdata-base: '/var/www/crawl/rawdata' # location for any whereis data
 scoring-local: 'scoring' # location for generated files; if relative, is relative to the location of scoresd.py
@@ -15,66 +15,7 @@ sources:
     # using http.
     local: /var/www
     logfiles:
-      - allgames.txt
-      - logfile04
-      - logfile05
-      - logfile06
-      - logfile07
-      - logfile08
-      - logfile09
-      - logfile10
-      - logfile11
-      - logfile12
-      - logfile13
-      - logfile14
-      - logfile15
-      - logfile16
-      - logfile17
-      - logfile18
-      - logfile19
-      - logfile20
-      - logfile21
-      - logfile22
-      - logfile23
-      - logfile24
-      - logfile25
-      - logfile26
-      - logfile27
-      - logfile28
-      - logfile29
-      - logfile30
-      - logfile-git
-    milestones:
-      - milestones02
-      - milestones03
-      - milestones04
-      - milestones05
-      - milestones06
-      - milestones07
-      - milestones08
-      - milestones09
-      - milestones10
-      - milestones11
-      - milestones12
-      - milestones13
-      - milestones14
-      - milestones15
-      - milestones16
-      - milestones17
-      - milestones18
-      - milestones19
-      - milestones20
-      - milestones21
-      - milestones22
-      - milestones23
-      - milestones24
-      - milestones25
-      - milestones26
-      - milestones27
-      - milestones28
-      - milestones29
-      - milestones30
-      - milestones-git
+      - logfile-git-descent
 
     # Regex -> location; player name is automatically appended.
     morgues:
@@ -85,51 +26,6 @@ sources:
     server_url: http://crawl.develz.org/wordpress/howto#cdo
     base: http://crawl.develz.org
     logfiles:
-      - allgames-0.4.txt
-      - allgames-0.5.txt
-      - allgames-0.6.txt
-      - allgames-0.7.txt
-      - allgames-0.8.txt
-      - allgames-0.10.txt
-      - allgames-0.11.txt
-      - allgames-0.12.txt
-      - allgames-0.13.txt
-      - allgames-0.14.txt
-      - allgames-0.15.txt
-      - allgames-0.16.txt
-      - allgames-0.17.txt
-      - allgames-0.18.txt
-      - allgames-0.19.txt
-      - allgames-0.20.txt
-      - allgames-0.21.txt
-      - allgames-0.22.txt
-      - allgames-0.23.txt
-      - allgames-0.24.txt
-      - allgames-0.25.txt
-      - allgames-0.26.txt
-      - allgames-svn.txt
-    milestones:
-      - milestones-0.6.txt
-      - milestones-0.7.txt
-      - milestones-0.8.txt
-      - milestones-0.10.txt
-      - milestones-0.11.txt
-      - milestones-0.12.txt
-      - milestones-0.13.txt
-      - milestones-0.14.txt
-      - milestones-0.15.txt
-      - milestones-0.16.txt
-      - milestones-0.17.txt
-      - milestones-0.18.txt
-      - milestones-0.19.txt
-      - milestones-0.20.txt
-      - milestones-0.21.txt
-      - milestones-0.22.txt
-      - milestones-0.23.txt
-      - milestones-0.24.txt
-      - milestones-0.25.txt
-      - milestones-0.26.txt
-      - milestones-svn.txt
     morgues:
       - - time_gt: ['end_time', '20110819-1740']
           version_match: ['v', '0.9']
@@ -137,240 +33,27 @@ sources:
       - ['cdo.*-(?:svn)', 'http://crawl.develz.org/morgues/trunk']
       - ['cdo.*-(.*)$', 'http://crawl.develz.org/morgues/$1']
 
-  - name: cszo
-    canonical_name: CSZO
-    dormant: True
-    base: http://s-z.org/
-    logfiles:
-      - meta/git/logfile
-      - meta/0.17/logfile
-      - meta/0.16/logfile
-      - meta/0.15/logfile
-      - meta/0.14/logfile
-      - meta/0.13/logfile
-      - meta/0.12/logfile
-      - meta/0.11/logfile
-      - meta/0.10/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.17/milestones
-      - meta/0.16/milestones
-      - meta/0.15/milestones
-      - meta/0.14/milestones
-      - meta/0.13/milestones
-      - meta/0.12/milestones
-      - meta/0.11/milestones
-      - meta/0.10/milestones
-    morgues:
-      - - time_gt: ['end_time', '20130902-0000']
-        - http://dobrazupa.org/morgue # TODO: dead link, something more useful?
-      - https://f000.backblazeb2.com/file/dcss-archives/www.dobrazupa.org/morgue
-
-
   - name: clan
     canonical_name: CUE
     server_url: https://underhound.eu:8080/
     base: https://underhound.eu/crawl
     logfiles:
-      - meta/git/logfile
-      - meta/0.30/logfile
-      - meta/0.29/logfile
-      - meta/0.28/logfile
-      - meta/0.27/logfile
-      - meta/0.26/logfile
-      - meta/0.25/logfile
-      - meta/0.24/logfile
-      - meta/0.23/logfile
-      - meta/0.22/logfile
-      - meta/0.21/logfile
-      - meta/0.20/logfile
-      - meta/0.19/logfile
-      - meta/0.18/logfile
-      - meta/0.17/logfile
-      - meta/0.16/logfile
-      - meta/0.15/logfile
-      - meta/0.14/logfile
-      - meta/0.13/logfile
-      - meta/0.12/logfile
-      - meta/0.11/logfile
-      - meta/0.10/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.30/milestones
-      - meta/0.29/milestones
-      - meta/0.28/milestones
-      - meta/0.27/milestones
-      - meta/0.26/milestones
-      - meta/0.25/milestones
-      - meta/0.24/milestones
-      - meta/0.23/milestones
-      - meta/0.22/milestones
-      - meta/0.21/milestones
-      - meta/0.20/milestones
-      - meta/0.19/milestones
-      - meta/0.18/milestones
-      - meta/0.17/milestones
-      - meta/0.16/milestones
-      - meta/0.15/milestones
-      - meta/0.14/milestones
-      - meta/0.13/milestones
-      - meta/0.12/milestones
-      - meta/0.11/milestones
-      - meta/0.10/milestones
     morgues:
       - https://underhound.eu/crawl/morgue
-
-  - name: rhf
-    canonical_name: rhf
-    base: http://rl.heh.fi/
-    dormant: True
-    logfiles:
-      - meta/crawl-git/logfile
-      - meta/crawl-0.12/logfile
-    milestones:
-      - meta/crawl-git/milestones
-      - meta/crawl-0.12/milestones
-    morgues:
-      - http://rl.heh.fi/morgue/
 
   - name: cbr2
     canonical_name: CBR2
     server_url: https://cbro.berotato.org/
     base: https://cbro.berotato.org/
     logfiles:
-      - meta/git/logfile
-      - meta/0.24/logfile
-      - meta/0.25/logfile
-      - meta/0.26/logfile
-      - meta/0.27/logfile
-      - meta/0.28/logfile
-      - meta/0.29/logfile
-      - meta/0.30/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.24/milestones
-      - meta/0.25/milestones
-      - meta/0.26/milestones
-      - meta/0.27/milestones
-      - meta/0.28/milestones
-      - meta/0.29/milestones
-      - meta/0.30/milestones
     morgues:
       - https://cbro.berotato.org/morgue
-
-  - name: cbro
-    canonical_name: CBRO
-    server_url: http://crawl.berotato.org:8080/
-    base: http://crawl.berotato.org/crawl
-    logfiles:
-      - meta/git/logfile
-      - meta/0.13/logfile
-      - meta/0.14/logfile
-      - meta/0.15/logfile
-      - meta/0.16/logfile
-      - meta/0.17/logfile
-      - meta/0.18/logfile
-      - meta/0.19/logfile
-      - meta/0.20/logfile
-      - meta/0.21/logfile
-      - meta/0.22/logfile
-      - meta/0.23/logfile
-      - meta/0.24/logfile
-      - meta/0.25/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.13/milestones
-      - meta/0.14/milestones
-      - meta/0.15/milestones
-      - meta/0.16/milestones
-      - meta/0.17/milestones
-      - meta/0.18/milestones
-      - meta/0.19/milestones
-      - meta/0.20/milestones
-      - meta/0.21/milestones
-      - meta/0.22/milestones
-      - meta/0.23/milestones
-      - meta/0.24/milestones
-      - meta/0.25/milestones
-    morgues:
-      - http://crawl.berotato.org/crawl/morgue
 
   - name: ckr2
     canonical_name: CWZ
     server_url: http://webzook.net:8080/
     base: http://webzook.net/soup
     logfiles:
-      - trunk/logfile
-      - 0.13/logfile
-      - 0.14/logfile
-      - 0.15/logfile
-      - 0.16/logfile
-      - 0.17/logfile
-      - 0.18/logfile
-      - 0.19/logfile
-      - 0.20/logfile
-      - 0.21/logfile
-      - 0.22/logfile
-      - 0.23/logfile
-      - 0.24/logfile
-      - 0.25/logfile
-      - 0.26/logfile
-      - 0.27/logfile
-      - 0.28/logfile
-      - 0.29/logfile
-      - 0.30/logfile
-    milestones:
-      - trunk/milestones
-      - 0.13/milestones
-      - 0.14/milestones
-      - 0.15/milestones
-      - 0.16/milestones
-      - 0.17/milestones
-      - 0.18/milestones
-      - 0.19/milestones
-      - 0.20/milestones
-      - 0.21/milestones
-      - 0.22/milestones
-      - 0.23/milestones
-      - 0.24/milestones
-      - 0.25/milestones
-      - 0.26/milestones
-      - 0.28/milestones
-      - 0.29/milestones
-      - 0.30/milestones
-    morgues:
-      - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
-      - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
-      - ['.*', 'http://webzook.net/soup/morgue/0.13']
-
-  # These entries went missing when cwz upgraded to 0.16.1, but were
-  # fortunately preserved by the tournament scripts (then copied here).
-  - name: ckr2clone
-    canonical_name: CWZ
-    server_url: http://webzook.net:8080/
-    local: /var/www/cwz-0.16.0
-    base: http://webzook.net:82/
-    logfiles:
-      - logfile
-    milestones:
-      - milestones
-    morgues:
-      - http://webzook.net/soup/morgue/0.16
-
-  - name: ckr
-    canonical_name: CKR
-    base: http://kr.dobrazupa.org/
-    local: /home/rax/scoring/
-    logfiles:
-      - data/ckr-logfile-git
-      - data/ckr-logfile-0.13
-      - data/ckr-logfile-0.14
-      - data/ckr-logfile-0.15
-    milestones:
-      - data/ckr-milestone-git
-      - data/ckr-milestone-0.13
-      - data/ckr-milestone-0.14
-      - data/ckr-milestone-0.15
     morgues:
       - ['.*-(?:trunk|git)', 'http://webzook.net/soup/morgue/trunk']
       - ['.*-([0-9]\.[0-9]+)', 'http://webzook.net/soup/morgue/$1']
@@ -381,43 +64,6 @@ sources:
     server_url: http://lazy-life.ddo.jp:8080/
     base: http://lazy-life.ddo.jp/mirror
     logfiles:
-      - meta/trunk/logfile
-      - meta/0.30/logfile
-      - meta/0.29/logfile
-      - meta/0.28/logfile
-      - meta/0.27/logfile
-      - meta/0.26/logfile
-      - meta/0.25/logfile
-      - meta/0.24/logfile
-      - meta/0.23/logfile
-      - meta/0.22/logfile
-      - meta/0.21/logfile
-      - meta/0.20/logfile
-      - meta/0.19/logfile
-      - meta/0.18/logfile
-      - meta/0.17/logfile
-      - meta/0.16/logfile
-      - meta/0.15/logfile
-      - meta/0.14/logfile
-    milestones:
-      - meta/trunk/milestones
-      - meta/0.30/milestones
-      - meta/0.29/milestones
-      - meta/0.28/milestones
-      - meta/0.27/milestones
-      - meta/0.26/milestones
-      - meta/0.25/milestones
-      - meta/0.24/milestones
-      - meta/0.23/milestones
-      - meta/0.22/milestones
-      - meta/0.21/milestones
-      - meta/0.20/milestones
-      - meta/0.19/milestones
-      - meta/0.18/milestones
-      - meta/0.17/milestones
-      - meta/0.16/milestones
-      - meta/0.15/milestones
-      - meta/0.14/milestones
     morgues:
       - http://lazy-life.ddo.jp:8080/morgue
 
@@ -426,43 +72,6 @@ sources:
     server_url: https://crawl.xtahua.com/
     base: http://crawl.xtahua.com/crawl
     logfiles:
-      - meta/git/logfile
-      - meta/0.14/logfile
-      - meta/0.15/logfile
-      - meta/0.16/logfile
-      - meta/0.17/logfile
-      - meta/0.18/logfile
-      - meta/0.19/logfile
-      - meta/0.20/logfile
-      - meta/0.21/logfile
-      - meta/0.22/logfile
-      - meta/0.23/logfile
-      - meta/0.24/logfile
-      - meta/0.25/logfile
-      - meta/0.26/logfile
-      - meta/0.27/logfile
-      - meta/0.28/logfile
-      - meta/0.29/logfile
-      - meta/0.30/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.14/milestones
-      - meta/0.15/milestones
-      - meta/0.16/milestones
-      - meta/0.17/milestones
-      - meta/0.18/milestones
-      - meta/0.19/milestones
-      - meta/0.20/milestones
-      - meta/0.21/milestones
-      - meta/0.22/milestones
-      - meta/0.23/milestones
-      - meta/0.24/milestones
-      - meta/0.25/milestones
-      - meta/0.26/milestones
-      - meta/0.27/milestones
-      - meta/0.28/milestones
-      - meta/0.29/milestones
-      - meta/0.30/milestones
     morgues:
       - http://crawl.xtahua.com/crawl/morgue
 
@@ -471,124 +80,14 @@ sources:
     server_url: https://crawl.project357.org/
     base: https://crawl.project357.org/
     logfiles:
-      - dcss-logfiles-trunk
-      - dcss-logfiles-0.30
-      - dcss-logfiles-0.29
-      - dcss-logfiles-0.28
-      - dcss-logfiles-0.27
-      - dcss-logfiles-0.26
-      - dcss-logfiles-0.25
-      - dcss-logfiles-0.24
-      - dcss-logfiles-0.23
-      - dcss-logfiles-0.22
-      - dcss-logfiles-0.21
-      - dcss-logfiles-0.20
-      - dcss-logfiles-0.19
-      - dcss-logfiles-0.18
-      - dcss-logfiles-0.17
-      - dcss-logfiles-0.16
-      - dcss-logfiles-0.15
-    milestones:
-      - dcss-milestones-trunk
-      - dcss-milestones-0.30
-      - dcss-milestones-0.29
-      - dcss-milestones-0.28
-      - dcss-milestones-0.27
-      - dcss-milestones-0.26
-      - dcss-milestones-0.25
-      - dcss-milestones-0.24
-      - dcss-milestones-0.23
-      - dcss-milestones-0.22
-      - dcss-milestones-0.21
-      - dcss-milestones-0.20
-      - dcss-milestones-0.19
-      - dcss-milestones-0.18
-      - dcss-milestones-0.17
-      - dcss-milestones-0.16
-      - dcss-milestones-0.15
     morgues:
       - https://crawl.project357.org/morgue
-
-  - name: csn
-    canonical_name: CSN
-    dormant: True
-    base: http://crawlus.somatika.net
-    local: /home/rax/scoring/
-    logfiles:
-      - data/csn-logfile-0.11
-      - data/csn-logfile-git
-    milestones:
-      - data/csn-milestone-0.11
-      - data/csn-milestone-git
-    morgues:
-      - http://crawlus.somatika.net/dumps
-
-  - name: cjr
-    canonical_name: CJR
-    base: https://crawl.jorgrun.rocks/
-    local: /home/rax/scoring/
-    logfiles:
-      - data/cjr-logfile-0.19
-      - data/cjr-logfile-0.20
-      - data/cjr-logfile-0.21
-      - data/cjr-logfile-0.22
-      - data/cjr-logfile-git
-      # the following two are short logfiles containing games that were, I'm
-      # told, lost in a crash and then manually recovered from sequell.
-      - data/_crawl-master_crawl-0.19_saves_logfile
-      - data/_crawl-master_crawl-0.20_saves_logfile
-    milestones:
-      - data/cjr-milestone-0.19
-      - data/cjr-milestone-0.20
-      - data/cjr-milestone-0.21
-      - data/cjr-milestone-0.22
-      - data/cjr-milestone-git
-    morgues:
-      - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/morgue
-
-  - name: cjrold
-    canonical_name: CJR
-    base: https://crawl.jorgrun.rocks/
-    local: /home/rax/scoring/
-    logfiles:
-      - data/cjr-logfile-0.17
-      - data/cjr-logfile-0.18
-    milestones:
-      - data/cjr-milestone-0.17
-      - data/cjr-milestone-0.18
-    morgues:
-      - https://s3-us-west-2.amazonaws.com/crawl.jorgrun.rocks/morgue
 
   - name: cko
     canonical_name: CKO
     server_url: https://crawl.kelbi.org/
     base: https://crawl.kelbi.org/crawl
     logfiles:
-      - meta/git/logfile
-      - meta/0.30/logfile
-      - meta/0.29/logfile
-      - meta/0.28/logfile
-      - meta/0.27/logfile
-      - meta/0.26/logfile
-      - meta/0.25/logfile
-      - meta/0.24/logfile
-      - meta/0.23/logfile
-      - meta/0.22/logfile
-      - meta/0.21/logfile
-      - meta/0.18/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.30/milestones
-      - meta/0.29/milestones
-      - meta/0.28/milestones
-      - meta/0.27/milestones
-      - meta/0.26/milestones
-      - meta/0.25/milestones
-      - meta/0.24/milestones
-      - meta/0.23/milestones
-      - meta/0.22/milestones
-      - meta/0.21/milestones
-      - meta/0.18/milestones
     morgues:
       - https://crawl.kelbi.org/crawl/morgue
 

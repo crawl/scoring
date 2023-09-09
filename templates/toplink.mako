@@ -7,5 +7,7 @@
   &nbsp;
   <a href="${SCORING_BASE_URL}/index.html">ToC</a>
   &nbsp;
+  <a href="http://crawl.akrasiac.org/scoring/">Normal mode scoring</a>
+  &nbsp;
   <a href="http://crawl.akrasiac.org">crawl.akrasiac.org</a>
 </div>

@@ -6,7 +6,7 @@
     <div class="page information">
       <%include file="toplink.mako"/>
       <div class="page_content">
-        <h2>DCSS Scoring Pages (stable and alpha versions)</h2>
+        <h2>DCSS Scoring Pages (Dungeon Descent)</h2>
 
         <div class="content">
 

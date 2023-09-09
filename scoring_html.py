@@ -8,7 +8,7 @@ import re
 import os.path
 import locale
 
-TITLE = "Crawl Scoring (stable and alpha versions)"
+TITLE = "Dungeon Descent scoring"
 
 try:
   import matplotlib

@@ -56,7 +56,7 @@ OLDEST_VERSION = '0.1'
 # will be read in strict chronological order.
 
 EXTENSION_FILE = 'modules.ext' # ???
-SCORING_DB = 'scoring'
+SCORING_DB = 'scoring_descent'
 COMMIT_INTERVAL = 3000
 
 LISTENERS = [ ]
