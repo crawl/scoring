@@ -438,8 +438,11 @@ def connect_db(password=None, host=None):
     "host": host,
     "user": 'scoring',
     "db": SCORING_DB,
-    # "unix_socket": "/opt/local/var/run/mysql8/mysqld.sock", # macports mysql
   }
+  # autodetect macports mysql (XX don't hardcode version)
+  if os.path.isdir('/opt/local/var/run/mysql8/'):
+    opts["unix_socket"] = "/opt/local/var/run/mysql8/mysqld.sock"
+
   if password is not None:
     opts['password'] = password
   connection = MySQLdb.connect(**opts)
