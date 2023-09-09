@@ -132,7 +132,11 @@ except:
   long = int # stupid compatibility hack
 
 def fixup_column(col, data, game):
-  if col.find('time') != -1:
+  # show 0 instead of "" for winning game rune counts
+  # XX I couldn't figure out how this becomes "" in the first place...
+  if col.find('urune') != -1 and not data and game.get('ktyp') == 'winning':
+    return 0
+  elif col.find('time') != -1:
     return pretty_date(data)
   elif col.find('dur') != -1:
     return pretty_dur(data)
