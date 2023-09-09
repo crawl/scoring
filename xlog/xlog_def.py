@@ -28,6 +28,7 @@ class XlogDef (object):
                                                       base_url)
     self.dormant = dormant
     self.version = xlog.version.version(self.raw_path)
+    self.mode = xlog.version.mode(self.raw_path)
     self.local_path = self._local_path(self.source,
                                        self.xlog_type,
                                        self.version)
