@@ -27,6 +27,8 @@
         <div class="heading">
           <h1>${scoring_html.TITLE}</h1>
         </div>
+
+        <div><p>Dungeon descent mode is currently <b>experimental</b>, and may undergo substantial changes before a stable version release! It is possible that this scoreboard will be reset before release.</p></div>
         <hr>
 
         <div class="content">

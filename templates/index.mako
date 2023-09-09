@@ -11,10 +11,12 @@
         <div class="content">
 
           <p style="max-width: 500px">
-            To report problems with CAO scoring, please
+            To report problems with Dungeon Descent scoring, please
             <a href="https://github.com/crawl/scoring/issues/new?assignees=&labels=&template=cao-scoring-pages-bug-report.md&title=">
               submit an issue on github</a>.
           </p>
+
+          <p>Dungeon descent mode is currently <b>experimental</b>, and may undergo substantial changes before a stable version release! It is possible that this scoreboard will be reset before release.</p>
 
           <ul>
             <li><a href="overview.html">Scoring Overview</a></li>
