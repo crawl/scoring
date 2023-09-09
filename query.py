@@ -143,15 +143,16 @@ def get_major_versions(c):
 @DBMemoizer
 def get_current_version(c):
   """Return a numeric representation of the current stable version"""
-  return query_first(c, "select major from version_triage where vclean='current'")
+  return query_first_def(c, None, "select major from version_triage where vclean='current'")
 
 def flush_version_info(c):
   get_clean_versions.flush()
   get_major_versions.flush()
   get_current_version.flush()
   cv = get_current_version(c)
-  _long_vnames["current"] = "Current stable (0.%d)" % cv
-  _short_vnames["current"] = "Current (0.%d)" % cv
+  if cv:
+    _long_vnames["current"] = "Current stable (0.%d)" % cv
+    _short_vnames["current"] = "Current (0.%d)" % cv
 
 @DBMemoizer
 def canonicalize_player_name(c, player):

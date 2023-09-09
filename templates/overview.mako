@@ -44,6 +44,7 @@
 
           <hr>
 
+          % if query.get_current_version():
           <div class="row">
             <div>
               <h3>Top Scores (current stable version)</h3>
@@ -60,6 +61,7 @@
           </div>
 
           <hr>
+          % endif
           
           <div class="row">
             <div>
