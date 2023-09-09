@@ -652,7 +652,7 @@ def recent_wins(c, limit=5):
   return find_games(c, 'wins', sort_max='end_time', limit=limit)
 
 def recent_allrune_wins(c, limit=5):
-  return find_games(c, 'wins', urune=15, sort_max='end_time', limit=limit)
+  return find_games(c, 'wins', urune=MAX_RUNES, sort_max='end_time', limit=limit)
 
 def most_pacific_wins(c, limit=5):
   return xdict_rows(
