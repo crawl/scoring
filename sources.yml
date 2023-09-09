@@ -1,6 +1,6 @@
 # comment out these first three params to run locally in-repo
 scoring-base-url: 'http://crawl.akrasiac.org/scoring/descent' # base URL for scoring pages: use 'file://...' for local testing
-local-base: '/home/rax' # where logs and lockfiles go
+local-base: '/home/scoring/scoring-descent/' # where logs and lockfiles go
 rawdata-base: '/var/www/crawl/rawdata' # location for any whereis data
 scoring-local: 'scoring' # location for generated files; if relative, is relative to the location of scoresd.py
 use-milestones: False
