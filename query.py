@@ -25,7 +25,7 @@ import time
 
 # Number of unique uniques
 MAX_UNIQUES = 43
-MAX_RUNES = 15
+MAX_RUNES = 14 # current max for dungeon descent, likely will change
 
 def _cursor():
   """Easy retrieve of cursor to make interactive testing easier."""
