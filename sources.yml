@@ -297,6 +297,7 @@ sources:
 
   - name: ckr2
     canonical_name: CWZ
+    dormant: True
     server_url: http://webzook.net:8080/
     base: http://webzook.net/soup
     logfiles:
