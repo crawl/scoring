@@ -601,10 +601,12 @@ def winner_stats(stats):
                      'Max Runes', 'Best Score', 'Total Score', 'Average Score'],
                     stats)
 
-def create_image(filename, stats):
+def create_image(filename, stats, suffix):
+  # n.b. this code is fairly broken for modern matplotlib, but it still works
+  # for cao's version...
   plt.clf()
   plt.figure(1, figsize=(12,6))
-  plt.title('Activity on public servers')
+  plt.title('Activity on public servers (%s)' % suffix)
 
   rstats = list(stats)
   rstats.reverse()
@@ -680,11 +682,14 @@ def create_image(filename, stats):
 
   plt.savefig(filename)
 
-def date_stats(stats, file_suffix=""):
+def date_stats(stats, graph_file_suffix="all", graph_only=False):
   if MATPLOT:
     create_image(os.path.join(config.SCORE_FILE_DIR,
-                  'date-stats%s.png' % file_suffix),
-                  stats)
+                  'date-stats-%s.png' % graph_file_suffix),
+                  stats,
+                  graph_file_suffix)
+  if graph_only:
+    return
 
   def daterowcls(r):
     return 'month' in r and 'date-month' or 'date-day'

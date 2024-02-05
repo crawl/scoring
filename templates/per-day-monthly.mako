@@ -2,7 +2,7 @@
    import scload, query, crawl_utils, scoring_html
    c = attributes['cursor']
 
-   stats = query.date_stats(c, True)
+   stats = query.date_stats(c, "1 month")
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">

@@ -3,6 +3,8 @@
    c = attributes['cursor']
 
    stats = query.date_stats(c)
+   year_stats = query.date_stats(c, "1 year")
+   scoring_html.date_stats(year_stats, "yearly", True)
 %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
           "http://www.w3.org/TR/html4/strict.dtd">
@@ -26,8 +28,10 @@
             <p>This page updates at most once a day. For monthly stats, see <a href="per-day-monthly.html">here</a>.</p>
 
             % if scoring_html.MATPLOT and len(stats) > 100:
-            <img src="date-stats.png" title="Activity Graph"
-                 alt="Server Activity Graph">
+            <img src="date-stats-all.png" title="All-time online activity"
+                 alt="All-time online activity">
+            <img src="date-stats-yearly.png" title="Online activity for the last year"
+                 alt="Online activity for the last year">
             % endif
                  
             <div style="margin-top: 20px">            

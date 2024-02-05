@@ -733,13 +733,14 @@ def fixup_month(c, month):
   month['winners'] = fixup_winners(mwin)
   return month
 
-def date_stats(c, restricted=False):
-  if restricted:
+def date_stats(c, interval=None):
+  if interval:
     dates = query_rows(c,
-                     '''SELECT which_day, games_ended, games_won
+                      '''SELECT which_day, games_ended, games_won
                          FROM per_day_stats
-                         WHERE which_day > curdate() - interval 1 month
-                         ORDER BY which_day DESC''')
+                         WHERE which_day > curdate() - interval %s
+                         ORDER BY which_day DESC''' %
+                      interval)
   else:
     dates = query_rows(c,
                      '''SELECT which_day, games_ended, games_won
