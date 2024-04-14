@@ -615,13 +615,9 @@ sources:
     server_url: https://crawl.dcss.io/
     base: https://crawl.dcss.io/crawl/
     logfiles:
-      - meta/git/logfile
-      - meta/0.31/logfile
-      - meta/0.30/logfile
-    milestones:
-      - meta/git/milestones
-      - meta/0.31/milestones
-      - meta/0.30/milestones
+      - meta/crawl-git/logfile
+      - meta/crawl-0.31/logfile
+      - meta/crawl-0.30/logfile
     morgues:
       - https://crawl.dcss.io/crawl/morgue
 
