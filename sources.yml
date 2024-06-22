@@ -621,6 +621,59 @@ sources:
     morgues:
       - https://crawl.dcss.io/crawl/morgue
 
+  - name: cnc
+    canonical_name: CNC
+    server_url: https://crawl.nemelex.cards/
+    base: https://archive.nemelex.cards/
+    logfiles:
+      - meta/crawl-git/logfile
+      - meta/crawl-0.31/logfile
+      - meta/crawl-0.30/logfile
+      - meta/crawl-0.29/logfile
+      - meta/crawl-0.28/logfile
+      - meta/crawl-0.27/logfile
+      - meta/crawl-0.26/logfile
+      - meta/crawl-0.25/logfile
+      - meta/crawl-0.24/logfile
+      - meta/crawl-0.23/logfile
+      - meta/crawl-0.22/logfile
+      - meta/crawl-0.21/logfile
+      - meta/crawl-0.20/logfile
+      - meta/crawl-0.19/logfile
+      - meta/crawl-0.18/logfile
+      - meta/crawl-0.17/logfile
+      - meta/crawl-0.16/logfile
+      - meta/crawl-0.15/logfile
+      - meta/crawl-0.14/logfile
+      - meta/crawl-0.13/logfile
+      - meta/crawl-0.12/logfile
+      - meta/crawl-0.11/logfile
+    milestones:
+      - meta/crawl-git/milestones
+      - meta/crawl-0.31/milestones
+      - meta/crawl-0.30/milestones
+      - meta/crawl-0.29/milestones
+      - meta/crawl-0.28/milestones
+      - meta/crawl-0.27/milestones
+      - meta/crawl-0.26/milestones
+      - meta/crawl-0.25/milestones
+      - meta/crawl-0.24/milestones
+      - meta/crawl-0.23/milestones
+      - meta/crawl-0.22/milestones
+      - meta/crawl-0.21/milestones
+      - meta/crawl-0.20/milestones
+      - meta/crawl-0.19/milestones
+      - meta/crawl-0.18/milestones
+      - meta/crawl-0.17/milestones
+      - meta/crawl-0.16/milestones
+      - meta/crawl-0.15/milestones
+      - meta/crawl-0.14/milestones
+      - meta/crawl-0.13/milestones
+      - meta/crawl-0.12/milestones
+      - meta/crawl-0.11/milestones
+    morgues:
+      - https://archive.nemelex.cards/morgue
+
 game-restrictions:
   buggy:
     - edsrzf:cpo:20160218190853S
