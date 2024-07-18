@@ -623,6 +623,10 @@ sources:
       - meta/crawl-git/logfile
       - meta/crawl-0.31/logfile
       - meta/crawl-0.30/logfile
+      - meta/crawl-bot-git/logfile
+      - meta/crawl-bot-0.31/logfile
+      - meta/crawl-bot-0.30/logfile
+      - meta/crawl-bot-0.29/logfile
     morgues:
       - https://crawl.dcss.io/crawl/morgue
 
