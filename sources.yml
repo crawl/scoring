@@ -618,7 +618,7 @@ sources:
   - name: cdi
     canonical_name: CDI
     server_url: https://crawl.dcss.io/
-    base: https://crawl.dcss.io/crawl/
+    base: http://crawl.dcss.io/crawl/
     logfiles:
       - meta/crawl-git/logfile
       - meta/crawl-0.31/logfile
