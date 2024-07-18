@@ -266,6 +266,7 @@ sources:
 
   - name: cbro
     canonical_name: CBRO
+    dormant: True
     server_url: http://crawl.berotato.org:8080/
     base: http://crawl.berotato.org/crawl
     logfiles:
@@ -303,7 +304,7 @@ sources:
 
   - name: ckr2
     canonical_name: CWZ
-    dormant: False
+    dormant: True
     server_url: http://webzook.net:8080/
     base: http://webzook.net/soup
     logfiles:
@@ -356,6 +357,7 @@ sources:
   # fortunately preserved by the tournament scripts (then copied here).
   - name: ckr2clone
     canonical_name: CWZ
+    dormant: True
     server_url: http://webzook.net:8080/
     local: /var/www/cwz-0.16.0
     base: http://webzook.net:82/
@@ -368,6 +370,7 @@ sources:
 
   - name: ckr
     canonical_name: CKR
+    dormant: True
     base: http://kr.dobrazupa.org/
     local: /home/rax/scoring/
     logfiles:
@@ -540,6 +543,7 @@ sources:
 
   - name: cjr
     canonical_name: CJR
+    dormant: True
     base: https://crawl.jorgrun.rocks/
     local: /home/rax/scoring/
     logfiles:
@@ -563,6 +567,7 @@ sources:
 
   - name: cjrold
     canonical_name: CJR
+    dormant: True
     base: https://crawl.jorgrun.rocks/
     local: /home/rax/scoring/
     logfiles:
