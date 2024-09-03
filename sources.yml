@@ -44,6 +44,7 @@ sources:
       - logfile29
       - logfile30
       - logfile31
+      - logfile32
       - logfile-git
     milestones:
       - milestones02
@@ -76,6 +77,7 @@ sources:
       - milestones29
       - milestones30
       - milestones31
+      - milestones32
       - milestones-git
 
     # Regex -> location; player name is automatically appended.
@@ -175,6 +177,7 @@ sources:
     base: https://underhound.eu/crawl
     logfiles:
       - meta/git/logfile
+      - meta/0.32/logfile
       - meta/0.31/logfile
       - meta/0.30/logfile
       - meta/0.29/logfile
@@ -199,6 +202,7 @@ sources:
       - meta/0.10/logfile
     milestones:
       - meta/git/milestones
+      - meta/0.32/milestones
       - meta/0.31/milestones
       - meta/0.30/milestones
       - meta/0.29/milestones
@@ -251,6 +255,7 @@ sources:
       - meta/0.29/logfile
       - meta/0.30/logfile
       - meta/0.31/logfile
+      - meta/0.32/logfile
     milestones:
       - meta/git/milestones
       - meta/0.24/milestones
@@ -261,6 +266,7 @@ sources:
       - meta/0.29/milestones
       - meta/0.30/milestones
       - meta/0.31/milestones
+      - meta/0.32/milestones
     morgues:
       - https://cbro.berotato.org/morgue
 
@@ -394,6 +400,7 @@ sources:
     base: http://lazy-life.ddo.jp/mirror
     logfiles:
       - meta/trunk/logfile
+      - meta/0.32/logfile
       - meta/0.31/logfile
       - meta/0.30/logfile
       - meta/0.29/logfile
@@ -414,6 +421,7 @@ sources:
       - meta/0.14/logfile
     milestones:
       - meta/trunk/milestones
+      - meta/0.32/milestones
       - meta/0.31/milestones
       - meta/0.30/milestones
       - meta/0.29/milestones
@@ -459,6 +467,7 @@ sources:
       - meta/0.29/logfile
       - meta/0.30/logfile
       - meta/0.31/logfile
+      - meta/0.32/logfile
     milestones:
       - meta/git/milestones
       - meta/0.14/milestones
@@ -479,8 +488,9 @@ sources:
       - meta/0.29/milestones
       - meta/0.30/milestones
       - meta/0.31/milestones
+      - meta/0.32/milestones
     morgues:
-      - http://crawl.xtahua.com/crawl/morgue
+      - https://crawl.xtahua.com/crawl/morgue
 
   - name: cpo
     canonical_name: CPO
@@ -488,6 +498,7 @@ sources:
     base: https://crawl.project357.org/
     logfiles:
       - dcss-logfiles-trunk
+      - dcss-logfiles-0.32
       - dcss-logfiles-0.31
       - dcss-logfiles-0.30
       - dcss-logfiles-0.29
@@ -507,6 +518,7 @@ sources:
       - dcss-logfiles-0.15
     milestones:
       - dcss-milestones-trunk
+      - dcss-milestones-0.32
       - dcss-milestones-0.31
       - dcss-milestones-0.30
       - dcss-milestones-0.29
@@ -621,6 +633,7 @@ sources:
     base: http://crawl.dcss.io/crawl/
     logfiles:
       - meta/crawl-git/logfile
+      - meta/crawl-0.32/logfile
       - meta/crawl-0.31/logfile
       - meta/crawl-0.30/logfile
       - meta/crawl-bot-git/logfile
@@ -636,6 +649,7 @@ sources:
     base: http://archive.nemelex.cards/
     logfiles:
       - meta/crawl-git/logfile
+      - meta/crawl-0.32/logfile
       - meta/crawl-0.31/logfile
       - meta/crawl-0.30/logfile
       - meta/crawl-0.29/logfile
