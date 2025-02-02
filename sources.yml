@@ -7,7 +7,7 @@ use-milestones: False
 sources:
   - name: cao
     canonical_name: CAO
-    server_url: http://crawl.akrasiac.org
+    server_url: https://crawl.akrasiac.org:8443
     base: http://crawl.akrasiac.org
 
     # If the file exists in this path, it will be linked into the data
@@ -82,7 +82,7 @@ sources:
 
     # Regex -> location; player name is automatically appended.
     morgues:
-      - http://crawl.akrasiac.org/rawdata
+      - https://crawl.akrasiac.org/rawdata
 
   - name: cdo
     canonical_name: CDO
