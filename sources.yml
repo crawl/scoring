@@ -495,7 +495,7 @@ sources:
   - name: cpo
     canonical_name: CPO
     server_url: https://crawl.project357.org/
-    base: https://crawl.project357.org/
+    base: http://crawl.project357.org/
     logfiles:
       - dcss-logfiles-trunk
       - dcss-logfiles-0.32
