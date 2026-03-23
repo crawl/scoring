@@ -51,7 +51,10 @@ class XlogDef (object):
   def fetch(self):
     if self.local or self.dormant:
       return
-    command = "wget --no-check-certificate --timeout=30 --tries=1 -q -c %s -O %s" % (self.source_path, self.local_path)
+    # Use a 20 minute total limit to network activity with a 30 second
+    # connection timeout. Use `-C -` to resume downloads based on local+remote
+    # file sizes.
+    command = "curl --max-time 1200 --connect-timeout 30 -C - -s -o %s %s" % (self.local_path, self.source_path)
     res = os.system(command)
     if res != 0:
       raise IOError("Failed to fetch %s with %s" % (self.source_path, command))

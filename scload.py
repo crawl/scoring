@@ -52,7 +52,7 @@ LIMIT_ROWS = 0
 OLDEST_VERSION = '0.1'
 
 # Log and milestone files. A tuple indicates a remote file with t[1]
-# being the URL to wget -c from. Files can be in any order, loglines
+# being the URL to curl -C from. Files can be in any order, loglines
 # will be read in strict chronological order.
 
 EXTENSION_FILE = 'modules.ext' # ???
@@ -250,7 +250,7 @@ class Xlogfile:
     if self.xlog.dormant:
       info("Skipping dormant remote logfile at %s" % self.url)
     else:
-      info("Fetching remote %s to %s with wget -c" % (self.url, self.filename))
+      info("Fetching remote %s to %s with curl -C" % (self.url, self.filename))
     try:
       self.xlog.fetch()
     except IOError as e:
