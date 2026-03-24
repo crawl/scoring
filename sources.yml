@@ -8,7 +8,7 @@ sources:
   - name: cao
     canonical_name: CAO
     server_url: https://crawl.akrasiac.org:8443
-    base: http://crawl.akrasiac.org
+    base: https://crawl.akrasiac.org
 
     # If the file exists in this path, it will be linked into the data
     # directory from the local path; otherwise it will be fetched
@@ -90,8 +90,8 @@ sources:
 
   - name: cdo
     canonical_name: CDO
-    server_url: http://crawl.develz.org/wordpress/howto#cdo
-    base: http://crawl.develz.org
+    server_url: https://crawl.develz.org/wordpress/howto#cdo
+    base: https://crawl.develz.org
     logfiles:
       - allgames-0.4.txt
       - allgames-0.5.txt
@@ -462,7 +462,7 @@ sources:
   - name: cxc
     canonical_name: CXC
     server_url: https://crawl.xtahua.com/
-    base: http://crawl.xtahua.com/crawl
+    base: https://crawl.xtahua.com/crawl
     logfiles:
       - meta/git/logfile
       - meta/0.14/logfile
@@ -515,7 +515,7 @@ sources:
   - name: cpo
     canonical_name: CPO
     server_url: https://crawl.project357.org/
-    base: http://crawl.project357.org/
+    base: https://crawl.project357.org/
     logfiles:
       - dcss-logfiles-trunk
       - dcss-logfiles-0.34
@@ -654,7 +654,7 @@ sources:
   - name: cdi
     canonical_name: CDI
     server_url: https://crawl.dcss.io/
-    base: http://crawl.dcss.io/crawl/
+    base: https://crawl.dcss.io/crawl/
     logfiles:
       - meta/crawl-git/logfile
       - meta/crawl-0.34/logfile
@@ -672,7 +672,7 @@ sources:
   - name: cnc
     canonical_name: CNC
     server_url: https://crawl.nemelex.cards/
-    base: http://archive.nemelex.cards/
+    base: https://archive.nemelex.cards/
     logfiles:
       - meta/crawl-git/logfile
       - meta/crawl-0.34/logfile
@@ -714,7 +714,7 @@ sources:
       - meta/0.31/logfile
       - meta/0.30/logfile
     morgues:
-      - https://crawl-br.roguelikes.gg/morgue/
+      - https://crawl-br.roguelikes.gg/morgue
 
 game-restrictions:
   buggy:
