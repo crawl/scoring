@@ -702,6 +702,20 @@ sources:
     morgues:
       - https://archive.nemelex.cards/morgue
 
+  - name: cbrg
+    canonical_name: CBRG
+    server_url: https://crawl-br.roguelikes.gg/
+    base: https://crawl-br.roguelikes.gg/
+    logfiles:
+      - meta/git/logfile
+      - meta/0.34/logfile
+      - meta/0.33/logfile
+      - meta/0.32/logfile
+      - meta/0.31/logfile
+      - meta/0.30/logfile
+    morgues:
+      - https://crawl-br.roguelikes.gg/morgue/
+
 game-restrictions:
   buggy:
     - edsrzf:cpo:20160218190853S
